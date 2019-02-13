@@ -73,6 +73,7 @@ jobs:
           cmakeArgs: --build $(Build.StagingDirectory)\cmark
         displayName: 'Build CMark'
       - script: |
+          del "%UniversalCRTSdkDir%\Include\%UCRTVersion%\ucrt\module.modulemap" "%VCToolsInstallDir%\include\module.modulemap" "%VCToolsInstallDir%\include\visualc.apinotes" "%UniversalCRTSdkDir%\Include\%UCRTVersion%\um\module.modulemap"
           mklink "%UniversalCRTSdkDir%\Include\%UCRTVersion%\ucrt\module.modulemap" "$(Build.SourcesDirectory)\swift\stdlib\public\Platform\ucrt.modulemap"
           mklink "%VCToolsInstallDir%\include\module.modulemap" "$(Build.SourcesDirectory)\swift\stdlib\public\Platform\visualc.modulemap"
           mklink "%VCToolsInstallDir%\include\visualc.apinotes" "$(Build.SourcesDirectory)\swift\stdlib\public\Platform\visualc.apinotes"
