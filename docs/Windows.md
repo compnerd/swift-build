@@ -57,7 +57,7 @@ On Windows, the most convenient setup for building Swift projects currently invo
 
 #### Further requirements: ICU
 
-You will need the ICU libraries from [ICU - International Components for Unicode](http://site.icu-project.org/). The nightlies are built against ICU 64.2 from the ICU project. You can download the binaries for that from [http://download./files/icu4c/64.2/icu4c-64_2-Win64-MSVC2017.zip](http://download./files/icu4c/64.2/icu4c-64_2-Win64-MSVC2017.zip). In these instructions we assume you rename the extracted ICU folder `icu4c-64_2-Win64-MSVC2017` to `icu-64.2` and move it to `C:\Library` and that you rename `bin64` to `bin`. The path to that `bin` should be added to the PATH environment variable.
+You will need the ICU libraries from [ICU - International Components for Unicode](http://site.icu-project.org/). The nightlies are built against ICU 64.2 from the ICU project. You can download the binaries for that from [http://download.icu-project.org/files/icu4c/64.2/icu4c-64_2-Win64-MSVC2017.zip](http://download.icu-project.org/files/icu4c/64.2/icu4c-64_2-Win64-MSVC2017.zip). In these instructions we assume you rename the extracted ICU folder `icu4c-64_2-Win64-MSVC2017` to `icu-64.2` and move it to `C:\Library` and that you rename `bin64` to `bin`. The path to that `bin` should be added to the PATH environment variable.
 
 #### Building Swift code
 
