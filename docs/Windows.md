@@ -75,7 +75,7 @@ Note that the files in `C:\Library\Swift\Current\bin` might be incomplete: depen
 - `C:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin`
 - `C:\Library\Developer\Platforms\Windows.platform\Developer\SDKs\Windows.sdk\usr\bin`
 
-Copy the missing files to `C:\Library\Swift\Current\bin` (again, be sure not to move them). (But note that a new installation of the Swift Runtime does not update those copied files, so first uninstall the old Swift Runtime and then delete all files in `C:\Library\Swift\Current\bin` before installing a new Swift Runtime.)
+Copy the missing files to `C:\Library\Swift\Current\bin` (again, be sure not to move them). (But note that a new installation of the Swift Runtime does not update those copied files, so before installing a new Swift Runtime, first uninstall the old Swift Runtime and then delete all files in `C:\Library\Swift\Current\bin`.)
 
 _Tip:_ When calling your program from the command line, first execute the command  `chcp 65001` to ensure that Unicode characters are printed correctly inside the Windows command shell.
 
