@@ -81,7 +81,7 @@ _Tip:_ When calling your program from the command line, first execute the comman
 
 #### Running the Swift program on any machine
 
-To run the Swift program on another machine, in addition to the files mentioned in the last section the files from the "Visual C++ Redistributable" in the according version have to be available on that machine (i.e. they have to be in your path). They can be made available by installing the according "Visual C++ Redistributable". As an alternative, according to [Distributable Code for Microsoft Visual Studio 2017](https://docs.microsoft.com/en-us/visualstudio/productinfo/2017-redistribution-vs) the files inside `[VisualStudioFolder]\VC\redist` are allowed to be part of your application (consider the files inside the subfolder `x64\*.CRT`). Please consult the Microsoft documentation to know which files you should bundle with your application.
+To run the Swift program on another machine, in addition to the files mentioned in the last section, the files from the "Visual C++ Redistributable" in the according version have to be available on that machine (i.e. they have to be in your path). They can be made available by installing the according "Visual C++ Redistributable". As an alternative, according to [Distributable Code for Microsoft Visual Studio 2017](https://docs.microsoft.com/en-us/visualstudio/productinfo/2017-redistribution-vs) the files inside `[VisualStudioFolder]\VC\redist` are allowed to be part of your application (consider the files inside the subfolder `x64\*.CRT`). Please consult the Microsoft documentation to know which files you should bundle with your application.
 
 #### Legal statement
 
