@@ -43,10 +43,13 @@ These \*.msi files install the files to `C:\Library`. The complete Library direc
 
 To install the Swift Toolchain and Swift Windows SDK, run the installers windows-toolchain-amd64.msi and windows-sdk.msi. To install the Swift Runtime, run the installer windows-runtime-amd64.msi.
 
-The installations of the Swift Toolchain and Swift Windows SDK add the following values to the system PATH environment variable:
+The installation of the Swift Toolchain adds the following values to the system PATH environment variable:
 
-- `\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin`
-- `\Library\Swift\Current\bin`
+`\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin`
+
+The installation of the Swift Windows SDK adds the following values to the system PATH environment variable:
+
+`\Library\Swift\Current\bin`
 
 #### Further requirements: CMake
 
@@ -64,16 +67,13 @@ You should use a CMake project to build a Swift program. An example CMake projec
 
 There is no need to call the compiled program from the Native Tools Command Prompt.
 
-Without using the results of the Swift Toolchain and Swift Windows SDK installers (i.e. without the values added by them to the PATH environment variable) you can use the content inside `C:\Library\Swift\Current\bin` to run the program on the development machine, i.e. you add this path to PATH environment variable before running the program.
-
-Additionally, the DLL files from the ICU project icudt\*.dll, icuin\*.dll, icuio\*.dll, icutu\*.dll, and icuuc\*.dll have to be in your path. (This is already the case if the `bin` directory from UCI is added to the PATH environment variable as described above.)
+The addition of `C:\Library\Swift\Current\bin` to the PATH environment variable Swift Windows SDK ensures that the program can be run on the development machine. `C:\Library\Swift\Current\bin` contains the DLL files needed to run a Swift program (besides the fact that the DLL files from the ICU project icudt\*.dll, icuin\*.dll, icuio\*.dll, icutu\*.dll, and icuuc\*.dll have to be in your path).
 
 Of course, if you place the according DLL files from those directories into the same directory beside your executable (just copy them, do not move them!), you do not need the according additions to the PATH environment variable.
 
-Note that the files in `C:\Library\Swift\Current\bin` might be incomplete: depending on the use case, you might need some more files (see the error messages when trying to run the program). You should find missing files in one of the following directories:
+Note that the files in `C:\Library\Swift\Current\bin` might be incomplete: depending on the use case, you might need some more files (see the error messages when trying to run the program). You should find missing files in
 
-- `C:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin`
-- `C:\Library\Developer\Platforms\Windows.platform\Developer\SDKs\Windows.sdk\usr\bin`
+`C:\Library\Developer\Platforms\Windows.platform\Developer\SDKs\Windows.sdk\usr\bin`
 
 Copy the missing files to `C:\Library\Swift\Current\bin` (again, be sure not to move them). (But note that a new installation of the Swift Runtime does not update those copied files, so before installing a new Swift Runtime, first uninstall the old Swift Runtime and then delete all files in `C:\Library\Swift\Current\bin`.)
 
@@ -81,7 +81,7 @@ _Tip:_ When calling your program from the command line, first execute the comman
 
 #### Running the Swift program on any machine
 
-To run the Swift program on another machine, the files from the "Visual C++ Redistributable" in the according version have to be available on that machine (i.e. they have to be in your path). They can be made available by installing the according "Visual C++ Redistributable". As an alternative, according to [Distributable Code for Microsoft Visual Studio 2017](https://docs.microsoft.com/en-us/visualstudio/productinfo/2017-redistribution-vs) the files inside `[VisualStudioFolder]\VC\redist` are allowed to be part of your application (consider the files inside the subfolder `x64\*.CRT`). Please consult the Microsoft documentation to know which files you should bundle with your application.
+To run the Swift program on another machine, in addition to the files mentioned in the last section the files from the "Visual C++ Redistributable" in the according version have to be available on that machine (i.e. they have to be in your path). They can be made available by installing the according "Visual C++ Redistributable". As an alternative, according to [Distributable Code for Microsoft Visual Studio 2017](https://docs.microsoft.com/en-us/visualstudio/productinfo/2017-redistribution-vs) the files inside `[VisualStudioFolder]\VC\redist` are allowed to be part of your application (consider the files inside the subfolder `x64\*.CRT`). Please consult the Microsoft documentation to know which files you should bundle with your application.
 
 #### Legal statement
 
