@@ -47,7 +47,7 @@ The installation of the Swift Toolchain adds the following value to the system P
 
 `\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin`
 
-The installation of the Swift Windows SDK adds the following value to the system PATH environment variable:
+The installation of the Swift Runtime adds the following value to the system PATH environment variable:
 
 `\Library\Swift\Current\bin`
 
