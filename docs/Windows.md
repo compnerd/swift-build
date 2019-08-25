@@ -53,11 +53,11 @@ The installation of the Swift Runtime adds the following value to the system PAT
 
 #### Further requirements: CMake
 
-On Windows, the most convenient setup for building Swift projects currently involves the use of CMake. This requires CMake 3.15+ for Swift support. You can download CMake from <https://cmake.org/>.
+On Windows, the most convenient setup for building Swift projects currently involves the use of CMake. This requires CMake 3.15+ for Swift support. You can download CMake from [https://cmake.org](https://cmake.org/).
 
 #### Further requirements: ICU
 
-You will need the ICU libraries from <http://site.icu-project.org/>. The nightlies are built against ICU 64.2 from the ICU project. You can download the binaries for that from http://download./files/icu4c/64.2/icu4c-64_2-Win64-MSVC2017.zip. In these instructions we assume you rename the extracted ICU folder `icu4c-64_2-Win64-MSVC2017` to `icu-64.2` and move it to `C:\Library` and that you rename `bin64` to `bin`. The path to that `bin` should be added to the PATH environment variable.
+You will need the ICU libraries from [ICU - International Components for Unicode](http://site.icu-project.org/). The nightlies are built against ICU 64.2 from the ICU project. You can download the binaries for that from [http://download./files/icu4c/64.2/icu4c-64_2-Win64-MSVC2017.zip](http://download./files/icu4c/64.2/icu4c-64_2-Win64-MSVC2017.zip). In these instructions we assume you rename the extracted ICU folder `icu4c-64_2-Win64-MSVC2017` to `icu-64.2` and move it to `C:\Library` and that you rename `bin64` to `bin`. The path to that `bin` should be added to the PATH environment variable.
 
 #### Building Swift code
 
@@ -77,7 +77,7 @@ Note that the files in `C:\Library\Swift\Current\bin` might be incomplete: depen
 
 Copy the missing files to `C:\Library\Swift\Current\bin` (again, be sure not to move them). (But note that a new installation of the Swift Runtime does not update those copied files, so before installing a new Swift Runtime, first uninstall the old Swift Runtime and then delete all files in `C:\Library\Swift\Current\bin`.)
 
-_Tip:_ When calling your program from the command line, first execute the command  `chcp 65001` to ensure that Unicode characters are printed correctly inside the Windows command shell.
+_Tip:_ When calling your program from the command line, first execute the command `chcp 65001` to ensure that Unicode characters are printed correctly inside the Windows command shell.
 
 #### Running the Swift program on any machine
 
