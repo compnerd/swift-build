@@ -43,11 +43,11 @@ These \*.msi files install the files to `C:\Library`. The complete Library direc
 
 To install the Swift Toolchain and Swift Windows SDK, run the installers windows-toolchain-amd64.msi and windows-sdk.msi. To install the Swift Runtime, run the installer windows-runtime-amd64.msi.
 
-The installation of the Swift Toolchain adds the following values to the system PATH environment variable:
+The installation of the Swift Toolchain adds the following value to the system PATH environment variable:
 
 `\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin`
 
-The installation of the Swift Windows SDK adds the following values to the system PATH environment variable:
+The installation of the Swift Windows SDK adds the following value to the system PATH environment variable:
 
 `\Library\Swift\Current\bin`
 
