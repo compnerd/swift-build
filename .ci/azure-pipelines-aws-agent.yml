@@ -25,7 +25,7 @@ jobs:
 
       llvm.extra_cmake_flags: -DLLVM_PARALLEL_LINK_JOBS=2
       swift.extra_cmake_flags: -DSWIFT_WINDOWS_x86_64_ICU_UC_INCLUDE=$(icu.directory)/usr/include/unicode -DSWIFT_WINDOWS_x86_64_ICU_UC=$(icu.directory)/usr/lib/icuuc$(icu.version).lib -DSWIFT_WINDOWS_x86_64_ICU_I18N_INCLUDE=$(icu.directory)/usr/include -DSWIFT_WINDOWS_x86_64_ICU_I18N=$(icu.directory)/usr/lib/icuin$(icu.version).lib -DSWIFT_PARALLEL_LINK_JOBS=8
-      lldb.extra_cmake_flags: -DPYTHON_HOME="C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python37_64"
+      lldb.extra_cmake_flags: -DLLDB_RELOCATABLE_PYTHON=YES
     steps:
     - task: BatchScript@1
       inputs:
@@ -35,7 +35,7 @@ jobs:
       displayName: 'vcvarsall.bat'
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '2.7.x'
+        versionSpec: '3.x'
     - script: |
         echo "##vso[task.setvariable variable=PATH]$(install.directory)/bin;%PATH%"
       displayName: 'Update PATH'
@@ -89,6 +89,9 @@ jobs:
     - script: |
         echo ##vso[task.setvariable variable=PATH]$(icu.directory)/usr/bin;$(install.directory)\bin;$(Build.StagingDirectory)\swift\libdispatch-prefix\bin;%PATH%;%ProgramFiles%\Git\usr\bin
       displayName: 'Update PATH'
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '2.7.x'
     - task: CMake@1
       inputs:
         cmakeArgs: --build $(Build.StagingDirectory)\swift --target check-swift-validation
