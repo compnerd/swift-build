@@ -52,7 +52,7 @@ steps:
   - task: CMake@1
     inputs:
       workingDirectory: $(Build.StagingDirectory)/cmark
-      cmakeArgs: -C $(Build.SourcesDirectory)/cmake/caches/$(platform)-$(arch).cmake -G Ninja $(Build.SourcesDirectory)/cmark -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=""
+      cmakeArgs: -C $(Build.SourcesDirectory)/cmake/caches/$(platform)-$(arch).cmake -G Ninja $(Build.SourcesDirectory)/cmark -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="" -DCMARK_TESTS=NO -DCMARK_STATIC=YES -DCMARK_SHARED=NO
     displayName: 'Configure CMark'
   - task: CMake@1
     inputs:
