@@ -16,5 +16,5 @@ if(CMAKE_VERSION VERSION_LESS 3.16)
   list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES CMAKE_Swift_COMPILER_TARGET)
 endif()
 set(CMAKE_Swift_COMPILER_TARGET aarch64-unknown-linux-android CACHE STRING "")
-set(CMAKE_Swift_FLAGS "-resource-dir ${SWIFT_ANDROID_SDK}/usr/lib/swift -Xcc --sysroot=${CMAKE_ANDROID_NDK}/sysroot" CACHE STRING "")
+set(CMAKE_Swift_FLAGS "-resource-dir ${SWIFT_ANDROID_SDK}/usr/lib/swift -tools-directory ${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/windows-x86_64/bin -Xclang-linker --gcc-toolchain=${CMAKE_ANDROID_NDK}/toolchains/aarch64-linux-android-4.9/prebuilt/windows-x86_64 -Xclang-linker --sysroot=${CMAKE_ANDROID_NDK}/sysroot -Xclang-linker -fuse-ld=gold.exe -Xcc --sysroot=${CMAKE_ANDROID_NDK}/sysroot" CACHE STRING "")
 
