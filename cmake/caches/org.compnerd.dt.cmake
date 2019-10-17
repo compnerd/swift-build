@@ -66,23 +66,28 @@ set(LLVM_TOOLCHAIN_TOOLS
       c++filt
       dsymutil
       dwp
+      # lipo
       llvm-ar
       llvm-cov
       llvm-cvtres
       llvm-cxxfilt
       llvm-dlltool
+      llvm-dwarfdump
       llvm-dwp
-      llvm-ranlib
       llvm-lib
+      llvm-lipo
       llvm-mt
       llvm-nm
+      llvm-objcopy
       llvm-objdump
       llvm-pdbutil
       llvm-profdata
+      llvm-ranlib
       llvm-rc
       llvm-readelf
       llvm-readobj
       llvm-size
+      llvm-strings
       llvm-strip
       llvm-symbolizer
       llvm-undname
@@ -97,15 +102,31 @@ set(LLVM_TOOLCHAIN_TOOLS
 
 set(CLANG_TOOLS
       clang
+      # clangd
       clang-format
-      clang-headers
+      clang-resource-headers
+      # clang-rename
+      # clang-reorder-fields
       clang-tidy
+      # modularize
+    CACHE STRING "")
+
+# --- lld ---
+set(LLD_TOOLS
+      lld
     CACHE STRING "")
 
 # --- lldb ---
 
 # NOTE(compnerd) use the pre-generated swig bindings rather than building it
 set(LLDB_ALLOW_STATIC_BINDINGS YES CACHE BOOL "")
+
+set(LLDB_TOOLS
+      lldb
+      lldb-server
+      lldb-vscode
+      # repl_swift
+    CACHE STRING "")
 
 # --- swift ---
 
@@ -138,3 +159,15 @@ set(SWIFT_INSTALL_COMPONENTS
       swift-remote-mirror
       swift-remote-mirror-headers
     CACHE STRING "")
+
+set(LLVM_DISTRIBUTION_COMPONENTS
+      IndexStore
+      libclang
+      libclang-headers
+      LTO
+      ${LLVM_TOOLCHAIN_TOOLS}
+      ${CLANG_TOOLS}
+      # ${LLD_TOOLS}
+      ${LLDB_TOOLS}
+      # ${SWIFT_INSTALL_COMPONENTS}
+   CACHE STRING "")
