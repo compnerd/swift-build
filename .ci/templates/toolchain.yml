@@ -5,6 +5,7 @@ steps:
 
       git clone --quiet --depth 1 --single-branch https://github.com/apple/swift-cmark cmark
       git clone --quiet --depth 1 --single-branch https://github.com/apple/swift-llvm llvm
+      sed  -i 's/substitutions:/substitutions:\n            print("a: " + str(a) + " b: " + str(b))/g' llvm/utils/lit/lit/TestRunner.py
 
       # NOTE(compnerd) this cannot be a shallow clone since we need to go back in time to around
       # when the branch was cut
