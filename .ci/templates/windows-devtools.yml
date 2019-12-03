@@ -7,6 +7,9 @@ steps:
       git clone --quiet --depth 1 --single-branch https://github.com/apple/swift-llbuild llbuild
       call :ApplyPatches "%LLBUILD_PR%" llbuild
 
+      git clone --quiet --depth 1 --single-branch https://github.com/apple/swift-tools-support-core tools-support-core
+      call :ApplyPatches "%TSC_PR%" tools-support-core
+
       git clone --quiet --config core.symlinks=true --depth 1 --single-branch https://github.com/apple/indexstore-db indexstore-db
       call :ApplyPatches "%INDEXSTOREDB_PR%" indexstore-db
 
@@ -68,6 +71,20 @@ steps:
     inputs:
       cmakeArgs: --build $(Build.StagingDirectory)/llbuild --target install
     displayName: 'Install llbuild'
+  - task: CMake@1
+    inputs:
+      workingDirectory: $(Build.StagingDirectory)/tsc
+      cmakeArgs: -G Ninja $(Build.SourcesDirectory)/tools-support-core -C $(Build.SourcesDirectory)/cmake/caches/$(platform)-$(arch).cmake -DSWIFT_WINDOWS_SDK=$(System.ArtifactsDirectory)/sdk-$(platform)-$(host)/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk -C $(Build.SourcesDirectory)/cmake/caches/$(platform)-$(arch)-swift-flags.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(platform.directory)/Developer/SharedSupport/TSC-$(tsc.version)/usr
+    displayName: 'Configure tools-support-core'
+  - task: CMake@1
+    inputs:
+      cmakeArgs: --build $(Build.StagingDirectory)/tsc
+    displayName: 'Build tools-support-core'
+  - task: CMake@1
+    inputs:
+      cmakeArgs: --build $(Build.StagingDirectory)/tsc --target install
+    displayName: 'Install tools-support-core'
+    enabled: false
   - task: CMake@1
     inputs:
       workingDirectory: $(Build.StagingDirectory)/indexstore-db
