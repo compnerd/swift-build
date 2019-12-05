@@ -626,9 +626,15 @@ if(BUILD_TOOLS)
   add_dependencies(icudata_lst
     gencnval gencfu makeconv genbrk gensprep gendict icupkg genrb)
 
-  add_custom_target(icudata ALL
-    COMMAND $<TARGET_FILE:pkgdata> -f -e ${U_ICUDATA_NAME} -v -m dll -c -p ${U_ICUDATA_PKGN} -T ${CMAKE_CURRENT_BINARY_DIR}/data/tmp -L ${U_ICUDATA_NAME} -d ${CMAKE_CURRENT_BINARY_DIR}/data/${U_ICUDATA_PKGN} -s . ${CMAKE_CURRENT_BINARY_DIR}/data/tmp/icudata.lst
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/data/${U_ICUDATA_PKGN})
+  if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+    add_custom_target(icudata ALL
+      COMMAND $<TARGET_FILE:pkgdata> -f -e ${U_ICUDATA_NAME} -v -m dll -c -p ${U_ICUDATA_PKGN} -T ${CMAKE_CURRENT_BINARY_DIR}/data/tmp -L ${U_ICUDATA_NAME} -d ${CMAKE_CURRENT_BINARY_DIR}/data/${U_ICUDATA_PKGN} -s . ${CMAKE_CURRENT_BINARY_DIR}/data/tmp/icudata.lst
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/data/${U_ICUDATA_PKGN})
+  else()
+    add_custom_target(icudata ALL
+      COMMAND $<TARGET_FILE:pkgdata> -f -e ${U_ICUDATA_NAME} -v -m dll -c -p ${U_ICUDATA_PKGN} -T ${CMAKE_CURRENT_BINARY_DIR}/data/tmp -r ${PROJECT_VERSION_MAJOR} -L ${U_ICUDATA_NAME} -d ${CMAKE_CURRENT_BINARY_DIR}/data/${U_ICUDATA_PKGN} -s . ${CMAKE_CURRENT_BINARY_DIR}/data/tmp/icudata.lst -O ${CMAKE_BINARY_DIR}/data/icupkg.inc
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/data/${U_ICUDATA_PKGN})
+  endif()
   add_dependencies(icudata pkgdata icudata_lst)
 
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/data/${U_ICUDATA_PKGN}/${U_ICUDATA_NAME}.dll
