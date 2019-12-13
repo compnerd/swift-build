@@ -114,3 +114,10 @@ jobs:
           PathtoPublish: '$(System.ArtifactsDirectory)/toolchain.deb'
           ArtifactName: 'linux-toolchain-amd64.deb'
         displayName: "Publish linux-toolchain-amd64.deb"
+      - task: cURLUploader@2
+        inputs:
+          files: '$(System.ArtifactsDirectory)/toolchain.dev'
+          authType: 'UserAndPass'
+          username: 'compnerd'
+          password: '$(BINTRAY_PASSWORD)'
+          url: 'https://api.bintray.com/content/compnerd/swift/swift-toolchain/$(Build.BuildId)/swift-toolchain_$(Build.BuildId)_amd64.deb;deb_distribution=bionic;deb_component=main;deb_architecture=amd64'
