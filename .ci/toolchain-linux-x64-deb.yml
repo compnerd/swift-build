@@ -116,7 +116,7 @@ jobs:
         displayName: "Publish linux-toolchain-amd64.deb"
       - task: cURLUploader@2
         inputs:
-          files: '$(System.ArtifactsDirectory)/toolchain.de'
+          files: '$(System.ArtifactsDirectory)/toolchain.dev'
           authType: 'UserAndPass'
           username: 'compnerd'
           password: '$(BINTRAY_PASSWORD)'
