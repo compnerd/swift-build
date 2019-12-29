@@ -6,7 +6,11 @@ pr:
     include:
       - .ci/toolchain-linux-x64.yml
       - .ci/templates/toolchain.yml
+      - .ci/templates/linux-devtools.yml
+      - .ci/templates/linux-sdk.yml
       - cmake/caches/org.compnerd.dt.cmake
+      - cmake/caches/linux-x86_64.cmake
+      - cmake/caches/linux-x86_64-swift-flags.cmake
 resources:
   repositories:
     - repository: apple/llvm-project
@@ -41,7 +45,11 @@ trigger:
     include:
       - .ci/toolchain-linux-x64.yml
       - .ci/templates/toolchain.yml
+      - .ci/templates/linux-devtools.yml
+      - .ci/templates/linux-sdk.yml
       - cmake/caches/org.compnerd.dt.cmake
+      - cmake/caches/linux-x86_64.cmake
+      - cmake/caches/linux-x86_64-swift-flags.cmake
 stages:
   - stage: toolchain
     jobs:
