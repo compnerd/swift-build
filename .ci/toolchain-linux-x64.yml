@@ -12,6 +12,15 @@ pr:
       - cmake/caches/linux-x86_64.cmake
       - cmake/caches/linux-x86_64-swift-flags.cmake
 resources:
+  pipelines:
+    - pipeline: icu
+      source: 'Dependencies/ICU'
+    - pipeline: xml2
+      source: 'Dependencies/XML2'
+    - pipeline: curl
+      source: 'Dependencies/CURL'
+    - pipeline: zlib
+      source: 'Dependencies/zlib'
   repositories:
     - repository: apple/llvm-project
       type: github
