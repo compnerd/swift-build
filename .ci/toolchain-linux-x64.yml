@@ -103,3 +103,195 @@ stages:
           arch: x86_64
           host: x64
           platform: linux
+
+  - stage: package
+    jobs:
+      - job: swift_icu__amd64_deb
+        steps:
+          - download: icu
+            artifact: icu-linux-x64
+          - script: |
+              rsync -v -a -l $(Pipeline.Workspace)/Library $(Build.StagingDirectory)/swift-icu/Library
+
+              # ensure the library path is searched in
+              mkdir -p $(Build.StagingDirectory)/swift-icu/etc/ld.so.conf.d
+              echo '/Library/icu-64/usr/lib' > $(Build.StagingDirectory)/swift-icu/etc/ld.so.conf.d/swift-icu.conf
+
+              # do not distribute the headers
+              rm -rf $(Build.StagingDirectory)/swift-icu/Library/icu-64/usr/include
+            displayName: 'cleanup image'
+          - script: |
+              mkdir -p $(Build.StagingDirectory)/swift-icu/DEBIAN
+              cp -v $(Build.SourcesDirectory)/debian/linux-icu $(Build.StagingDirectory)/swift-icu/DEBIAN/control
+              sed -e "s/Version:/& $(Build.BuildId)/" -i $(Build.StagingDirectory)/swift-icu/DEBIAN/control
+              echo "activate-noawait ldconfig" > $(Build.StagingDirectory)/swift-icu/DEBIAN/triggers
+
+              cd $(Build.StagingDirectory)
+              fakeroot dpkg-deb --build swift-icu $(Build.StagingDirectory)
+            displayName: 'package'
+          - publish: $(Build.StagingDirectory)/swift-icu_$(Build.BuildId)_amd64.deb
+            artifact: swift-icu_$(Build.BuildId)_amd64.deb
+          - script: |
+              cd $(Build.StagingDirectory)
+              curl -F swift-icu=@swift-icu_$(Build.BuildId)_amd64.deb https://$(GEMFURY_PASSWORD)@push.fury.io/compnerd
+            displayName: 'upload to gemfury'
+            enabled: false
+      - job: swift_toolchain__amd64_deb
+        variables:
+          toolchain.directory: $(Build.StagingDirectory)/swift-toolchain/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain
+        steps:
+          - download: current
+            artifact: toolchain-linux-x64
+          - script: |
+              mkdir -p $(Build.StagingDirectory)/swift-toolchain/Library
+              rsync -v -a -l $(Pipeline.Workspace)/Library $(Build.StagingDirectory)/swift-toolchain/Library
+
+              # remove testing binaries
+              rm -v $(toolchain.directory)/usr/bin/complete-test
+              rm -v $(toolchain.directory)/usr/bin/lldb-moduleimport-test
+              rm -v $(toolchain.directory)/usr/bin/sil-func-extractor
+              rm -v $(toolchain.directory)/usr/bin/sil-llvm-gen
+              rm -v $(toolchain.directory)/usr/bin/sil-nm
+              rm -v $(toolchain.directory)/usr/bin/sil-opt
+              rm -v $(toolchain.directory)/usr/bin/sil-passpipeline-dumper
+              rm -v $(toolchain.directory)/usr/bin/sourcekitd-repl
+              rm -v $(toolchain.directory)/usr/bin/sourcekitd-test
+              rm -v $(toolchain.directory)/usr/bin/swift-api-dump.py
+              rm -v $(toolchain.directory)/usr/bin/swift-ast-script
+              rm -v $(toolchain.directory)/usr/bin/swift-demangle-yamldump
+              rm -v $(toolchain.directory)/usr/bin/swift-ide-test
+              rm -v $(toolchain.directory)/usr/bin/swift-indent
+              rm -v $(toolchain.directory)/usr/bin/swift-llvm-opt
+              rm -v $(toolchain.directory)/usr/bin/swift-reflection-dump
+              rm -v $(toolchain.directory)/usr/bin/swift-remoteast-test
+              rm -v $(toolchain.directory)/usr/bin/swift-syntax-parser-test
+              rm -v $(toolchain.directory)/usr/bin/swift-syntax-test
+
+              # remove swift docs
+              rm -v -r -f $(toolchain.directory)/usr/share/docs/swift
+
+              # make IndexStore headers part of `/usr` instead of `/usr/local`
+              mv -v $(toolchain.directory)/usr/local/include/indexstore $(toolchain.directory)/usr/include/indexstore
+              rmdir -v $(toolchain.directory)/usr/local
+
+              # symlink in clang resource headers
+              cd $(toolchain.directory)/usr/lib/swift
+              rm -vrf clang
+              ln -vs ../clang/*/include clang
+
+              # fix file permissions
+              chmod -v +x $(toolchain.directory)/usr/bin/*
+              chmod -v +x $(toolchain.directory)/usr/lib/*.so*
+
+              # fixup the symlinks being replaced with binaries
+              cd $(toolchain.directory)/usr/lib
+              rm -v libLTO.so ; ln -vs libLTO.so.* libLTO.so
+              rm -v libIndexStore.so ; ln -vs libIndexStore.so.* libIndexStore.so
+              rm -v libclang.so ; ln -vs libclang.so.* libclang.so
+              # TODO(compnerd) figure out how to update this automatically
+              rm -v liblldb.so ; ln -vs liblldb.so.9 liblldb.so
+              rm -v liblldb.so.9 ; ln -vs liblldb.so.9.0 liblldb.so.9
+              rm -v liblldb.so.9.0 ; ln -vs liblldb.so.9.0.0 liblldb.so.9.0
+
+              cd $(toolchain.directory)/usr/bin
+              rm -v addr2line ; ln -vs llvm-symbolizer addr2line
+              rm -v ar ; ln -vs llvm-ar ar
+              rm -v c++filt ; ln -vs llvm-cxxfilt c++filt
+              rm -v clang ; ln -vs clang-[0-9]* clang
+              rm -v clang++ ; ln -vs clang-[0-9]* clang++
+              rm -v clang-cl ; ln -vs clang-[0-9]* clang-cl
+              rm -v clang-cpp ; ln -vs clang-[0-9]* clang-cpp
+              rm -v dwp ; ln -vs llvm-dwp dwp
+              rm -v ld64.lld ; ln -vs lld ld64.lld
+              rm -v ld.lld ; ln -vs lld ld.lld
+              rm -v lld-link ; ln -vs lld lld-link
+              rm -v llvm-dlltool ; ln -vs llvm-ar llvm-dlltool
+              rm -v llvm-lib ; ln -vs llvm-ar llvm-lib
+              rm -v llvm-ranlib ; ln -vs llvm-ar llvm-ranlib
+              rm -v llvm-readelf ; ln -vs llvm-readobj llvm-readelf
+              rm -v llvm-strip ; ln -vs llvm-objcopy llvm-strip
+              rm -v nm ; ln -vs llvm-nm nm
+              rm -v objcopy ; ln -vs llvm-objcopy objcopy
+              rm -v objdump ; ln -vs llvm-objdump objdump
+              rm -v ranlib ; ln -vs llvm-ranlib ranlib
+              rm -v readelf ; ln -vs llvm-readelf readelf
+              rm -v size ; ln -vs llvm-size size
+              rm -v strings ; ln -vs llvm-strings strings
+              rm -v strip ; ln -vs llvm-strip strip
+              rm -v swift-autolink-extract ; ln -vs swift swift-autolink-extract
+              rm -v swiftc ; ln -vs swift swiftc
+              rm -v wasm-ld ; ln -vs lld wasm-ld
+            displayName: 'cleanup image'
+          - script: |
+              mkdir -p $(Build.StagingDirectory)/swift-toolchain/DEBIAN
+              cp -v $(Build.SourcesDirectory)/debian/control $(Build.StagingDirectory)/swift-toolchain/DEBIAN/control
+              sed -e "s/Version:/& $(Build.BuildId)/" -i $(Build.StagingDirectory)/swift-toolchain/DEBIAN/control
+
+              cd $(Build.StagingDirectory)
+              fakeroot dpkg-deb --build swift-toolchain $(Build.StagingDirectory)
+            displayName: 'package'
+          - publish: $(Build.StagingDirectory)/swift-toolchain_$(Build.BuildId)_amd64.deb
+            artifact: swift-toolchain_$(Build.BuildId)_amd64.deb
+          - script: |
+              cd $(Build.StagingDirectory)
+              curl -F swift-toolchain=@swift-toolchain_$(Build.BuildId)_amd64.deb https://$(GEMFURY_PASSWORD)@push.fury.io/compnerd
+            displayName: 'upload to gemfury'
+            enabled: false
+      - job: swift_linux_sdk__amd64_deb
+        variables:
+          sdk.directory: $(Build.StagingDirectory)/swift-linux-sdk/Library/Developer/Platforms/Linux.platform/Developer/SDKs/Linux.sdk
+        steps:
+          - download: current
+            artifact: sdk-linux-x64
+          - script: |
+              rsync -v -a -l $(Pipeline.Workspace)/Library $(Build.StagingDirectory)/swift-linux-sdk/Library
+
+              # drop comments including the build tree layout
+              sed -e '/sourceLocation/d' -i $(sdk.directory)/usr/lib/swift/linux/x86_64/glibc.modulemap
+
+              # shuffle around XCTest binaries
+              mv -v $(sdk.directory)/usr/lib/swift/linux/x86_64/XCTest.swift* $(Build.StagingDirectory)/swift-linux-sdk/Library/Developer/Platforms/Linux.platform/Developer/Library/XCTest-development/usr/lib/swift/linux/x86_64
+              mv -v $(sdk.directory)/usr/lib/swift/linux/libXCTest.so $(Build.StagingDirectory)/swift-linux-sdk/Library/Developer/Platforms/Linux.platform/Developer/Library/XCTest-development/usr/lib/swift/linux
+
+              # remove tools and documentation
+              rm -v -r -f $(sdk.directory)/usr/bin
+              rm -v -r -f $(sdk.directory)/usr/share
+              rm -v -r -f $(sdk.directory)/usr/lib/swift/FrameworkABIBaseline
+            displayName: 'cleanup image'
+          - script: |
+              mkdir -p $(Build.StagingDirectory)/swift-linux-sdk/DEBIAN
+              cp -v $(Build.SourcesDirectory)/debian/linux-sdk $(Build.StagingDirectory)/swift-linux-sdk/DEBIAN/control
+              sed -e "s/Version:/& $(Build.BuildId)/" -i $(Build.StagingDirectory)/swift-linux-sdk/DEBIAN/control
+
+              cd $(Build.StagingDirectory)
+              fakeroot dpkg-deb --build swift-linux-sdk $(Build.StagingDirectory)
+            displayName: 'package'
+          - publish: $(Build.StagingDirectory)/swift-linux-sdk_$(Build.BuildId)_amd64.deb
+            artifact: swift-linux-sdk_$(Build.BuildId)_amd64.deb
+          - script: |
+              cd $(Build.StagingDirectory)
+              curl -F swift-linux-sdk=@swift-linux-sdk_$(Build.BuildId)_amd64.deb https://$(GEMFURY_PASSWORD)@push.fury.io/compnerd
+            displayName: 'upload to gemfury'
+            enabled: false
+      - job: swift_devtools__amd64_deb
+        steps:
+          - download: current
+            artifact: devtools-linux-x64
+          - script: |
+              rsync -v -a -l $(Pipeline.Workspace)/Developer $(Build.StagingDirectory)/swift-devtools/Library/Developer
+            displayName: 'cleanup image'
+          - script: |
+              mkdir -p $(Build.StagingDirectory)/swift-devtools/DEBIAN
+              cp -v $(Build.SourcesDirectory)/debian/linux-devtools $(Build.StagingDirectory)/swift-devtools/DEBIAN/control
+              sed -e "s/Version:/& $(Build.BuildId)/" -i $(Build.StagingDirectory)/swift-devtools/DEBIAN/control
+
+              cd $(Build.StagingDirectory)
+              fakeroot dpkg-deb --build swift-devtools $(Build.StagingDirectory)
+            displayName: 'package'
+          - publish: $(Build.StagingDirectory)/swift-devtools_$(Build.BuildId)_amd64.deb
+            artifact: swift-devtools_$(Build.BuildId)_amd64.deb
+          - script: |
+              cd $(Build.StagingDirectory)
+              curl -F swift-devtools=@swift-devtools$(Build.BuildId)_amd64.deb https://$(GEMFURY_PASSWORD)@push.fury.io/compnerd
+            displayName: 'upload to gemfury'
+            enabled: false
