@@ -8,8 +8,8 @@ jobs:
       icu.directory: $(System.ArtifactsDirectory)/icu-linux-${{ parameters.host }}/icu-$(icu.version)
       xml2.directory: $(Pipeline.Workspace)/Library/libxml2-development
       zlib.directory: $(Pipeline.Workspace)/Library/zlib-1.2.11
-      install.directory: $(Build.StagingDirectory)/Library/Developer/Platforms/Linux.platform/Developer/SDKs/Linux.sdk/usr
-      xctest.install.directory: $(Build.StagingDirectory)/Library/Developer/Platforms/Linux.platform/Developer/Library/XCTest-development/usr
+      install.directory: $(Build.StagingDirectory)/sdk-linux-${{ parameters.host }}/Library/Developer/Platforms/Linux.platform/Developer/SDKs/Linux.sdk/usr
+      xctest.install.directory: $(Build.StagingDirectory)/sdk-linux-${{ parameters.host }}/Library/Developer/Platforms/Linux.platform/Developer/Library/XCTest-development/usr
     steps:
       - script: |
           git config --global --add core.autocrlf false
@@ -121,7 +121,7 @@ jobs:
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/xctest --target install
         displayName: 'Install XCTest'
-      - publish: $(Build.BinariesDirectory)/Library
+      - publish: $(Build.BinariesDirectory)/sdk-linux-${{ parameters.host }}
         artifact: sdk-linux-${{ parameters.host }}
       - task: CMake@1
         inputs:
