@@ -11,17 +11,18 @@ steps:
       git config --global user.name 'builder'
       git config --global user.email 'builder@compnerd.org'
 
-      git clone --quiet --depth 1 --single-branch https://github.com/apple/swift-llvm llvm
-      git clone --config core.autocrlf=false --config core.symlinks=true --quiet --depth 1 --single-branch https://github.com/apple/swift swift
+      git clone --quiet --depth 1 --single-branch --branch swift/master https://github.com/apple/llvm-project llvm-project
+
+      git clone --quiet --depth 1 --single-branch --branch master --config core.autocrlf=false --config core.symlinks=true https://github.com/apple/swift swift
       ApplyPatches swift ${SWIFT_PR}
 
-      git clone --quiet --depth 1 --single-branch https://github.com/apple/swift-corelibs-libdispatch swift-corelibs-libdispatch
+      git clone --quiet --depth 1 --single-branch --branch master https://github.com/apple/swift-corelibs-libdispatch swift-corelibs-libdispatch
       ApplyPatches swift-corelibs-libdispatch ${DISPATCH_PR}
 
-      git clone --quiet --depth 1 --single-branch https://github.com/apple/swift-corelibs-foundation swift-corelibs-foundation
+      git clone --quiet --depth 1 --single-branch --branch master https://github.com/apple/swift-corelibs-foundation swift-corelibs-foundation
       ApplyPatches swift-corelibs-foundation ${FOUNDATION_PR}
 
-      git clone --quiet --depth 1 --single-branch https://github.com/apple/swift-corelibs-xctest swift-corelibs-xctest
+      git clone --quiet --depth 1 --single-branch --branch master https://github.com/apple/swift-corelibs-xctest swift-corelibs-xctest
       ApplyPatches swift-corelibs-xctest ${XCTEST_PR}
     displayName: 'Fetch Sources'
   - task: DownloadPipelineArtifact@2
@@ -78,7 +79,7 @@ steps:
   - task: CMake@1
     inputs:
       workingDirectory: $(Build.StagingDirectory)/llvm
-      cmakeArgs: -G Ninja -C $(Build.SourcesDirectory)/cmake/caches/linux-$(arch).cmake $(Build.SourcesDirectory)/llvm -DCMAKE_BUILD_TYPE=Release -DLLVM_HOST_TRIPLE=$(triple)
+      cmakeArgs: -G Ninja -C $(Build.SourcesDirectory)/cmake/caches/linux-$(arch).cmake $(Build.SourcesDirectory)/llvm-project/llvm -DCMAKE_BUILD_TYPE=Release -DLLVM_HOST_TRIPLE=$(triple)
     displayName: 'Configure LLVM'
   - task: CMake@1
     inputs:
