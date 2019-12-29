@@ -121,10 +121,8 @@ jobs:
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/xctest --target install
         displayName: 'Install XCTest'
-      - task: PublishBuildArtifacts@1
-        inputs:
-          pathtoPublish: $(Build.StagingDirectory)/Library
-          artifactName: sdk-linux-${{ parameters.host }}
+      - publish: $(Build.BinariesDirectory)/Library
+        artifact: sdk-linux-${{ parameters.host }}
       - task: CMake@1
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/libdispatch --target ExperimentalTest
