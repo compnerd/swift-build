@@ -223,3 +223,15 @@ stages:
 
           arch: 'x86_64'
           host: 'x64'
+
+  - stage: package
+    dependsOn: toolchain
+    jobs:
+      - template: templates/toolchain-msi.yml
+        parameters:
+          VisualStudio: 2019/Enterprise
+          pool:
+            vmImage: 'windows-2019'
+
+          host: 'x64'
+          proc: 'amd64'

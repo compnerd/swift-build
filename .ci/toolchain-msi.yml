@@ -42,7 +42,7 @@ jobs:
       - task: MSBuild@1
         inputs:
           solution: $(Build.SourcesDirectory)\wix\windows-toolchain.wixproj
-          msbuildArguments: /p:RunWixToolsOutOfProc=true -p:TOOLCHAIN_ROOT=$(System.ArtifactsDirectory)/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain
+          msbuildArguments: /p:RunWixToolsOutOfProc=true /p:ARCH=amd64 -p:TOOLCHAIN_ROOT=$(System.ArtifactsDirectory)/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain
         displayName: 'Build windows-toolchain-amd64.msi'
       - task: PublishBuildArtifacts@1
         inputs:
