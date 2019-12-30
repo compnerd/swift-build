@@ -1,0 +1,24 @@
+jobs:
+  - job: swift_devtools__${{ parameters.proc }}_deb
+    pool: ${{ parameters.pool }}
+    steps:
+      - checkout: self
+      - download: current
+        artifact: devtools-linux-${{ parameters.host }}
+      - script: |
+          rsync -v -a -l $(Pipeline.Workspace)/devtools-linux-${{ parameters.host }}/Developer $(Build.StagingDirectory)/swift-devtools/Library/Developer
+        displayName: 'cleanup image'
+      - script: |
+          mkdir -p $(Build.StagingDirectory)/swift-devtools/DEBIAN
+          sed -e "s/Version:/& $(Build.BuildId)/" $(Build.SourcesDirectory)/debian/linux-devtools > $(Build.StagingDirectory)/swift-devtools/DEBIAN/control
+
+          cd $(Build.StagingDirectory)
+          fakeroot dpkg-deb --build swift-devtools $(Build.StagingDirectory)
+        displayName: 'package'
+      - publish: $(Build.StagingDirectory)/swift-devtools_$(Build.BuildId)_${{ parameters.proc }}.deb
+        artifact: swift-devtools_$(Build.BuildId)_${{ parameters.proc }}.deb
+      - script: |
+          cd $(Build.StagingDirectory)
+          curl -F swift-devtools=@swift-devtools_$(Build.BuildId)_${{ parameters.proc }}.deb https://$(GEMFURY_PASSWORD)@push.fury.io/compnerd
+        displayName: 'upload to gemfury'
+        enabled: false
