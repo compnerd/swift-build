@@ -5,33 +5,57 @@ jobs:
     steps:
       - checkout: self
       - checkout: compnerd/libxml2
+
       - task: BatchScript@1
+        condition: eq( variables['Agent.OS'], 'Windows_NT' )
+        displayName: VsDevCmd.bat
         inputs:
           filename: C:/Program Files (x86)/Microsoft Visual Studio/${{ parameters.VisualStudio }}/Common7/Tools/VsDevCmd.bat
           arguments: -no_logo -arch=${{ parameters.host }} -host_arch=x64
           modifyEnvironment: true
-        condition: eq( variables['Agent.OS'], 'Windows_NT' )
-        displayName: 'vsvarsall.bat'
+
+      - script: |
+          echo ##vso[task.setvariable variable=CC]=cl
+        condition: and( eq( variables['Agent.OS'], 'Windows_NT' ), eq( '${{ parameters.platform }}', 'windows' ) )
+        displayName: CC
+      - script: |
+          echo ##vso[task.setvariable variable=CXX]=cl
+        condition: and( eq( variables['Agent.OS'], 'Windows_NT' ), eq( '${{ parameters.platform }}', 'windows' ) )
+        displayName: CXX
+
       - script: |
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
           sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
           sudo apt-get update
           sudo apt-get -y install cmake ninja-build
         condition: eq( variables['Agent.OS'], 'Linux' )
-        displayName: 'Install Dependencies'
+        displayName: Install Dependencies
+
       - task: CMake@1
+        displayName: Configure XML2
         inputs:
           workingDirectory: $(Build.BinariesDirectory)/libxml2
-          cmakeArgs: -C $(Build.SourcesDirectory)/swift-build/cmake/caches/libxml2.cmake -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake -G Ninja $(Build.SourcesDirectory)/libxml2 -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=$(install.directory)/usr -DBUILD_SHARED_LIBS=NO -DENABLE_TESTING=NO
-        displayName: 'Configure XML2'
+          cmakeArgs:
+            -G Ninja
+            -S $(Build.SourcesDirectory)/libxml2
+            -B $(Build.BinariesDirectory)/libxml2
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/libxml2.cmake
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake
+            -D CMAKE_BUILD_TYPE=MinSizeRel
+            -D CMAKE_INSTALL_PREFIX=$(install.directory)/usr
+            -D BUILD_SHARED_LIBS=NO
+            -D ENABLE_TESTING=NO
+
       - task: CMake@1
+        displayName: Build XML2
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/libxml2
-        displayName: 'Build XML2'
+
       - task: CMake@1
+        displayName: Install XML2
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/libxml2 --target install
-        displayName: 'Install XML2'
+
       - publish: $(Build.StagingDirectory)/xml2-${{ parameters.platform }}-${{ parameters.host }}
         artifact: xml2-${{ parameters.platform }}-${{ parameters.host }}
 

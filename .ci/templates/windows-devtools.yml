@@ -79,6 +79,12 @@ jobs:
           arguments: -no_logo -arch=${{ parameters.host }} -host_arch=x64
           modifyEnvironment: true
 
+      - task: UsePythonVersion@0
+        continueOnError: true
+        inputs:
+          versionSpec: '2.7.x'
+        name: python
+
       - script: |
           copy $(Build.SourcesDirectory)\swift\stdlib\public\Platform\ucrt.modulemap "%UniversalCRTSdkDir%\Include\%UCRTVersion%\ucrt\module.modulemap"
           copy $(Build.SourcesDirectory)\swift\stdlib\public\Platform\visualc.modulemap "%VCToolsInstallDir%\include\module.modulemap"
@@ -87,16 +93,20 @@ jobs:
         condition: eq( variables['Agent.OS'], 'Windows_NT' )
         displayName: Configure SDK
 
-      - task: UsePythonVersion@0
-        continueOnError: true
-        inputs:
-          versionSpec: '2.7.x'
-        name: python
-
       - script: |
           echo ##vso[task.prependpath]$(toolchain.directory)/usr/bin
         condition: eq( variables['Agent.OS'], 'Windows_NT' )
         displayName: Adjust PATH
+
+      - script: |
+          echo ##vso[task.setvariable variable=CC]clang-cl.exe
+        condition: eq( variables['Agent.OS'], 'Windows_NT' )
+        displayName: CC
+
+      - script: |
+          echo ##vso[task.setvariable variable=CXX]clang-cl.exe
+        condition: eq( variables['Agent.OS'], 'Windows_NT' )
+        displayName: CXX
 
       - task: CMake@1
         displayName: Configure llbuild
@@ -105,7 +115,7 @@ jobs:
             -G Ninja
             -S $(Build.SourcesDirectory)/llbuild
             -B $(Build.BinariesDirectory)/llbuild
-            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-clang.cmake
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake
             -D CMAKE_BUILD_TYPE=Release
             -D CMAKE_Swift_SDK=$(sdk.directory)
             -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-swift-flags.cmake
@@ -132,7 +142,7 @@ jobs:
             -G Ninja
             -S $(Build.SourcesDirectory)/tools-support-core
             -B $(Build.BinariesDirectory)/tsc
-            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-clang.cmake
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake
             -D CMAKE_Swift_SDK=$(sdk.directory)
             -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-swift-flags.cmake
             -D CMAKE_BUILD_TYPE=Release
@@ -158,7 +168,7 @@ jobs:
             -G Ninja
             -S $(Build.SourcesDirectory)/indexstore-db
             -B $(Build.BinariesDirectory)/indexstore-db
-            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-clang.cmake
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake
             -D CMAKE_Swift_SDK=$(sdk.directory)
             -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-swift-flags.cmake
             -D CMAKE_BUILD_TYPE=Release

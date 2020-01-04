@@ -11,39 +11,58 @@ jobs:
         displayName: 'checkout compnerd/swift-build'
       - checkout: curl/curl
         displayName: 'checkout curl/curl'
+
       - task: BatchScript@1
+        condition: eq( variables['Agent.OS'], 'Windows_NT' )
+        displayName: VsDevCmd.bat
         inputs:
           filename: C:/Program Files (x86)/Microsoft Visual Studio/${{ parameters.VisualStudio }}/Common7/Tools/VsDevCmd.bat
           arguments: -no_logo -arch=${{ parameters.host }} -host_arch=x64
           modifyEnvironment: true
-        condition: eq( variables['Agent.OS'], 'Windows_NT' )
-        displayName: 'vsvarsall.bat'
+
+      - script: |
+          echo ##vso[task.setvariable variable=CC]=cl
+        condition: and( eq( variables['Agent.OS'], 'Windows_NT' ), eq( '${{ parameters.platform }}', 'windows' ) )
+        displayName: CC
+      - script: |
+          echo ##vso[task.setvariable variable=CXX]=cl
+        condition: and( eq( variables['Agent.OS'], 'Windows_NT' ), eq( '${{ parameters.platform }}', 'windows' ) )
+        displayName: CXX
+
       - script: |
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
           sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
           sudo apt-get update
           sudo apt-get -y install cmake ninja-build
         condition: eq( variables['Agent.OS'], 'Linux' )
-        displayName: 'Install Dependencies'
-      - script: |
-          /usr/bin/cmake -B $(Build.BinariesDirectory)/curl -C $(Build.SourcesDirectory)/swift-build/cmake/caches/curl.cmake -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake -G Ninja $(Build.SourcesDirectory)/curl -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=$(install.directory)/usr -DZLIB_ROOT=$(zlib.directory)/usr -DBUILD_SHARED_LIBS=NO -DBUILD_TESTING=NO
-        # NOTE(compnerd) workaround old cmake installation on hosted agents
-        condition: eq( variables['Agent.OS'], 'Linux' )
-        displayName: 'Configure curl'
+        displayName: Install Dependencies
+
       - task: CMake@1
+        displayName: 'Configure curl'
         inputs:
+          # NOTE(compnerd) workaround old cmake installation on hosted agents
           workingDirectory: $(Build.BinariesDirectory)/curl
-          cmakeArgs: -C $(Build.SourcesDirectory)/swift-build/cmake/caches/curl.cmake -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake -G Ninja $(Build.SourcesDirectory)/curl -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=$(install.directory)/usr -DZLIB_ROOT=$(zlib.directory)/usr -DBUILD_SHARED_LIBS=NO -DBUILD_TESTING=NO
-        # NOTE(compnerd) workaround old cmake installation on hosted agents
-        condition: not( eq( variables['Agent.OS'], 'Linux' ) )
-        displayName: 'Configure curl'
+          cmakeArgs:
+            -G Ninja
+            -S $(Build.SourcesDirectory)/curl
+            -B $(Build.BinariesDirectory)/curl
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/curl.cmake
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake
+            -D CMAKE_BUILD_TYPE=MinSizeRel
+            -D CMAKE_INSTALL_PREFIX=$(install.directory)/usr
+            -D ZLIB_ROOT=$(zlib.directory)/usr
+            -D BUILD_SHARED_LIBS=NO
+            -D BUILD_TESTING=NO
+
       - task: CMake@1
+        displayName: Build CURL
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/curl
-        displayName: 'Build CURL'
+
       - task: CMake@1
+        displayName: Install CURL
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/curl --target install
-        displayName: 'Install CURL'
+
       - publish: $(Build.StagingDirectory)/curl-${{ parameters.platform }}-${{ parameters.host }}
         artifact: curl-${{ parameters.platform }}-${{ parameters.host }}

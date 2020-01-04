@@ -17,29 +17,52 @@ jobs:
           contents: icupkg.inc.cmake
           targetFolder: icu/icu4c
         displayName: 'Prepare'
+
       - task: BatchScript@1
+        condition: eq( variables['Agent.OS'], 'Windows_NT' )
+        displayName: VsDevCmd.bat
         inputs:
           filename: C:/Program Files (x86)/Microsoft Visual Studio/${{ parameters.VisualStudio }}/Common7/Tools/VsDevCmd.bat
           arguments: -no_logo -arch=${{ parameters.host }} -host_arch=x64
           modifyEnvironment: true
-        condition: eq( variables['Agent.OS'], 'Windows_NT' )
-        displayName: 'vsvarsall.bat'
+
+      - script: |
+          echo ##vso[task.setvariable variable=CC]=cl
+        condition: and( eq( variables['Agent.OS'], 'Windows_NT' ), eq( '${{ parameters.platform }}', 'windows' ) )
+        displayName: CC
+      - script: |
+          echo ##vso[task.setvariable variable=CXX]=cl
+        condition: and( eq( variables['Agent.OS'], 'Windows_NT' ), eq( '${{ parameters.platform }}', 'windows' ) )
+        displayName: CXX
+
       - script: |
           sudo apt-get -y install ninja-build
         condition: eq( variables['Agent.OS'], 'Linux' )
-        displayName: 'Install Dependencies'
+        displayName: Install Dependencies
+
       - task: CMake@1
+        displayName: Configure ICU
         inputs:
           workingDirectory: $(Build.BinariesDirectory)/icu
-          cmakeArgs: -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake -G Ninja $(Build.SourcesDirectory)/icu/icu4c -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=$(install.directory)/usr -DBUILD_SHARED_LIBS=YES -DBUILD_TOOLS=${{ parameters.BUILD_TOOLS }}
-        displayName: 'Configure ICU'
+          cmakeArgs:
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake
+            -G Ninja
+            -S $(Build.SourcesDirectory)/icu/icu4c
+            -B $(Build.BinariesDirectory)/icu
+            -D CMAKE_BUILD_TYPE=MinSizeRel
+            -D CMAKE_INSTALL_PREFIX=$(install.directory)/usr
+            -D BUILD_SHARED_LIBS=YES
+            -D BUILD_TOOLS=${{ parameters.BUILD_TOOLS }}
+
       - task: CMake@1
+        displayName: Build ICU
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/icu
-        displayName: 'Build ICU'
+
       - task: CMake@1
+        displayName: Install ICU
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/icu --target install
-        displayName: 'Install ICU'
+
       - publish: $(Build.StagingDirectory)/icu-${{ parameters.platform }}-${{ parameters.host }}
         artifact: icu-${{ parameters.platform }}-${{ parameters.host }}
