@@ -1,10 +1,11 @@
 jobs:
   - job: ${{ parameters.host }}
     variables:
-      toolchain.directory: $(Pipeline.Workspace)/toolchain-windows-${{ parameters.host }}/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain
+      platform.directory: $(Pipeline.Workspace)/sdk-${{ parameters.platform }}-${{ parameters.host }}/Library/Developer/Platforms/${{ parameters.os }}.platform
+      sdk.directory: $(platform.directory)/Developer/SDKs/${{ parameters.os }}.sdk
     steps:
       - download: current
-        artifact: toolchain-windows-${{ parameters.host }}
+        artifact: sdk-${{ parameters.platform }}-${{ parameters.host }}
 
       - script: |
           git config --global --add core.autocrlf false
@@ -67,10 +68,19 @@ jobs:
           modifyEnvironment: true
 
       - task: MSBuild@1
-        displayName: windows-toolchain.msi
+        displayName: ${{ parameters.platform }}-sdk-${{ parameters.proc }}.msi
         inputs:
-          solution: $(Build.SourcesDirectory)/swift-build/wix/windows-toolchain.wixproj
-          msbuildArguments: /p:RunWixToolsOutOfProc=true -p:TOOLCHAIN_ROOT=$(toolchain.directory)
+          solution: $(Build.SourcesDirectory)/swift-build/wix/windows-sdk.wixproj
+          msbuildArguments: /p:RunWixToolsOutOfProc=true -p:PLATFORM_ROOT=$(platform.directory) -p:SDK_ROOT=$(sdk.directory) -p:SWIFT_SOURCE_DIR=$(Build.SourcesDirectory)/toolchain/swift
 
-      - publish: $(Build.SourcesDirectory)/swift-build/wix/build/windows-toolchain.msi
-        artifact: windows-toolchain-${{ parameters.proc }}.msi
+      - publish: $(Build.SourcesDirectory)/swift-build/wix/build/sdk.msi
+        artifact: ${{ parameters.platform }}-sdk-${{ parameters.proc }}.msi
+
+      - task: MSBuild@1
+        displayName: ${{ parameters.platform }}-runtime-${{ parameters.proc }}.msi
+        inputs:
+          solution: $(Build.SourcesDirectory)/swift-build/wix/windows-runtime.wixproj
+          msbuildArguments: /p:RunWixToolsOutOfProc=true -p:PLATFORM_ROOT=$(platform.directory) -p:SDK_ROOT=$(sdk.directory) -p:SWIFT_SOURCE_DIR=$(Build.SourcesDirectory)/toolchain/swift
+
+      - publish: $(Build.SourcesDirectory)/swift-build/wix/build/runtime.msi
+        artifact: ${{ parameters.platform }}-runtime-${{ parameters.proc }}.msi
