@@ -243,6 +243,25 @@ jobs:
           cmakeArgs: --build $(Build.BinariesDirectory)/xctest
 
       - task: CMake@1
+        displayName: Configure swift-argument-parser
+        inputs:
+          cmakeArgs:
+            -B $(Build.BinariesDirectory)/swift-argument-parser
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake
+            -D CMAKE_Swift_SDK=$(sdk.directory)
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-swift-flags.cmake
+            -D ANDROID_ALTERNATE_TOOLCHAIN=$(toolchain.directory)/usr
+            -D CMAKE_TOOLCHAIN_FILE=$(Build.SourcesDirectory)/swift-build/cmake/toolchains/android.toolchain.cmake
+            -D CMAKE_BUILD_TYPE=Release
+            -G Ninja
+            -S $(Build.SourcesDirectory)/swift-argument-parser
+
+      - task: CMake@1
+        displayName: Build swift-argument-parser
+        inputs:
+          cmakeArgs: --build $(Build.BinariesDirectory)/swift-argument-parser
+
+      - task: CMake@1
         displayName: Install Foundation
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/foundation --target install

@@ -62,6 +62,9 @@ jobs:
       - checkout: apple/indexstore-db
         displayName: checkout apple/indexstore-db
 
+      - checkout: apple/swift-argument-parser
+        displayName: checkout apple/swift-argument-parser
+
       - ${{ if eq(parameters.TENSORFLOW, true) }}:
         - checkout: tensorflow/swift-apis
           displayName: checkout tensorflow/swift-apis

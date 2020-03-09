@@ -126,6 +126,9 @@ jobs:
       - checkout: apple/indexstore-db
         displayName: checkout apple/indexstore-db
 
+      - checkout: apple/swift-argument-parser
+        displayName: checkout apple/swift-argument-parser
+
       - ${{ if eq(parameters.TENSORFLOW, true) }}:
         - checkout: tensorflow/swift-apis
           displayName: checkout tensorflow/swift-apis
@@ -318,6 +321,25 @@ jobs:
         displayName: Build XCTest
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/xctest
+
+      - task: CMake@1
+        displayName: Configure swift-argument-parser
+        inputs:
+          cmakeArgs:
+            -B $(Build.BinariesDirectory)/swift-argument-parser
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-clang.cmake
+            -D SWIFT_STDLIB_DIR=$(Build.BinariesDirectory)/swift-stdlib
+            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-swift-flags.cmake
+            -D BUILD_SHARED_LIBS=YES
+            -D CMAKE_BUILD_TYPE=Release
+            -D CMAKE_INSTALL_PREFIX=$(install.directory)
+            -G Ninja
+            -S $(Build.SourcesDirectory)/swift-argument-parser
+
+      - task: CMake@1
+        displayName: Build swift-argument-parser
+        inputs:
+          cmakeArgs: --build $(Build.BinariesDirectory)/swift-argument-parser
 
       - ${{ if eq(parameters.TENSORFLOW, true) }}:
         - task: CMake@1
