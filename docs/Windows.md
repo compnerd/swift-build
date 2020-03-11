@@ -61,7 +61,19 @@ You will need the ICU libraries from [ICU - International Components for Unicode
 
 #### Building Swift code
 
-You should use a CMake project to build a Swift program. An example CMake project with support for mixed-language support is available at [https://github.com/compnerd/swift-cmake-demo](https://github.com/compnerd/swift-cmake-demo), sample commands that build the project are documented there. The make commands are to be executed from the Native Tools Command Prompt. Note that the cmake executable to be used is the one mentioned above. (Try `cmake -version` to see which CMake version is actually being called.)
+You should use a CMake project to build a Swift program. As an example CMake project use the "HelloWorld-CMake" example from [https://github.com/compnerd/swift-cmake-demo](https://github.com/compnerd/swift-cmake-demo) and use the following commands from within the project directory to build the project for Windows:
+
+```cmd
+SET INSTALLATION_DIR=C:\Library
+SET SDK=%INSTALLATION_DIR%\Developer\Platforms\Windows.platform\Developer\SDKs\Windows.sdk
+SET OS=windows
+cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=YES -D CMAKE_Swift_FLAGS="-sdk %SDK% -I %SDK%/usr/lib/swift -L %SDK%/usr/lib/swift/%OS%"
+cd build
+ninja
+ninja test
+```
+
+Here, the variables INSTALLATION_DIR, SDK, and OS are just added for clarity of the subsequent command (as used here, they they should not contain spaces). Execute these commands from the Native Tools Command Prompt (or set needed paths before executing). Note that the cmake executable to be used is the one mentioned above. (Try `cmake -version` to see which CMake version is actually being called.)
 
 #### Running the Swift program on the development machine
 
