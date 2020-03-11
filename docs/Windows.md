@@ -29,7 +29,7 @@ The installation instructions that follow will result in a directory tree that h
 
 #### Downloading the nightlies
 
-1. Go to [https://dev.azure.com/compnerd/windows-swift](https://dev.azure.com/compnerd/windows-swift).
+1. Go to [https://compnerd.visualstudio.com/swift-build](https://compnerd.visualstudio.com/swift-build).
 2. Choose `Pipelines` > `Pipelines` from the left of the dashboard.
 3. Choose 'Runs'.
 4. Use the filter symbol to search for "VS2017".
