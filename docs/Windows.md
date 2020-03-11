@@ -53,7 +53,7 @@ The installation of the Swift Runtime adds the following value to the system PAT
 
 #### Further requirements: CMake
 
-On Windows, the most convenient setup for building Swift projects currently involves the use of CMake. This requires CMake 3.15+ for Swift support. You can download CMake from [https://cmake.org](https://cmake.org/).
+On Windows, the most convenient setup for building Swift projects currently involves the use of CMake. This requires CMake 3.15+ for Swift support. CMake 3.16+ is recommended. You can download CMake from [https://cmake.org](https://cmake.org/).
 
 #### Further requirements: ICU
 
