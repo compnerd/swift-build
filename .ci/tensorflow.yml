@@ -1,0 +1,216 @@
+pr:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - .ci/tensorflow.yml
+
+resources:
+  repositories:
+    - repository: tensorflow/tensorflow
+      type: github
+      name: tensorflow/tensorflow
+      ref: refs/tags/v2.1.0-rc1
+      endpoint: GitHub
+
+    - repository: compnerd/tensorflow
+      type: github
+      name: compnerd/tensorflow
+      ref: refs/heads/v2.1.0-win-backports
+      endpoint: GitHub
+
+trigger:
+  paths:
+    include:
+      - .ci/tensorflow.yml
+
+variables:
+  tensorflow.version: 2.1.0-rc1
+
+jobs:
+  - job: darwin
+    pool:
+      vmImage: 'macos-10.14'
+    timeoutInMinutes: 240
+    steps:
+      - task: DownloadGitHubRelease@0
+        displayName: download bazel
+        inputs:
+          connection: GitHub
+          userRepository: bazelbuild/bazel
+          defaultVersionType: specificVersion
+          version: '19882193'
+          itemPattern: bazel-*-darwin-x86_64
+          downloadPath: $(Agent.ToolsDirectory)/bazel/0.29.1/x64
+
+      - script: |
+          mv $(Agent.ToolsDirectory)/bazel/0.29.1/x64/bazel-0.29.1-darwin-x86_64 $(Agent.ToolsDirectory)/bazel/0.29.1/x64/bazel
+          chmod +x $(Agent.ToolsDirectory)/bazel/0.29.1/x64/bazel
+        displayName: rename bazel
+
+      - script: |
+          echo "##vso[task.prependpath]$(Agent.ToolsDirectory)/bazel/0.29.1/x64"
+        displayName: add bazel to PATH
+
+      - checkout: self
+        displayName: checkout compnerd/swift-build
+
+      - checkout: tensorflow/tensorflow
+        displayName: checkout tensorflow/tensorflow
+
+      - task: UsePythonVersion@0
+        displayName: configure python
+        inputs:
+          versionSpec: '3.x'
+          addToPath: true
+          architecture: 'x64'
+        name: python
+
+      - script: |
+          python -m pip install --upgrade pip
+          python -m pip install -U numpy six
+        displayName: install numpy, six
+
+      - task: Cache@2
+        inputs:
+          key: '"bazel" | "tensorflow" | "$(tensorflow.version)" | "$(Agent.OS)"'
+          path: $(Agent.BuildDirectory)/caches/bazel/tensorflow
+        displayName: bazel build cache
+
+      - script: |
+          PYTHON_BIN_PATH=$(which python) USE_DEFAULT_PYTHON_LIB_PATH=1 TF_ENABLE_XLA=1 TF_NEED_CUDA=0 TF_NEED_OPENCL_SYCL=0 TF_NEED_ROCM=0 TF_NEED_CUDA=0 TF_DOWNLOAD_CLANG=0 CC_OPT_FLAGS="-march=native" TF_SET_ANDROID_WORKSPACE=0 TF_CONFIGURE_IOS=1 python configure.py
+        displayName: configure tensorflow
+        workingDirectory: $(Build.SourcesDirectory)/tensorflow
+
+      - script: |
+          bazel --output_user_root $(Agent.BuildDirectory)/caches/bazel/tensorflow build -c opt --define framework_shared_object=false --config short_logs //tensorflow:tensorflow
+        displayName: build tensorflow
+        workingDirectory: $(Build.SourcesDirectory)/tensorflow
+
+      - script: |
+          mkdir -v -p $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/lib
+          cp -v $(Build.SourcesDirectory)/tensorflow/bazel-bin/tensorflow/libtensorflow.2.1.0.dylib $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/lib/
+
+          mkdir -v -p $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c
+          cp -v $(Build.SourcesDirectory)/tensorflow/tensorflow/c/c_api.h $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c
+          cp -v $(Build.SourcesDirectory)/tensorflow/tensorflow/c/c_api_experimental.h $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c
+          cp -v $(Build.SourcesDirectory)/tensorflow/tensorflow/c/tf_attrtype.h $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c
+          cp -v $(Build.SourcesDirectory)/tensorflow/tensorflow/c/tf_datatype.h $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c
+          cp -v $(Build.SourcesDirectory)/tensorflow/tensorflow/c/tf_file_statistics.h $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c
+          cp -v $(Build.SourcesDirectory)/tensorflow/tensorflow/c/tf_status.h $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c
+          cp -v $(Build.SourcesDirectory)/tensorflow/tensorflow/c/tf_tensor.h $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c
+
+          mkdir -v -p $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c/eager
+          cp -v $(Build.SourcesDirectory)/tensorflow/tensorflow/c/eager/c_api.h $(Build.StagingDirectory)/tensorflow-darwin-x64/Library/tensorflow-$(tensorflow.version)/usr/include/tensorflow/c/eager
+        displayName: install tensorflow
+
+      - publish: $(Build.StagingDirectory)/tensorflow-darwin-x64
+        artifact: tensorflow-darwin-x64
+
+  - job: windows
+    pool: Google
+    steps:
+      - task: DownloadGitHubRelease@0
+        displayName: download bazel
+        inputs:
+          connection: GitHub
+          userRepository: bazelbuild/bazel
+          defaultVersionType: specificVersion
+          version: '19882193'
+          itemPattern: bazel-*-windows-x86_64.exe
+          downloadPath: $(Agent.ToolsDirectory)/bazel/0.29.1/x64
+
+      - script: |
+          move "$(Agent.ToolsDirectory)\bazel\0.29.1\x64\bazel-0.29.1-windows-x86_64.exe" "$(Agent.ToolsDirectory)\bazel\0.29.1\x64\bazel.exe"
+        displayName: rename bazel
+
+      - script: |
+          echo ##vso[task.prependpath]$(Agent.ToolsDirectory)\bazel\0.29.1\x64
+        displayName: add bazel to PATH
+
+      - checkout: self
+        displayName: checkout compnerd/swift-build
+
+      - checkout: tensorflow/tensorflow
+        displayName: checkout tensorflow/tensorflow
+        enabled: false
+
+      - checkout: compnerd/tensorflow
+        displayName: checkout compnerd/tensorflow
+
+      - task: UsePythonVersion@0
+        displayName: configure python
+        inputs:
+          versionSpec: '3.x'
+          addToPath: true
+          architecture: 'x64'
+        name: python
+
+      - script: |
+          echo ##vso[task.prependpath]%ProgramFiles%\Git\usr\bin
+        displayName: configure GNU tools path
+
+      - script: |
+          python -m pip install --upgrade pip
+          python -m pip install --user numpy six
+        displayName: install numpy, six
+
+      - script: |
+          set TF_ENABLE_XLA=1
+          set TF_NEED_ROCM=0
+          set TF_NEED_CUDA=0
+          set TF_CUDA_COMPUTE_CAPABILITIES=7.5
+          set CC_OPT_FLAGS="/arch:AVX /D_USE_MATH_DEFINES"
+          set TF_OVERRIDE_EIGEN_STRONG_INLINE=1
+
+          .\configure.cmd
+        displayName: configure tensorflow
+        workingDirectory: $(Build.SourcesDirectory)/tensorflow
+
+      - task: BatchScript@1
+        condition: eq( variables['Agent.OS'], 'Windows_NT' )
+        displayName: vsvarsall.bat
+        inputs:
+          filename: C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools/VsDevCmd.bat
+          arguments: -no_logo -arch=x64 -host_arch=x64
+          modifyEnvironment: true
+
+      - script: |
+          set BAZEL_SH=%ProgramFiles%\Git\usr\bin\bash.exe
+          set BAZEL_VC=%VCINSTALLDIR%
+
+          bazel --output_user_root $(Agent.BuildDirectory)/caches/bazel/tensorflow build -c opt --copt /D_USE_MATH_DEFINES --define framework_shared_object=false --config short_logs //tensorflow:tensorflow //tensorflow:tensorflow_dll_import_lib
+        displayName: build tensorflow
+        workingDirectory: $(Build.SourcesDirectory)/tensorflow
+
+      - script: |
+          bazel --output_user_root $(Agent.BuildDirectory)/caches/bazel/tensorflow shutdown
+        displayName: shutdown bazel
+        workingDirectory: $(Build.SourcesDirectory)/tensorflow
+
+      - script: |
+          md $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\bin
+          copy $(Build.SourcesDirectory)\tensorflow\bazel-bin\tensorflow\tensorflow.dll $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\bin\
+
+          md $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\lib
+          copy $(Build.SourcesDirectory)\tensorflow\bazel-out\x64_windows-opt\bin\tensorflow\tensorflow.lib $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\lib\
+
+          md $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c
+          copy $(Build.SourcesDirectory)\tensorflow\tensorflow\c\c_api.h $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c\
+          copy $(Build.SourcesDirectory)\tensorflow\tensorflow\c\c_api_experimental.h $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c\
+          copy $(Build.SourcesDirectory)\tensorflow\tensorflow\c\tf_attrtype.h $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c\
+          copy $(Build.SourcesDirectory)\tensorflow\tensorflow\c\tf_datatype.h $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c\
+          copy $(Build.SourcesDirectory)\tensorflow\tensorflow\c\tf_file_statistics.h $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c\
+          copy $(Build.SourcesDirectory)\tensorflow\tensorflow\c\tf_status.h $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c\
+          copy $(Build.SourcesDirectory)\tensorflow\tensorflow\c\tf_tensor.h $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c\
+
+          md $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c\eager
+          copy $(Build.SourcesDirectory)\tensorflow\tensorflow\c\eager\c_api.h $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\include\tensorflow\c\eager\
+
+          md $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\share
+          copy $(Build.SourcesDirectory)\tensorflow\bazel-out\x64_windows-opt\bin\tensorflow\tensorflow_filtered_def_file.def $(Build.StagingDirectory)\tensorflow-windows-x64\Library\tensorflow-$(tensorflow.version)\usr\share\
+        displayName: install tensorflow
+
+      - publish: $(Build.StagingDirectory)/tensorflow-windows-x64
+        artifact: tensorflow-windows-x64

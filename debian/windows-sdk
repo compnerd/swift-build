@@ -1,0 +1,6 @@
+Package: swift-windows-sdk
+Version:
+Architecture: all
+Maintainer: Saleem Abdulrasool <compnerd@compnerd.org>
+Description: Windows Swift SDK
+

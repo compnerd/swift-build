@@ -1,0 +1,79 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
+         DefaultTargets="Build"
+         InitialTargets="DisplayBuildConfiguration">
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ProjectGuid>d3270c15-65d7-4c3a-81ce-dc0d89d802bb</ProjectGuid>
+    <ProductVersion>0.0.0</ProductVersion>
+    <OutputName>sdk</OutputName>
+    <OutputType>Package</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>build\</OutputPath>
+    <IntermediateOutputPath>obj\</IntermediateOutputPath>
+    <DefineSolutionProperties>false</DefineSolutionProperties>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SWIFT_SOURCE_DIR Condition=" '$(SWIFT_SOURCE_DIR)' == '' ">S:\SourceCache\llvm-project\swift</SWIFT_SOURCE_DIR>
+    <TENSORFLOW Condition=" '$(TENSORFLOW)' == '' ">false</TENSORFLOW>
+  </PropertyGroup>
+
+  <Import Project="$(WixTargetsPath)" />
+
+  <PropertyGroup>
+    <DefineConstants>PLATFORM_ROOT=$(PLATFORM_ROOT);SDK_ROOT=$(SDK_ROOT);SWIFT_SOURCE_DIR=$(SWIFT_SOURCE_DIR);SDK_ROOT_USR_LIB_SWIFT_SHIMS=$(SDK_ROOT)\usr\lib\swift\shims;SDK_ROOT_USR_LIB_SWIFT_COREFOUNDATION=$(SDK_ROOT)\usr\lib\swift\CoreFoundation;SDK_ROOT_USR_LIB_SWIFT_TENSORFLOW=$(SDK_ROOT)\usr\lib\swift\tensorflow;TENSORFLOW=$(TENSORFLOW);TensorFlow_ROOT=$(TensorFlow_ROOT)</DefineConstants>
+    <HarvestDirectoryAutogenerateGuids>false</HarvestDirectoryAutogenerateGuids>
+    <HarvestDirectoryGenerateGuidsNow>true</HarvestDirectoryGenerateGuidsNow>
+    <HarvestDirectoryNoLogo>true</HarvestDirectoryNoLogo>
+    <HarvestDirectorySuppressCom>true</HarvestDirectorySuppressCom>
+    <HarvestDirectorySuppressFragments>true</HarvestDirectorySuppressFragments>
+    <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
+    <HarvestDirectorySuppressRootDirectory>true</HarvestDirectorySuppressRootDirectory>
+  </PropertyGroup>
+
+  <Target Name="DisplayBuildConfiguration">
+    <Message Text="Building with TensorFlow"
+             Importance="high"
+             Condition=" '$(TENSORFLOW)' == 'true' "/>
+    <Message Text="TensorFlow Path: $(TensorFlow_ROOT)"
+             Importance="high"
+             Condition=" '$(TENSORFLOW)' == 'true' "/>
+  </Target>
+
+  <Target Name="BeforeBuild">
+    <ItemGroup>
+      <HarvestDirectory Include="$(SDK_ROOT)\usr\lib\swift\shims">
+        <ComponentGroupName>SWIFT_SHIMS</ComponentGroupName>
+        <DirectoryRefId>WINDOWS_SDK_USR_LIB_SWIFT_SHIMS</DirectoryRefId>
+        <PreprocessorVariable>var.SDK_ROOT_USR_LIB_SWIFT_SHIMS</PreprocessorVariable>
+      </HarvestDirectory>
+    </ItemGroup>
+    <ItemGroup>
+      <HarvestDirectory Include="$(SDK_ROOT)\usr\lib\swift\CoreFoundation">
+        <ComponentGroupName>COREFOUNDATION_HEADERS</ComponentGroupName>
+        <DirectoryRefId>WINDOWS_SDK_USR_LIB_SWIFT_COREFOUNDATION</DirectoryRefId>
+        <PreprocessorVariable>var.SDK_ROOT_USR_LIB_SWIFT_COREFOUNDATION</PreprocessorVariable>
+      </HarvestDirectory>
+    </ItemGroup>
+    <ItemGroup Condition=" '$(TENSORFLOW)' == 'true' ">
+      <HarvestDirectory Include="$(SDK_ROOT)\usr\lib\swift\tensorflow">
+        <ComponentGroupName>TENSORFLOW_HEADERS</ComponentGroupName>
+        <DirectoryRefId>WINDOWS_SDK_USR_LIB_SWIFT_TENSORFLOW</DirectoryRefId>
+        <PreprocessorVariable>var.SDK_ROOT_USR_LIB_SWIFT_TENSORFLOW</PreprocessorVariable>
+      </HarvestDirectory>
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <Compile Include="windows-sdk.wxs" />
+  </ItemGroup>
+</Project>
