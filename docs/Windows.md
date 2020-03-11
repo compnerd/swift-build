@@ -2,7 +2,7 @@
 
 #### The Windows SDK and the Native Tools Command Prompt
 
-You will need an installation of the Windows SDK to develop with the Swift Toolchain described here. An easy way to get the Windows SDK is to install Visual Studio, Visual Studio 2017 or later is needed. The following instructions suppose that you have Visual Studio installed. This will also make the `x64 Native Tools Command Prompt ...` available, it should be accessible from the `Visual Studio ...` folder in the Start menu.
+You will need an installation of the Windows SDK to develop with the Swift Toolchain described here. An easy way to get the Windows SDK is to install Visual Studio, Visual Studio 2017 or later is needed. The following instructions suppose that you have Visual Studio 2019 installed. (Replace `2019` by `2017` in the instructions if you use Visual Studio 2017.) The installation of Visual Studio will also make the `x64 Native Tools Command Prompt ...` available, it should be accessible from the `Visual Studio ...` folder in the Start menu.
 
 Most of the following commands are to be executed from within this Native Tools Command Prompt. Be sure to always start the `x64` version of the Native Tools Command Prompt.
 
@@ -31,10 +31,10 @@ The installation instructions that follow will result in a directory tree that h
 
 1. Go to [https://compnerd.visualstudio.com/swift-build](https://compnerd.visualstudio.com/swift-build).
 2. Choose `Pipelines` > `Pipelines` from the left of the dashboard.
-3. Choose 'Runs'.
-4. Use the filter symbol to search for "VS2017".
-5. In the results list, scroll down until you see the first successful build (with a green OK symbol) that does not have "facebook" in the description and click on it.
-6. Under "Artifacts", click on the "... published" link.
+3. Use the filter symbol to search for "VS2019".
+4. Click on the appropriate pipeline (e.g. `VS2019`).
+5. The list of the runs will be displayed, scroll down until you see the first successful build (with a green OK symbol) and click on it.
+6. Click the link under "Artifacts:".
 7. Download windows-toolchain-amd64.msi, windows-sdk.msi, and windows-runtime-amd64.msi by clicking on the appropriate down-arrows on the right. Be sure to really download these files from the same build (i.e. do not switch the build for the next download, and be careful when updating). These files will be downloaded as zip files. Unless they are not automatically unzipped during the download process, unzip them to obtain \*.msi files in the extracted directories.
 
 #### Installing the nightlies
@@ -81,7 +81,7 @@ _Tip:_ When calling your program from the command line, first execute the comman
 
 #### Running the Swift program on any machine
 
-To run the Swift program on another machine, in addition to the files mentioned in the last section, the files from the "Visual C++ Redistributable" in the according version have to be available on that machine (i.e. they have to be in your path). They can be made available by installing the according "Visual C++ Redistributable". As an alternative, according to [Distributable Code for Microsoft Visual Studio 2017](https://docs.microsoft.com/en-us/visualstudio/productinfo/2017-redistribution-vs) the files inside `[VisualStudioFolder]\VC\redist` are allowed to be part of your application (consider the files inside the subfolder `x64\*.CRT`). Please consult the Microsoft documentation to know which files you should bundle with your application.
+To run the Swift program on another machine, in addition to the files mentioned in the last section, the files from the "Visual C++ Redistributable" in the according version have to be available on that machine (i.e. they have to be in your path). They can be made available by installing the according "Visual C++ Redistributable". As an alternative, according to [Distributable Code for Visual Studio 2019](https://docs.microsoft.com/en-us/visualstudio/releases/2019/redistribution) the files inside `[VisualStudioFolder]\VC\redist` are allowed to be part of your application (consider the files inside the subfolder `x64\*.CRT`). Please consult the Microsoft documentation to know which files you should bundle with your application.
 
 #### Legal statement
 
