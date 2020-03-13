@@ -64,8 +64,8 @@ You will need the ICU libraries from [ICU - International Components for Unicode
 You should use a CMake project to build a Swift program. As an example CMake project use the "HelloWorld-CMake" example from [https://github.com/compnerd/swift-cmake-demo](https://github.com/compnerd/swift-cmake-demo) and use the following commands from within the project directory to build the project for Windows:
 
 ```cmd
-SET INSTALLATION_DIR=C:\Library
-SET SDK=%INSTALLATION_DIR%\Developer\Platforms\Windows.platform\Developer\SDKs\Windows.sdk
+SET INSTALLATION_DIR=C:
+SET SDK=%INSTALLATION_DIR%\Library\Developer\Platforms\Windows.platform\Developer\SDKs\Windows.sdk
 SET OS=windows
 cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=YES -D CMAKE_Swift_FLAGS="-sdk %SDK% -I %SDK%/usr/lib/swift -L %SDK%/usr/lib/swift/%OS%"
 cd build
