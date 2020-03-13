@@ -73,7 +73,7 @@ ninja
 ninja test
 ```
 
-Here, the variables INSTALLATION_DIR, SDK, and OS are just added for clarity of the subsequent command (as used here, they should not contain spaces, better use a tool where you can define each argument to cmake separately). Execute these commands from the Native Tools Command Prompt (or set needed paths before executing). Note that the cmake executable to be used is the one mentioned above. (Try `cmake -version` to see which CMake version is actually being called.)
+Here, the variables INSTALLATION_DIR, SDK, and OS are just added for clarity of the subsequent command (as used here, they should not contain spaces, better use a tool where you can define each argument to cmake separately and then put the paths inside the CMAKE_Swift_FLAGS argument in quotes). Execute these commands from the Native Tools Command Prompt (or set needed paths before executing). Note that the cmake executable to be used is the one mentioned above. (Try `cmake -version` to see which CMake version is actually being called.)
 
 #### Running the Swift program on the development machine
 
