@@ -26,7 +26,9 @@
     <TENSORFLOW Condition=" '$(TENSORFLOW)' == '' ">false</TENSORFLOW>
   </PropertyGroup>
 
+  <Import Project="targets\CodeSigning.props" />
   <Import Project="$(WixTargetsPath)" />
+  <Import Project="targets\CodeSigning.targets" />
 
   <PropertyGroup>
     <DefineConstants>PLATFORM_ROOT=$(PLATFORM_ROOT);SDK_ROOT=$(SDK_ROOT);$(INCLUDE_DEBUG_INFO);TENSORFLOW=$(TENSORFLOW)</DefineConstants>

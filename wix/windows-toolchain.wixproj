@@ -22,7 +22,9 @@
     <DefineSolutionProperties>false</DefineSolutionProperties>
   </PropertyGroup>
 
+  <Import Project="targets\CodeSigning.props" />
   <Import Project="$(WixTargetsPath)" />
+  <Import Project="targets\CodeSigning.targets" />
 
   <PropertyGroup>
     <DefineConstants>TOOLCHAIN_ROOT=$(TOOLCHAIN_ROOT);TOOLCHAIN_ROOT_USR_LIB_CLANG=$(TOOLCHAIN_ROOT)\usr\lib\clang;$(INCLUDE_DEBUG_INFO)</DefineConstants>

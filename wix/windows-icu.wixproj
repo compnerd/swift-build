@@ -20,7 +20,9 @@
     <DefineSolutionProperties>false</DefineSolutionProperties>
   </PropertyGroup>
 
+  <Import Project="targets\CodeSigning.props" />
   <Import Project="$(WixTargetsPath)" />
+  <Import Project="targets\CodeSigning.targets" />
 
   <PropertyGroup>
     <DefineConstants>ICU_ROOT=$(ICU_ROOT)</DefineConstants>

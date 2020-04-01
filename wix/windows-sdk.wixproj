@@ -27,7 +27,9 @@
     <TENSORFLOW Condition=" '$(TENSORFLOW)' == '' ">false</TENSORFLOW>
   </PropertyGroup>
 
+  <Import Project="targets\CodeSigning.props" />
   <Import Project="$(WixTargetsPath)" />
+  <Import Project="targets\CodeSigning.targets" />
 
   <PropertyGroup>
     <DefineConstants>PLATFORM_ROOT=$(PLATFORM_ROOT);SDK_ROOT=$(SDK_ROOT);SWIFT_SOURCE_DIR=$(SWIFT_SOURCE_DIR);SDK_ROOT_USR_LIB_SWIFT_SHIMS=$(SDK_ROOT)\usr\lib\swift\shims;SDK_ROOT_USR_LIB_SWIFT_COREFOUNDATION=$(SDK_ROOT)\usr\lib\swift\CoreFoundation;SDK_ROOT_USR_LIB_SWIFT_TENSORFLOW=$(SDK_ROOT)\usr\lib\swift\tensorflow;TENSORFLOW=$(TENSORFLOW);TensorFlow_ROOT=$(TensorFlow_ROOT)</DefineConstants>
