@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup Condition="'$(SigningEnabled)' == 'true'">
+    <SignOutput>true</SignOutput>
+    <SignToolVersion Condition="'$(SignToolVersion)' == ''">10.0.18362.0</SignToolVersion>
+    <SignToolPath Condition="'$(SignToolPath)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\bin\$(SignToolVersion)\x86\signtool.exe</SignToolPath>
+    <CertificateThumbprint>AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDD</CertificateThumbprint>
+
+    <SignTimestampingProvider>http://timestamp.digicert.com</SignTimestampingProvider>
+    <SignDescription>Replace Me</SignDescription>
+    <SignInformationUrl>http://example.com/</SignInformationUrl>
+  </PropertyGroup>
+</Project>

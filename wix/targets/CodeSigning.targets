@@ -1,0 +1,68 @@
+<Project>
+  <Import Project="CodeSigning.Tasks.targets" />
+
+  <Target Name="BeforeSigning">
+    <CheckIfCertificateIsInstalled CertificateThumbprint="$(CertificateThumbprint)" CertificateStoreName="My" CertificateStoreLocation="CurrentUser">
+      <Output TaskParameter="CertificateExists" PropertyName="CertificateExists" />
+    </CheckIfCertificateIsInstalled>
+
+    <Error Text="Signing is enabled but certificate with thumbprint '$(CertificateThumbprint)' does not exist."
+           Condition=" '$(CertificateExists)' == 'false' and '$(SigningEnabled)' == 'true' " />
+  </Target>
+
+  <Target Name="SignMsm">
+    <Sign ExecutablePath="$(SignToolPath)"
+      CertificateThumbprint="$(CertificateThumbprint)"
+      Description="$(SignDescription)"
+      InformationUrl="$(SignInformationUrl)"
+      TimestampingProvider="$(SignTimestampingProvider)"
+      ItemsToSign="@(SignMsm)"
+      IgnoreExitCode="false" />
+  </Target>
+  <Target Name="SignCabs">
+    <Sign ExecutablePath="$(SignToolPath)"
+      CertificateThumbprint="$(CertificateThumbprint)"
+      Description="$(SignDescription)"
+      InformationUrl="$(SignInformationUrl)"
+      TimestampingProvider="$(SignTimestampingProvider)"
+      ItemsToSign="@(SignCabs)"
+      IgnoreExitCode="false" />
+  </Target>
+  <Target Name="SignMsi">
+    <Sign ExecutablePath="$(SignToolPath)"
+      CertificateThumbprint="$(CertificateThumbprint)"
+      Description="$(SignDescription)"
+      InformationUrl="$(SignInformationUrl)"
+      TimestampingProvider="$(SignTimestampingProvider)"
+      ItemsToSign="@(SignMsi)"
+      IgnoreExitCode="false" />
+  </Target>
+
+  <Target Name="SignContainers">
+    <Sign ExecutablePath="$(SignToolPath)"
+      CertificateThumbprint="$(CertificateThumbprint)"
+      Description="$(SignDescription)"
+      InformationUrl="$(SignInformationUrl)"
+      TimestampingProvider="$(SignTimestampingProvider)"
+      ItemsToSign="@(SignContainers)"
+      IgnoreExitCode="false" />
+  </Target>
+  <Target Name="SignBundleEngine">
+    <Sign ExecutablePath="$(SignToolPath)"
+      CertificateThumbprint="$(CertificateThumbprint)"
+      Description="$(SignDescription)"
+      InformationUrl="$(SignInformationUrl)"
+      TimestampingProvider="$(SignTimestampingProvider)"
+      ItemsToSign="@(SignBundleEngine)"
+      IgnoreExitCode="false" />
+  </Target>
+  <Target Name="SignBundle">
+    <Sign ExecutablePath="$(SignToolPath)"
+      CertificateThumbprint="$(CertificateThumbprint)"
+      Description="$(SignDescription)"
+      InformationUrl="$(SignInformationUrl)"
+      TimestampingProvider="$(SignTimestampingProvider)"
+      ItemsToSign="@(SignBundle)"
+      IgnoreExitCode="false" />
+  </Target>
+</Project>

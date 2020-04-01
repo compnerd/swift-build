@@ -1,0 +1,201 @@
+<Project>
+  <UsingTask TaskName="CheckIfCertificateIsInstalled" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <CertificateThumbprint ParameterType="System.String" Required="true" />
+      <CertificateExists ParameterType="System.Boolean" Output="true" />
+      <CertificateStoreLocation ParameterType="System.String" />
+      <CertificateStoreName ParameterType="System.String" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System.Security.Cryptography.X509Certificates" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+        StoreName storeName = StoreName.My;
+        if (!string.IsNullOrEmpty(CertificateStoreName)) {
+          if (!Enum.TryParse(CertificateStoreName, ignoreCase: true, out storeName)) {
+            Log.LogError("Could not parse certificate store name '{0}'", CertificateStoreName);
+            return false;
+          }
+        }
+
+        StoreLocation storeLocation = StoreLocation.CurrentUser;
+        if (!string.IsNullOrEmpty(CertificateStoreLocation)) {
+          if (!Enum.TryParse(CertificateStoreLocation, ignoreCase: true, out storeLocation)) {
+            Log.LogError("Could not parse certificate store location '{0}'", CertificateStoreLocation);
+            return false;
+          }
+        }
+        
+        using (var store = new X509Store(storeName, storeLocation)) {
+          store.Open(OpenFlags.ReadOnly);
+          var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, CertificateThumbprint, validOnly: false);
+          CertificateExists = certificates.Count > 0;
+        }
+
+        Success = true;
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <UsingTask TaskName="Sign" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <Task>
+      <Code Type="Class" Language="cs">
+        <![CDATA[
+using System;
+using System.IO;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+
+public sealed class Sign : ToolTask
+{
+	private const string SigntoolExeName = "signtool.exe";
+
+	[Required]
+	public string CertificateThumbprint
+	{
+		get;
+		set;
+	}
+
+	public string Description
+	{
+		get;
+		set;
+	}
+
+	public string ExecutablePath
+	{
+		get;
+		set;
+	}
+
+	public bool IgnoreExitCode
+	{
+		get;
+		set;
+	}
+
+	public string InformationUrl
+	{
+		get;
+		set;
+	}
+
+	[Required]
+	public ITaskItem[] ItemsToSign
+	{
+		get;
+		set;
+	}
+
+	public string TimestampingProvider
+	{
+		get;
+		set;
+	}
+
+	protected override string ToolName => "signtool.exe";
+
+	protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
+	{
+		try
+		{
+			foreach (ITaskItem itemToSign in ItemsToSign)
+			{
+				string fileFullPath = itemToSign.GetMetadata("FullPath");
+				string fileName = itemToSign.GetMetadata("Filename");
+				string fileExtensions = itemToSign.GetMetadata("Extension");
+				if (!File.Exists(fileFullPath))
+				{
+					Log.LogError("File to sign doesn't exist -> " + fileFullPath, Array.Empty<object>());
+				}
+				else
+				{
+					commandLineCommands = GenerateSha1CommandLineCommands(fileFullPath);
+					int exitCode2 = base.ExecuteTool(pathToTool, responseFileCommands, commandLineCommands);
+					if (exitCode2 != 0 && !IgnoreExitCode)
+					{
+						return exitCode2;
+					}
+
+					if (fileExtensions != ".msi")
+					{
+						commandLineCommands = GenerateSha256CommandLineCommands(fileFullPath);
+						exitCode2 = base.ExecuteTool(pathToTool, responseFileCommands, commandLineCommands);
+						if (exitCode2 != 0 && !IgnoreExitCode)
+						{
+							return exitCode2;
+						}
+						Log.LogMessage(MessageImportance.High, fileName + fileExtensions + " signed file -> " + fileFullPath, Array.Empty<object>());
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Log.LogErrorFromException(ex, true);
+			return 1;
+		}
+		return 0;
+	}
+
+	protected override string GenerateFullPathToTool()
+	{
+		if (!File.Exists(ExecutablePath))
+		{
+			Log.LogWarning("The file path set on ExecutablePath does not exist: '" + ExecutablePath + "'. Falling back to using the system PATH.", Array.Empty<object>());
+			return "signtool.exe";
+		}
+		return ExecutablePath;
+	}
+
+	protected override bool HandleTaskExecutionErrors()
+	{
+		if (!IgnoreExitCode)
+		{
+			return base.HandleTaskExecutionErrors();
+		}
+		return true;
+	}
+
+	private string GenerateSha1CommandLineCommands(string filePath)
+	{
+		CommandLineBuilder builder = (CommandLineBuilder)(object)new CommandLineBuilder();
+		builder.AppendSwitch("sign");
+		builder.AppendSwitchIfNotNull("/sha1 ", CertificateThumbprint);
+		builder.AppendSwitchIfNotNull("/d ", Description);
+		builder.AppendSwitchIfNotNull("/du ", InformationUrl);
+		builder.AppendSwitchIfNotNull("/t ", TimestampingProvider);
+		builder.AppendSwitch("/v");
+		builder.AppendFileNameIfNotNull(filePath);
+		string commands = builder.ToString();
+		this.LogToolCommand("[Sign] " + commands);
+		return commands;
+	}
+
+	private string GenerateSha256CommandLineCommands(string filePath)
+	{
+		CommandLineBuilder builder = (CommandLineBuilder)(object)new CommandLineBuilder();
+		builder.AppendSwitch("sign");
+		builder.AppendSwitchIfNotNull("/sha1 ", CertificateThumbprint);
+		builder.AppendSwitch("/fd sha256");
+		builder.AppendSwitch("/as");
+		builder.AppendSwitchIfNotNull("/d ", Description);
+		builder.AppendSwitchIfNotNull("/du ", InformationUrl);
+		builder.AppendSwitchIfNotNull("/tr ", TimestampingProvider);
+		builder.AppendSwitch("/td sha256");
+		builder.AppendSwitch("/v");
+		builder.AppendFileNameIfNotNull(filePath);
+		string commands = builder.ToString();
+		this.LogToolCommand("[Sign] " + commands);
+		return commands;
+	}
+
+}
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
