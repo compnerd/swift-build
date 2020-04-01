@@ -36,16 +36,9 @@
       <Merge Id="icu-msm" Language="1033" DiskId="1" SourceFile="$(var.windows-icu-msm.TargetPath)" />
     </DirectoryRef>
 
-    <DirectoryRef Id="TARGETDIR">
-      <Component Id="ENV_VARS" Guid="0138a205-109c-49ca-878b-bd533eb0fd05">
-        <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[WindowsVolume]Library\icu-64\usr\bin" />
-      </Component>
-    </DirectoryRef>
-
     <!-- Features -->
     <Feature Id="RUNTIME" Level="1">
       <MergeRef Id="icu-msm" />
-      <ComponentRef Id="ENV_VARS" />
     </Feature>
 
     <!-- UI -->
