@@ -13,12 +13,12 @@
     <ProjectGuid>efba7465-b325-4eee-bb39-96c076850ddf</ProjectGuid>
     <ProductVersion>0.0.0</ProductVersion>
     <OutputName>runtime</OutputName>
-    <OutputType>Package</OutputType>
+    <OutputType>Module</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>build\</OutputPath>
-    <IntermediateOutputPath>obj\</IntermediateOutputPath>
+    <OutputPath>build\runtime-msm\</OutputPath>
+    <IntermediateOutputPath>obj\runtime-msm\</IntermediateOutputPath>
     <DefineSolutionProperties>false</DefineSolutionProperties>
   </PropertyGroup>
 
@@ -39,7 +39,6 @@
   </Target>
 
   <ItemGroup>
-    <Compile Include="windows-runtime.wxs" />
-    <ProjectReference Include="windows-runtime-msm.wixproj" />
+    <Compile Include="windows-runtime-msm.wxs" />
   </ItemGroup>
 </Project>
