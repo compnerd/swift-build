@@ -1,23 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*"
-           Language="1033"
-           Manufacturer="dt.compnerd.org"
-           Name="TensorFlow"
-           UpgradeCode="c16b17e8-b3a3-4674-984e-deb1d1c3ed33"
-           Version="2.1.0.9999" >
-  <Package Comments="Copyright 2020 Saleem Abdulrasool &lt;compnerd@compnerd.org&gt;"
-           Compressed="yes"
-           InstallScope="perMachine"
-           Manufacturer="dt.compnerd.org"
-           Description="TensorFlow" />
-    <!--
-         NOTE(compnerd) use the pre-3.8 schema for better compatibility.  If we
-         are guaranteed WIX 3.8+ we could write this as:
-
-         <MediaTemplate EmbedCab="yes" />
-    -->
-    <Media Id="1" Cabinet="tensorflow.cab" EmbedCab="yes" />
+  <Module Id="dt.compnerd.org.SwiftRuntime.TensorFlow"
+          Language="1033"
+          Version="2.1.0.9999" >
+    <Package Comments="Copyright 2020 Saleem Abdulrasool &lt;compnerd@compnerd.org&gt;"
+             Compressed="yes"
+             InstallScope="perMachine"
+             Manufacturer="dt.compnerd.org"
+             Description="TensorFlow" />
 
     <!-- Directory Structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
@@ -47,14 +37,5 @@
         <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[WindowsVolume]Library\tensorflow-2.1.0-rc1\usr\bin" />
       </Component>
     </DirectoryRef>
-
-    <!-- Features -->
-    <Feature Id="RUNTIME" Level="1">
-      <ComponentRef Id="TENSORFLOW_RUNTIME" />
-      <ComponentRef Id="ENV_VARS" />
-    </Feature>
-
-    <!-- UI -->
-    <UI />
-  </Product>
+  </Module>
 </Wix>
