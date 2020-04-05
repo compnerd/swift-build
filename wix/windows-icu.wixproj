@@ -11,12 +11,12 @@
     <ProjectGuid>bd850555-b303-404a-9e4a-c8b0e04fc8ab</ProjectGuid>
     <ProductVersion>64.1</ProductVersion>
     <OutputName>icu</OutputName>
-    <OutputType>Package</OutputType>
+    <OutputType>Module</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>build\</OutputPath>
-    <IntermediateOutputPath>obj\</IntermediateOutputPath>
+    <OutputPath>build\icu\</OutputPath>
+    <IntermediateOutputPath>obj\icu\</IntermediateOutputPath>
     <DefineSolutionProperties>false</DefineSolutionProperties>
   </PropertyGroup>
 
@@ -28,6 +28,5 @@
 
   <ItemGroup>
     <Compile Include="windows-icu.wxs" />
-    <ProjectReference Include="windows-icu-msm.wixproj" />
   </ItemGroup>
 </Project>

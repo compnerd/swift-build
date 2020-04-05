@@ -13,12 +13,12 @@
     <ProjectGuid>efba7465-b325-4eee-bb39-96c076850ddf</ProjectGuid>
     <ProductVersion>0.0.0</ProductVersion>
     <OutputName>runtime</OutputName>
-    <OutputType>Package</OutputType>
+    <OutputType>Module</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>build\</OutputPath>
-    <IntermediateOutputPath>obj\</IntermediateOutputPath>
+    <OutputPath>build\runtime\</OutputPath>
+    <IntermediateOutputPath>obj\runtime\</IntermediateOutputPath>
     <DefineSolutionProperties>false</DefineSolutionProperties>
   </PropertyGroup>
 
@@ -40,6 +40,5 @@
 
   <ItemGroup>
     <Compile Include="windows-runtime.wxs" />
-    <ProjectReference Include="windows-runtime-msm.wixproj" />
   </ItemGroup>
 </Project>
