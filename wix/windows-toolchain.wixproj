@@ -13,7 +13,7 @@
     <ProjectGuid>6c7a4772-77e1-4d3e-a7e8-ebf01a8965ef</ProjectGuid>
     <ProductVersion>0.0.0</ProductVersion>
     <OutputName>toolchain</OutputName>
-    <OutputType>Package</OutputType>
+    <OutputType>Module</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -1,33 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*"
-           Language="1033"
-           Manufacturer="dt.compnerd.org"
-           Name="Toolchain"
-           UpgradeCode="bed47738-52ef-4af7-a47b-b81cf238e0c8"
-           Version="0.0.0.0">
-    <Package Comments="Copyright 2019-2020 Saleem Abdulrasool &lt;compnerd@compnerd.org&gt;"
-             Compressed="yes"
+  <Module Id="dt.compnerd.org.SwiftRuntime.toolchain"
+          Language="1033"
+          Version="0.0.0.0">
+    <Package Id="bed47738-52ef-4af7-a47b-b81cf238e0c8"
+             Comments="Copyright 2019-2020 Saleem Abdulrasool &lt;compnerd@compnerd.org&gt;"
              Description="Toolchain"
              InstallScope="perMachine"
              Manufacturer="dt.compnerd.org" />
-    <!--
-         NOTE(compnerd) use the pre-3.8 schema for better compatibility.  If we
-         are guaranteed WIX 3.8+ we could write this as:
-
-         <MediaTemplate EmbedCab="yes" />
-    -->
-    <Media Id="1" Cabinet="toolchain.cab" EmbedCab="yes" />
-
-    <?ifdef INCLUDE_DEBUG_INFO ?>
-    <Media Id="2" Cabinet="clang_PDBs.cab" EmbedCab="yes" />
-    <Media Id="3" Cabinet="LLDB_PDBs.cab" EmbedCab="yes" />
-    <Media Id="4" Cabinet="LLVM_PDBs.cab" EmbedCab="yes" />
-    <Media Id="5" Cabinet="Swift_PDBs.cab" EmbedCab="yes" />
-    <Media Id="6" Cabinet="SourceKit_PDBs.cab" EmbedCab="yes" />
-    <Media Id="7" Cabinet="LLD_PDBs.cab" EmbedCab="yes" />
-    <?endif?>
-
     <!-- Directory Structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="WINDOWSVOLUME">
@@ -362,42 +342,5 @@
         <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[WindowsVolume]Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin" />
       </Component>
     </DirectoryRef>
-
-    <Feature Id="TOOLCHAIN" Level="1">
-      <ComponentRef Id="TOOLCHAIN_BINS" />
-      <ComponentRef Id="TOOLCHAIN_IMPLIBS" />
-      <!--
-      <ComponentRef Id="BLOCK_HEADERS" />
-      -->
-      <ComponentRef Id="INDEXSTORE_HEADERS" />
-      <ComponentRef Id="LIBCLANG_HEADERS" />
-      <ComponentRef Id="LTO_HEADERS" />
-      <!--
-      <ComponentRef Id="DISPATCH_HEADERS" />
-      <ComponentRef Id="OS_HEADERS" />
-      -->
-      <ComponentRef Id="SOURCEKIT_HEADERS" />
-      <ComponentRef Id="SWIFT_MIGRATOR_DATA" />
-      <ComponentGroupRef Id="CLANG_RESOURCES" />
-      <!--
-      <ComponentGroupRef Id="SWIFT_SHIMS" />
-      -->
-      <ComponentRef Id="LLDB_PYTHON_SCRIPTS" />
-      <ComponentRef Id="LLDB_PYTHON_SCRIPTS_FORMATTERS" />
-      <ComponentRef Id="LLDB_PYTHON_SCRIPTS_FORMATTERS_CPP" />
-      <ComponentRef Id="LLDB_PYTHON_SCRIPTS_UTILS" />
-
-      <ComponentRef Id="ENV_VARS" />
-    </Feature>
-
-    <?ifdef INCLUDE_DEBUG_INFO ?>
-    <Feature Id="DEBUGINFO" Level="0">
-      <Condition Level="1">INSTALL_DEBUGINFO</Condition>
-      <ComponentRef Id="TOOLCHAIN_DEBUGINFO" />
-    </Feature>
-    <?endif?>
-
-    <!-- UI -->
-    <UI />
-  </Product>
+  </Module>
 </Wix>
