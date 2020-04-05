@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?if "$(var.TENSORFLOW)"="true" ?>
+  <?define Description="Swift Toolchain for Tensorflow"?>
+  <?define UpgradeCode="e6d62358-5010-4c18-a7d2-e77a8aaa6911"?>
+  <?else?>
+  <?define Description="Swift Toolchain"?>
+  <?define UpgradeCode="bed47738-52ef-4af7-a47b-b81cf238e0c8"?>
+  <?endif?>
+  
+  <Product Id="*"
+           Language="1033"
+           Manufacturer="dt.compnerd.org"
+           Name="$(var.Description)"
+           UpgradeCode="$(var.UpgradeCode)"
+           Version="0.0.0.0">
+    <Package Comments="Copyright 2019-2020 Saleem Abdulrasool &lt;compnerd@compnerd.org&gt;"
+             Compressed="yes"
+             Description="$(var.Description)"
+             InstallScope="perMachine"
+             Manufacturer="dt.compnerd.org" />
+    <!--
+         NOTE(compnerd) use the pre-3.8 schema for better compatibility.  If we
+         are guaranteed WIX 3.8+ we could write this as:
+
+         <MediaTemplate EmbedCab="yes" />
+    -->
+    <Media Id="1" Cabinet="swift.cab" EmbedCab="yes" />
+
+    <!-- Directory Structure -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="WINDOWSVOLUME">
+        <Merge Id="icu" Language="1033" DiskId="1" SourceFile="$(var.windows-icu.TargetPath)" />
+        <Merge Id="runtime" Language="1033" DiskId="1" SourceFile="$(var.windows-runtime.TargetPath)" />
+      </Directory>
+    </Directory>
+
+    <Feature Id="swift" Title="$(var.Description)" TypicalDefault="install" AllowAdvertise="no" Absent="disallow">
+      <MergeRef Id="icu" />
+      <MergeRef Id="runtime" />
+    </Feature>
+
+    <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />
+
+    <!-- UI -->
+    <UI />
+  </Product>
+</Wix>

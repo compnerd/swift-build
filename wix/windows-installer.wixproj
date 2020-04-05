@@ -1,0 +1,49 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
+         DefaultTargets="Build"
+         InitialTargets="DisplayBuildConfiguration">
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ProjectGuid>6c7a4772-77e1-4d3e-a7e8-ebf01a8965ef</ProjectGuid>
+    <ProductVersion>0.0.0</ProductVersion>
+    <OutputName Condition="'$(TENSORFLOW)' == 'true'">SwiftForTensorflow</OutputName>
+    <OutputName Condition="'$(TENSORFLOW)' != 'true'">Swift</OutputName>
+    <OutputType>Package</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>build\</OutputPath>
+    <IntermediateOutputPath>obj\</IntermediateOutputPath>
+    <DefineSolutionProperties>false</DefineSolutionProperties>
+  </PropertyGroup>
+
+  <Import Project="$(WixTargetsPath)" />
+
+  <PropertyGroup>
+    <DefineConstants>$(INCLUDE_DEBUG_INFO);TENSORFLOW=$(TENSORFLOW)</DefineConstants>
+    
+    <!--
+      This is needed because this project won't pass the required path properties (SDK_ROOT, etc)
+      to the referenced projects, causing them to fail, even if they were just built successfully.
+    -->
+    <BuildProjectReferences>false</BuildProjectReferences>
+  </PropertyGroup>
+
+  <Target Name="DisplayBuildConfiguration">
+    <Message Text="Building with TensorFlow"
+             Importance="high"
+             Condition=" '$(TENSORFLOW)' == 'true' "/>
+  </Target>
+
+  <ItemGroup>
+    <Compile Include="windows-installer.wxs" />
+    <ProjectReference Include="windows-icu.wixproj" />
+    <ProjectReference Include="windows-runtime.wixproj" />
+  </ItemGroup>
+</Project>
