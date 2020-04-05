@@ -34,6 +34,9 @@
         <Merge Id="runtime" Language="1033" DiskId="1" SourceFile="$(var.windows-runtime.TargetPath)" />
         <Merge Id="sdk" Language="1033" DiskId="1" SourceFile="$(var.windows-sdk.TargetPath)" />
         <Merge Id="toolchain" Language="1033" DiskId="1" SourceFile="$(var.windows-toolchain.TargetPath)" />
+        <?if "$(var.TENSORFLOW)"="true"?>
+        <Merge Id="tensorflow" Language="1033" DiskId="1" SourceFile="$(var.windows-tensorflow.TargetPath)" />
+        <?endif?>
       </Directory>
     </Directory>
 
@@ -42,6 +45,9 @@
       <MergeRef Id="runtime" />
       <MergeRef Id="sdk" />
       <MergeRef Id="toolchain" />
+      <?if "$(var.TENSORFLOW)"="true"?>
+      <MergeRef Id="tensorflow" />
+      <?endif?>
     </Feature>
 
     <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />

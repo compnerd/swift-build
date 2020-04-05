@@ -48,4 +48,8 @@
     <ProjectReference Include="windows-sdk.wixproj" />
     <ProjectReference Include="windows-toolchain.wixproj" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(TENSORFLOW)' == 'true'">
+    <ProjectReference Include="windows-tensorflow.wixproj" />
+  </ItemGroup>
 </Project>
