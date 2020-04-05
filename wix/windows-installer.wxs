@@ -32,12 +32,14 @@
       <Directory Id="WINDOWSVOLUME">
         <Merge Id="icu" Language="1033" DiskId="1" SourceFile="$(var.windows-icu.TargetPath)" />
         <Merge Id="runtime" Language="1033" DiskId="1" SourceFile="$(var.windows-runtime.TargetPath)" />
+        <Merge Id="sdk" Language="1033" DiskId="1" SourceFile="$(var.windows-sdk.TargetPath)" />
       </Directory>
     </Directory>
 
     <Feature Id="swift" Title="$(var.Description)" TypicalDefault="install" AllowAdvertise="no" Absent="disallow">
       <MergeRef Id="icu" />
       <MergeRef Id="runtime" />
+      <MergeRef Id="sdk" />
     </Feature>
 
     <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />

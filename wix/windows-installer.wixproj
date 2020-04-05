@@ -45,5 +45,6 @@
     <Compile Include="windows-installer.wxs" />
     <ProjectReference Include="windows-icu.wixproj" />
     <ProjectReference Include="windows-runtime.wixproj" />
+    <ProjectReference Include="windows-sdk.wixproj" />
   </ItemGroup>
 </Project>
