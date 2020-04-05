@@ -13,7 +13,7 @@
     <ProjectGuid>d3270c15-65d7-4c3a-81ce-dc0d89d802bb</ProjectGuid>
     <ProductVersion>0.0.0</ProductVersion>
     <OutputName>sdk</OutputName>
-    <OutputType>Package</OutputType>
+    <OutputType>Module</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>

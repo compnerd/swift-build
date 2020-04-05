@@ -1,23 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*"
-           Language="1033"
-           Manufacturer="dt.compnerd.org"
-           Name="Windows Swift SDK for x86_64"
-           UpgradeCode="c16b17e8-b3a3-4674-984e-deb1d1c3ed33"
-           Version="0.0.0.0">
-    <Package Comments="Copyright 2019-2020 Saleem Abdulrasool &lt;compnerd@compnerd.org&gt;"
-             Compressed="yes"
+  <Module Id="dt.compnerd.org.SwiftRuntime.SDK"
+          Language="1033"
+          Version="0.0.0.0">
+    <Package Id="3492961c-1fc2-45b0-a6ae-44a10e830925"
+             Comments="Copyright 2019-2020 Saleem Abdulrasool &lt;compnerd@compnerd.org&gt;"
              Description="Windows Swift SDK for x86_64"
              InstallScope="perMachine"
              Manufacturer="dt.compnerd.org" />
-    <!--
-         NOTE(compnerd) use the pre-3.8 schema for better compatibility.  If we
-         are guaranteed WIX 3.8+ we could write this as:
-
-         <MediaTemplate EmbedCab="yes" />
-    -->
-    <Media Id="1" Cabinet="WindowsSDK.cab" EmbedCab="yes" />
 
     <!-- Directory Structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
@@ -291,62 +281,5 @@
         <File Id="VISUALC_APINOTES" Source="$(var.SWIFT_SOURCE_DIR)\stdlib\public\Platform\visualc.apinotes" Checksum="yes" />
       </Component>
     </DirectoryRef>
-
-    <ComponentGroup Id="DISPATCH_HEADERS">
-      <ComponentRef Id="DISPATCH_DISPATCH_HEADERS" />
-      <ComponentRef Id="DISPATCH_OS_HEADERS" />
-    </ComponentGroup>
-
-    <!-- Features -->
-    <Feature Id="SDK" Level="1">
-      <ComponentRef Id="XCTEST_RUNTIME" />
-      <ComponentRef Id="XCTEST_IMPORT_LIBS" />
-      <ComponentRef Id="XCTEST_SWIFT_MODULES" />
-
-      <ComponentRef Id="BLOCKS_RUNTIME_HEADERS" />
-      <ComponentRef Id="BLOCKS_RUNTIME_IMPORT_LIBS" />
-
-      <ComponentRef Id="DISPATCH" />
-      <ComponentGroupRef Id="DISPATCH_HEADERS" />
-      <ComponentRef Id="DISPATCH_IMPORT_LIBS" />
-
-      <ComponentRef Id="FOUNDATION" />
-      <ComponentGroupRef Id="COREFOUNDATION_HEADERS" />
-      <ComponentRef Id="CFURLSESSIONINTERFACE_HEADERS" />
-      <ComponentRef Id="CFXMLINTERFACE_HEADERS" />
-      <ComponentRef Id="FOUNDATION_IMPORT_LIBS" />
-
-      <ComponentRef Id="SWIFT" />
-      <ComponentRef Id="SWIFT_IMPORT_LIBS" />
-
-      <ComponentRef Id="SDK_OVERLAY" />
-      <ComponentRef Id="SDK_OVERLAY_IMPORT_LIBS" />
-
-      <ComponentRef Id="SWIFT_REMOTE_MIRROR_HEADERS" />
-      <ComponentRef Id="SWIFT_REMOTE_MIRROR_IMPORT_LIBS" />
-
-      <ComponentGroupRef Id="SWIFT_SHIMS" />
-
-      <ComponentRef Id="REGISTRAR" />
-
-      <ComponentRef Id="WINDOWS_MODULE_MAPS_AND_APINOTES" />
-
-      <?if $(var.TENSORFLOW) = true ?>
-      <ComponentRef Id="_DIFFERENTIATION" />
-      <ComponentRef Id="_DIFFERENTIATION_IMPORT_LIBS" />
-
-      <ComponentRef Id="PYTHONKIT" />
-      <ComponentRef Id="PYTHONKIT_IMPORT_LIBS" />
-
-      <ComponentGroupRef Id="TENSORFLOW_HEADERS" />
-
-      <ComponentRef Id="TENSORFLOW_IMPORT_LIBS" />
-      <ComponentRef Id="TENSORFLOW_SWIFT_APIS" />
-      <ComponentRef Id="TENSORFLOW_SWIFT_APIS_IMPORT_LIBS" />
-      <?endif?>
-    </Feature>
-
-    <!-- UI -->
-    <UI />
-  </Product>
+  </Module>
 </Wix>
