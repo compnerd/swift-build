@@ -46,5 +46,6 @@
     <ProjectReference Include="windows-icu.wixproj" />
     <ProjectReference Include="windows-runtime.wixproj" />
     <ProjectReference Include="windows-sdk.wixproj" />
+    <ProjectReference Include="windows-toolchain.wixproj" />
   </ItemGroup>
 </Project>

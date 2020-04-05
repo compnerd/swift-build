@@ -33,6 +33,7 @@
         <Merge Id="icu" Language="1033" DiskId="1" SourceFile="$(var.windows-icu.TargetPath)" />
         <Merge Id="runtime" Language="1033" DiskId="1" SourceFile="$(var.windows-runtime.TargetPath)" />
         <Merge Id="sdk" Language="1033" DiskId="1" SourceFile="$(var.windows-sdk.TargetPath)" />
+        <Merge Id="toolchain" Language="1033" DiskId="1" SourceFile="$(var.windows-toolchain.TargetPath)" />
       </Directory>
     </Directory>
 
@@ -40,6 +41,7 @@
       <MergeRef Id="icu" />
       <MergeRef Id="runtime" />
       <MergeRef Id="sdk" />
+      <MergeRef Id="toolchain" />
     </Feature>
 
     <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />
