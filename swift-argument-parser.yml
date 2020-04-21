@@ -46,7 +46,7 @@ steps:
     set list=%~1
     set repository=%~2
     for /F "tokens=1*" %%P in ("%list%") do (
-      git -C %repository% fetch origin/%%P/merge
+      git -C %repository% fetch origin pull/%%P/merge
       git -C %repository% merge FETCH_HEAD
       if not "%%Q" == "" call :ApplyPatches "%%Q" %repository%
     )
