@@ -39,8 +39,20 @@
 ## Installation
 
 1. Install Visual Studio from [Microsoft](https://visualstudio.microsoft.com).
-2. Install Swift Toolchain from [//swift/build](https://compnerd.visualstudio.com/compnerd/swift-build).
+2. Install Swift Toolchain from either the GitHub [releases](https://github.com/compnerd/swift-build/releases) or the [//swift/build](https://compnerd.visualstudio.com/compnerd/swift-build) CI Pipeline.
 3. Deploy Windows SDK updates.  This must be run from an (elevated) "Administrator" `x64 Native Tools for VS2019 Command Prompt` shell.
+
+Before executing the following, you'll need to ensure that you've set the following values for the build parameter variables: 
+
+* **SystemDrive** 
+    * _Example_: ``` set SystemDrive=C ```  
+* **UniversalCRTSdkDir**
+    * _Example_: ```set UniversalCRTSdkDir=C:\Program Files (x86)\Windows Kits\10\ ```
+* **UCRTVersion**
+    * _Example_: ```set UCRTVersion=10.0.19041.0```
+
+You can print the current value of these variables by using the echo command: 
+```echo %UniversalCRTSdkDir%``` 
 
 ```cmd
 set SDKROOT=%SystemDrive%\Library\Developer\Platforms\Windows.platform\Developer\SDKs\Windows.sdk
@@ -66,8 +78,9 @@ git clone git://github.com/compnerd/swift-build-examples /SourceCache/swift-buil
 
 2. Setup Common Build Parameter Variables
 
+If you've already set the ```SDKROOT``` parameter variable as instructed above then simply add the following:
+
 ```cmd
-set SDKROOT=%SystemDrive%/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk
 set SWIFTFLAGS=-sdk %SDKROOT% -I %SDKROOT%/usr/lib/swift -L %SDKROOT%/usr/lib/swift/windows
 ```
 
