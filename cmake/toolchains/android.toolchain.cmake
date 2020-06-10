@@ -364,8 +364,10 @@ set(CMAKE_SYSROOT_COMPILE "${CMAKE_SYSROOT}")
 # The compiler driver doesn't check any arch specific include locations (though
 # maybe we should add that). Architecture specific headers like asm/ and
 # machine/ are installed to an arch-$ARCH subdirectory of the sysroot.
+# --- COMPNERD ---
 list(APPEND ANDROID_COMPILER_FLAGS
-  "-isystem ${CMAKE_SYSROOT}/usr/include/${ANDROID_HEADER_TRIPLE}")
+  "-isystem \"${CMAKE_SYSROOT}/usr/include/${ANDROID_HEADER_TRIPLE}\"")
+# --- COMPNERD ---
 list(APPEND ANDROID_COMPILER_FLAGS
   "-D__ANDROID_API__=${ANDROID_PLATFORM_LEVEL}")
 
@@ -373,7 +375,9 @@ list(APPEND ANDROID_COMPILER_FLAGS
 # support that. Pass the sysroot flag manually when linking.
 set(ANDROID_SYSTEM_LIBRARY_PATH
   "${ANDROID_NDK}/platforms/${ANDROID_PLATFORM}/arch-${ANDROID_SYSROOT_ABI}")
-list(APPEND ANDROID_LINKER_FLAGS "--sysroot ${ANDROID_SYSTEM_LIBRARY_PATH}")
+# --- COMPNERD ---
+list(APPEND ANDROID_LINKER_FLAGS "--sysroot \"${ANDROID_SYSTEM_LIBRARY_PATH}\"")
+# --- COMPNERD ---
 
 # find_library searches a handful of paths as described by
 # https://cmake.org/cmake/help/v3.6/command/find_library.html.  Since libraries
@@ -550,8 +554,10 @@ elseif(ANDROID_STL MATCHES "^c\\+\\+_")
 
   # Add the libc++ lib directory to the path so the linker scripts can pick up
   # the extra libraries.
+  # --- COMPNERD ---
   list(APPEND ANDROID_LINKER_FLAGS
-    "-L${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}")
+    "-L \"${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}\"")
+  # --- COMPNERD ---
 
   set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES
     "${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/include"
