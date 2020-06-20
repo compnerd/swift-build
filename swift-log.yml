@@ -9,6 +9,7 @@ resources:
       type: github
       name: apple/swift-log
       endpoint: GitHub
+      ref: ${SWIFT_LOG_REF}
 
 pr:
   paths:
