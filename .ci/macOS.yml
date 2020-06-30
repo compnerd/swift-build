@@ -153,7 +153,7 @@ stages:
           triple: x86_64-apple-macosx10.14
 
           ICU_VERSION: 0
-          SWIFT_OPTIONS: -D CMAKE_CXX_FLAGS="-isystem /Applications/Xcode_11.2.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"
+          SWIFT_OPTIONS: -D CMAKE_CXX_FLAGS="-isystem $(XcodePath)/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"
 
           os: MacOSX
           proc: amd64

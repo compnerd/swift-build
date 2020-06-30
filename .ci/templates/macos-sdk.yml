@@ -79,6 +79,15 @@ jobs:
         condition: eq( variables['Agent.OS'], 'Darwin' )
         displayName: Add Ninja to PATH
 
+      - script: |
+          if [[ -e /Applications/Xcode_12_beta.app/Contents/Developer ]] ; then
+            sudo xcode-select -s /Applications/Xcode_12_beta.app/Contents/Developer
+          fi
+          xcode-select -p
+          echo ##vso[task.setvariable variable=XcodePath;]$(xcode-select -p)
+        condition: eq( variables['Agent.OS'], 'Darwin' )
+        displayName: "Xcode Selection"
+
       - download: current
         artifact: toolchain-darwin-x64
         displayName: download toolchain
