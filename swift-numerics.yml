@@ -36,8 +36,11 @@ steps:
 - script: |
     git config --global user.name builder
     git config --global user.email builder@compnerd.org
+
     call :ApplyPatches "%SWIFT_NUMERICS_PR%" $(Build.SourcesDirectory)
+
     goto :eof
+
     :ApplyPatches
     setlocal
     set list=%~1
@@ -48,6 +51,7 @@ steps:
       if not "%%Q" == "" call :ApplyPatches "%%Q" %repository%
     )
   displayName: Apply Patches
+  enabled: false
 
 - task: DownloadPipelineArtifact@2
   inputs:
