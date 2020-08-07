@@ -148,7 +148,7 @@ jobs:
           connection: 'GitHub'
           userRepository: 'bazelbuild/bazel'
           defaultVersionType: 'specificVersion'
-          version: '22354400'
+          version: '25759820'
           itemPattern: 'bazel-*-windows-x86_64.exe'
           downloadPath: '$(Agent.ToolsDirectory)/bazel/$(bazel.version)/x64'
 
