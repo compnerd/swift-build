@@ -11,7 +11,7 @@ resources:
     - repository: tensorflow/tensorflow
       type: github
       name: tensorflow/tensorflow
-      ref: refs/tags/v2.2.0-rc1
+      ref: refs/tags/v2.3.0
       endpoint: GitHub
 
     - repository: tensorflow/swift-apis
