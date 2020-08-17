@@ -478,6 +478,7 @@ jobs:
 
       - task: CMake@1
         condition: eq( variables['Agent.OSArchitecture'], '${{ parameters.host }}' )
+        continueOnError: true
         displayName: Rebuild Foundation
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/foundation
