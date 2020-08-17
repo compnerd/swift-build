@@ -107,7 +107,7 @@ steps:
   - task: CMake@1
     displayName: Install Yams
     inputs:
-      cmakeArgs: --build $(Build.BianriesDirectory)/Yams --target install
+      cmakeArgs: --build $(Build.BinariesDirectory)/Yams --target install
 
   - publish: $(Build.StagingDirectory)/yams-windows-x64
     artifact: yams-windows-x64
