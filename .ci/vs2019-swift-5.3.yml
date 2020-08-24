@@ -234,6 +234,8 @@ stages:
           os: Windows
           proc: arm64
 
+          ICU_VERSION: 67
+
       - template: templates/windows-devtools.yml
         parameters:
           VisualStudio: 2019/Enterprise
@@ -244,6 +246,8 @@ stages:
 
           os: Windows
           proc: amd64
+
+          ICU_VERSION: 67
 
   - stage: package_toolchain
     dependsOn: toolchain
