@@ -100,9 +100,6 @@ jobs:
       - checkout: apple/swift-argument-parser
         displayName: checkout apple/swift-argument-parser
 
-      - checkout: apple/swift-driver
-        displayName: checkout apple/swift-driver
-
       - checkout: apple/swift-package-manager
         displayName: checkout apple/swift-package-manager
 
@@ -124,7 +121,6 @@ jobs:
           call :ApplyPatches "%LLBUILD_PR%" swift-llbuild
           call :ApplyPatches "%TSC_PR%" swift-tools-support-core
           call :ApplyPatches "%SPM_PR%" swift-package-manager
-          call :ApplyPatches "%SWIFTDRIVER_PR%" swift-driver
           call :ApplyPatches "%INDEXSTOREDB_PR%" indexstore-db
 
           goto :eof
@@ -216,58 +212,6 @@ jobs:
         displayName: Install swift-tools-support-core
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/swift-tools-support-core --target install
-
-      - task: CMake@1
-        displayName: Configure Yams
-        inputs:
-          cmakeArgs:
-            -B $(Build.BinariesDirectory)/Yams
-            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}.cmake
-            -D CMAKE_Swift_SDK=$(sdk.directory)
-            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-swift-flags.cmake
-            -D BUILD_TESTING=NO
-            -D CMAKE_BUILD_TYPE=Release
-            -D CMAKE_C_COMPILER=cl
-            -D CMAKE_INSTALL_PREFIX=$(devtools.toolchain.directory)/usr
-            -G Ninja
-            -S $(Build.SourcesDirectory)/Yams
-
-      - task: CMake@1
-        displayName: Build Yams
-        inputs:
-          cmakeArgs: --build $(Build.BinariesDirectory)/Yams
-
-      - task: CMake@1
-        displayName: Install Yams
-        inputs:
-          cmakeArgs: --build $(Build.BinariesDirectory)/Yams --target install
-
-      - task: CMake@1
-        displayName: Configure swift-driver
-        inputs:
-          cmakeArgs:
-            -B $(Build.BinariesDirectory)/swift-driver
-            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-clang.cmake
-            -D CMAKE_Swift_SDK=$(sdk.directory)
-            -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-swift-flags.cmake
-            -D BUILD_TESTING=NO
-            -D CMAKE_BUILD_TYPE=Release
-            -D CMAKE_INSTALL_PREFIX=$(devtools.toolchain.directory)/usr
-            -D LLBuild_DIR=$(Build.BinariesDirectory)/swift-llbuild/cmake/modules
-            -D TSC_DIR=$(Build.BinariesDirectory)/swift-tools-support-core/cmake/modules
-            -D Yams_DIR=$(Build.BinariesDirectory)/Yams/cmake/modules
-            -G Ninja
-            -S $(Build.SourcesDirectory)/swift-driver
-
-      - task: CMake@1
-        displayName: Build swift-driver
-        inputs:
-          cmakeArgs: --build $(Build.BinariesDirectory)/swift-driver
-
-      - task: CMake@1
-        displayName: Install swift-driver
-        inputs:
-          cmakeArgs: --build $(Build.BinariesDirectory)/swift-driver --target install
 
       - task: CMake@1
         displayName: Configure swift-argument-parser
