@@ -119,7 +119,7 @@ jobs:
         displayName: 'Update PATH'
       - task: UsePythonVersion@0
         inputs:
-          versionSpec: '2.7.x'
+          versionSpec: '3.7.x'
         name: python
         continueOnError: true
 
