@@ -1,3 +1,7 @@
+parameters:
+  - name: PythonVersion
+    type: string
+    default: '3.7.x'
 
 jobs:
   - job: ${{ parameters.host }}
@@ -158,7 +162,7 @@ jobs:
 
       - task: UsePythonVersion@0
         inputs:
-          versionSpec: '3.7.x'
+          versionSpec: ${{ parameters.PythonVersion }}
         name: python
         continueOnError: true
 
