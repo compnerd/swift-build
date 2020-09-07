@@ -25,6 +25,12 @@ parameters:
   - name: ICU_VERSION
     type: string
 
+  - name: TENSORFLOW
+    default: false
+
+  - name: USE_PREBUILT_TOOLCHAIN
+    default: false
+
 jobs:
   - job: ${{ parameters.host }}
 
