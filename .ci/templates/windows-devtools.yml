@@ -1,7 +1,29 @@
 parameters:
+  - name: VisualStudio
+    type: string
+    default: ''
+
   - name: PythonVersion
     type: string
     default: '3.7.x'
+
+  - name: arch
+    type: string
+
+  - name: host
+    type: string
+
+  - name: platform
+    type: string
+
+  - name: os
+    type: string
+
+  - name: proc
+    type: string
+
+  - name: ICU_VERSION
+    type: string
 
 jobs:
   - job: ${{ parameters.host }}
