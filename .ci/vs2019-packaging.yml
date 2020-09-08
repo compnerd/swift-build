@@ -100,6 +100,7 @@ resources:
 
 stages:
 - stage: ICU
+  dependsOn: []
   pool: Google
   jobs:
     - template: templates/icu-msi.yml
@@ -131,6 +132,7 @@ stages:
         USE_PREBUILT_TOOLCHAIN: true
 
 - stage: Toolchain
+  dependsOn: []
   pool: Google
   jobs:
     - template: templates/toolchain-msi.yml
@@ -162,6 +164,7 @@ stages:
         USE_PREBUILT_TOOLCHAIN: true
 
 - stage: SDK
+  dependsOn: []
   pool: Google
   jobs:
     - template: templates/sdk-msi.yml
@@ -194,6 +197,10 @@ stages:
 
 - stage: Installer
   pool: Google
+  dependsOn:
+    - ICU
+    - Toolchain
+    - SDK
   jobs:
     - template: templates/swift-installer-bundle.yml
       parameters:
