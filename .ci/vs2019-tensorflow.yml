@@ -240,7 +240,7 @@ stages:
     displayName: package devtools
     pool: Google
     jobs:
-      - template: templates/windows-devtools.yml
+      - template: templates/devtools-msi.yml
         parameters:
           VisualStudio: 2019/Community
 
