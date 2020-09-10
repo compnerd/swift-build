@@ -361,10 +361,14 @@ jobs:
           scriptSource: inline
           script: |
             import os, plistlib
-            with open(os.path.normpath('$(platform.directory)/Info.plist'), 'wb') as plist:
+
+            info_plist = r'$(platform.directory)/Info.plist'
+            with open(os.path.normpath(info_plist), 'wb') as plist:
               # TODO(compnerd) derive this from the install directory
               plistlib.dump({ 'DefaultProperties': { 'XCTEST_VERSION': 'development' } }, plist)
-            with open(os.path.normapth('$(sdk.directory)/SDKSettings.plist'), 'wb') as plist:
+
+            sdk_settings_plist = r'$(sdk.directory)/SDKSettings.plist'
+            with open(os.path.normapth(sdk_settings_plist), 'wb') as plist:
               # TODO(compnerd) derive this from the CMAKE_BUILD_TYPE for the
               # runtime.
               plistlib.dump({ 'DefaultProperties': { 'DEFAULT_USE_RUNTIME': 'MD' } }, plist)
