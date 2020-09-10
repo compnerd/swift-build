@@ -356,6 +356,19 @@ jobs:
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/libdispatch --target install
 
+      - task: PythonScript@0
+        inputs:
+          scriptSource: inline
+          script: |
+            import plistlib
+            with open('$(platform.directory)/Info.plist', 'wb') as plist:
+              # TODO(compnerd) derive this from the install directory
+              plistlib.dump({ 'DefaultProperties': { 'XCTEST_VERSION': 'development' } }, plist)
+            with open('$(sdk.directory)/SDKSettings.plist', 'wb') as plist:
+              # TODO(compnerd) derive this from the CMAKE_BUILD_TYPE for the
+              # runtime.
+              plistlib.dump({ 'DefaultProperties': { 'DEFAULT_USE_RUNTIME': 'MD' } }, plist)
+
       - ${{ if eq(parameters.TENSORFLOW, true) }}:
         - task: CMake@1
           displayName: Configure PythonKit
