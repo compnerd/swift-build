@@ -228,7 +228,7 @@ jobs:
             -D LLVM_ENABLE_ASSERTIONS=NO
             -D LLVM_ENABLE_LIBEDIT=NO
             -D LLVM_ENABLE_LIBXML2=NO
-            -D LLVM_ENABLE_PROJECTS="clang;lldb"
+            -D LLVM_ENABLE_PROJECTS="clang;compiler-rt;lldb"
             -D LLVM_EXTERNAL_PROJECTS="cmark;swift"
             -D LLVM_EXTERNAL_CMARK_SOURCE_DIR=$(Build.SourcesDirectory)/swift-cmark
             -D LLVM_EXTERNAL_SWIFT_SOURCE_DIR=$(Build.SourcesDirectory)/swift
@@ -260,6 +260,11 @@ jobs:
         displayName: Build LLDB Build Tools
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/llvm-tools --target lldb-tblgen
+
+      - task: CMake@1
+        displayName: Build TSan Runtime
+        inputs:
+          cmakeArgs: --build $(Build.BinariesDirectory)/llvm-tools --target compiler-rt
 
       - task: CMake@1
         condition: ${{ eq(parameters.VERSION, 'master') }}
