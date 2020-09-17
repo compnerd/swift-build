@@ -337,7 +337,7 @@ jobs:
             -D CLANG_TABLEGEN=$(CLANG_TABLEGEN)
             -D LLDB_TABLEGEN=$(LLDB_TABLEGEN)
             -D SWIFT_PATH_TO_LIBDISPATCH_SOURCE=$(Build.SourcesDirectory)/swift-corelibs-libdispatch
-            -D SWIFT_NATIVE_SWIFT_TOOLS_PATH=$(Build.BinariesDirectory)/llvm-tools/bin
+            -D SWIFT_NATIVE_LLVM_TOOLS_PATH=$(Build.BinariesDirectory)/llvm-tools/bin
             -D LLVM_EXTERNAL_SWIFT_SOURCE_DIR=$(Build.SourcesDirectory)/swift
             -D LLVM_EXTERNAL_CMARK_SOURCE_DIR=$(Build.SourcesDirectory)/swift-cmark
             ${{ parameters.LLVM_OPTIONS }}
