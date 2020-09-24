@@ -30,8 +30,8 @@
 
   <PropertyGroup>
     <DefineConstants>TOOLCHAIN_ROOT=$(TOOLCHAIN_ROOT);TOOLCHAIN_ROOT_USR_LIB_CLANG=$(TOOLCHAIN_ROOT)\usr\lib\clang;$(INCLUDE_DEBUG_INFO);INCLUDE_LLDB_PYTHON_SCRIPTS=$(INCLUDE_LLDB_PYTHON_SCRIPTS)</DefineConstants>
-    <HarvestDirectoryAutogenerateGuids>false</HarvestDirectoryAutogenerateGuids>
-    <HarvestDirectoryGenerateGuidsNow>true</HarvestDirectoryGenerateGuidsNow>
+    <HarvestDirectoryAutogenerateGuids>true</HarvestDirectoryAutogenerateGuids>
+    <HarvestDirectoryGenerateGuidsNow>false</HarvestDirectoryGenerateGuidsNow>
     <HarvestDirectoryNoLogo>true</HarvestDirectoryNoLogo>
     <HarvestDirectorySuppressCom>true</HarvestDirectorySuppressCom>
     <HarvestDirectorySuppressFragments>true</HarvestDirectorySuppressFragments>

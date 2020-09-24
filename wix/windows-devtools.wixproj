@@ -29,8 +29,8 @@
 
   <PropertyGroup>
     <DefineConstants>DEVTOOLS_ROOT=$(DEVTOOLS_ROOT)</DefineConstants>
-    <HarvestDirectoryAutogenerateGuids>false</HarvestDirectoryAutogenerateGuids>
-    <HarvestDirectoryGenerateGuidsNow>true</HarvestDirectoryGenerateGuidsNow>
+    <HarvestDirectoryAutogenerateGuids>true</HarvestDirectoryAutogenerateGuids>
+    <HarvestDirectoryGenerateGuidsNow>false</HarvestDirectoryGenerateGuidsNow>
     <HarvestDirectoryNoLogo>true</HarvestDirectoryNoLogo>
     <HarvestDirectorySuppressCom>true</HarvestDirectorySuppressCom>
     <HarvestDirectorySuppressFragments>true</HarvestDirectorySuppressFragments>
