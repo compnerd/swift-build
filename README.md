@@ -146,7 +146,7 @@ targets, or build on Windows natively without cross-compilation.
 ### Stable builds
 The latest stable build can be acuqired from the [releases](https://github.com/compnerd/swift-build/releases) page.
 ### Dev builds
-The `utilities/swift-build.py` script allows dopwnloading of the latest build artifacts. The script requires the `azure-devops` and `tabulate` python packages. This can be installed with pip:
+The `utilities/swift-build.py` script allows downloading of the latest build artifacts. The script requires the `azure-devops` and `tabulate` python packages. These can be installed with `pip`:
 ```
 python3 -m pip install tabulate azure-devops
 ```
