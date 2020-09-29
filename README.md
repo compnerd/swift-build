@@ -141,6 +141,7 @@ targets, or build on Windows natively without cross-compilation.
       - SDK
         - Linux
 </details>
+
 ## Getting the latest build
 ### Stable builds
 The latest stable build can be acuqired from the [releases](https://github.com/compnerd/swift-build/releases) page.
