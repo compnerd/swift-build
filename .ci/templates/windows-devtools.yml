@@ -359,6 +359,7 @@ jobs:
         inputs:
           cmakeArgs:
             -B $(Build.BinariesDirectory)/indexstore-db
+            -D CMAKE_CXX_FLAGS="-I $(sdk.directory)/usr/lib/swift -I $(sdk.directory)/usr/lib/swift/Block"
             -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-clang.cmake
             -D CMAKE_Swift_SDK=$(sdk.directory)
             -C $(Build.SourcesDirectory)/swift-build/cmake/caches/${{ parameters.platform }}-${{ parameters.arch }}-swift-flags.cmake
