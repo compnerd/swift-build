@@ -379,6 +379,8 @@ stages:
           os: Windows
           proc: amd64
 
+          BUILD_VSCODE_EXTENSION: true
+
   - stage: package_icu
     dependsOn: []
     displayName: package ICU

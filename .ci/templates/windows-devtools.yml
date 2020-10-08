@@ -31,6 +31,9 @@ parameters:
   - name: USE_PREBUILT_TOOLCHAIN
     default: false
 
+  - name: BUILD_VSCODE_EXTENSION
+    default: false
+
 jobs:
   - job: ${{ parameters.host }}
 
@@ -406,6 +409,19 @@ jobs:
         displayName: Install SourceKit-LSP
         inputs:
           cmakeArgs: --build $(Build.BinariesDirectory)/sourcekit-lsp --target install
+
+      - ${{ if eq(parameters.BUILD_VSCODE_EXTENSION, true) }}:
+        - task: Npm@1
+          inputs:
+            command: custom
+            customCommand: run createDevPackage
+            workingDir: $(Build.SourcesDirectory)/sourcekit-lsp/Editors/vsccode
+
+        - task: CopyFiles@2
+          inputs:
+            sourceFolder: $(Build.SourcesDirectory)/sourcekit-lsp/Editors/vscode/out
+            contents: sourcekit-lsp-vscode-dev.vsix
+            targetFolder: $(devtools.toolchain.directory)/usr/share/vscode
 
       - script: |
           echo ##vso[task.prependpath]$(icu.directory)/usr/bin;$(sdk.directory)/usr/bin;$(Build.BinariesDirectory)/swift-llbuild/bin;$(Build.BinariesDirectory)/swift-tools-support-core/bin;$(Build.BinariesDirectory)/Yams/bin;$(Build.BinariesDirectory)/swift-driver/bin;$(Build.BinariesDirectory)/swift-argument-parser/bin;$(Build.BinariesDirectory)/swift-package-manager/bin
