@@ -25,7 +25,7 @@
 
     <!-- Directory Structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="WINDOWSVOLUME">
+      <Directory Id="INSTALLDIR">
         <Directory Id="LIBRARY" Name="Library">
           <Directory Id="DEVELOPER" Name="Developer">
             <Directory Id="TOOLCHAINS" Name="Toolchains">
@@ -69,7 +69,9 @@
       </Directory>
     </Directory>
 
-    <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />
+    <SetDirectory Id="INSTALLDIR" Value="[WindowsVolume]">
+      NOT INSTALLDIR
+    </SetDirectory>
 
     <!-- Components -->
     <DirectoryRef Id="USR_BIN">
@@ -258,7 +260,7 @@
       <?endif?>
     </DirectoryRef>
 
-    <Feature Id="DEVTOOLS" Level="1">
+    <Feature Id="DEVTOOLS" ConfigurableDirectory="INSTALLDIR" Level="1">
       <ComponentRef Id="INDEXSTOREDB_BINS" />
       <ComponentRef Id="LLBUILD_BINS" />
       <ComponentRef Id="SOURCEKIT_LSP_BINS" />
@@ -272,7 +274,7 @@
     </Feature>
 
     <?ifdef INCLUDE_DEBUG_INFO ?>
-    <Feature Id="DEBUGINFO" Level="0">
+    <Feature Id="DEBUGINFO" ConfigurableDirectory="INSTALLDIR" Level="0">
       <Condition Level="1">INSTALL_DEBUGINFO</Condition>
       <ComponentRef Id="INDEXSTOREDB_DEBUGINFO" />
       <ComponentRef Id="LLBUILD_DEBUGINFO" />

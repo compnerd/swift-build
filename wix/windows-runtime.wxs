@@ -26,7 +26,7 @@
 
     <!-- Directory Structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="WINDOWSVOLUME">
+      <Directory Id="INSTALLDIR">
         <Directory Id="LIBRARY" Name="Library">
           <Directory Id="SWIFT" Name="Swift-development">
             <Directory Id="BIN" Name="bin">
@@ -36,7 +36,9 @@
       </Directory>
     </Directory>
 
-    <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />
+    <SetDirectory Id="INSTALLDIR" Value="[WindowsVolume]">
+      NOT INSTALLDIR
+    </SetDirectory>
 
     <!-- Components -->
     <DirectoryRef Id="BIN">
@@ -102,18 +104,18 @@
 
     <DirectoryRef Id="TARGETDIR">
       <Component Id="ENV_VARS" Guid="879f2029-84e0-4c64-9595-c11c499ff340">
-        <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[WindowsVolume]Library\Swift-development\bin" />
+        <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[INSTALLDIR]Library\Swift-development\bin" />
       </Component>
     </DirectoryRef>
 
     <!-- Feature -->
-    <Feature Id="RUNTIME" Level="1">
+    <Feature Id="RUNTIME" ConfigurableDirectory="INSTALLDIR" Level="1">
       <ComponentRef Id="WINDOWS_SWIFT_RUNTIME" />
       <ComponentRef Id="ENV_VARS" />
     </Feature>
 
     <?ifdef INCLUDE_DEBUG_INFO ?>
-    <Feature Id="DEBUGINFO" Level="0">
+    <Feature Id="DEBUGINFO" ConfigurableDirectory="INSTALLDIR" Level="0">
       <Condition Level="1">INSTALL_DEBUGINFO</Condition>
       <ComponentRef Id="WINDOWS_SWIFT_RUNTIME_DEBUGINFO" />
     </Feature>

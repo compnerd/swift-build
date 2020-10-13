@@ -21,7 +21,7 @@
 
     <!-- Directory Structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="WINDOWSVOLUME">
+      <Directory Id="INSTALLDIR">
         <Directory Id="LIBRARY" Name="Library">
           <Directory Id="ICU" Name="icu-67">
             <Directory Id="ICU_USR" Name="usr">
@@ -33,7 +33,9 @@
       </Directory>
     </Directory>
 
-    <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />
+    <SetDirectory Id="INSTALLDIR" Value="[WindowsVolume]">
+      NOT INSTALLDIR
+    </SetDirectory>
 
     <!-- Components -->
     <DirectoryRef Id="ICU_USR_BIN">
@@ -46,12 +48,12 @@
 
     <DirectoryRef Id="TARGETDIR">
       <Component Id="ENV_VARS" Guid="0138a205-109c-49ca-878b-bd533eb0fd05">
-        <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[WindowsVolume]Library\icu-67\usr\bin" />
+        <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[INSTALLDIR]Library\icu-67\usr\bin" />
       </Component>
     </DirectoryRef>
 
     <!-- Features -->
-    <Feature Id="RUNTIME" Level="1">
+    <Feature Id="RUNTIME" ConfigurableDirectory="INSTALLDIR" Level="1">
       <ComponentRef Id="ICU_RUNTIME" />
       <ComponentRef Id="ENV_VARS" />
     </Feature>

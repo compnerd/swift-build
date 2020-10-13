@@ -17,22 +17,39 @@
       <bal:WixStandardBootstrapperApplication
         LicenseUrl=""
         LogoFile="$(var.Logo)"
-        SuppressOptionsUI="yes"
+        SuppressOptionsUI="no"
         SuppressRepair="yes" />
     </BootstrapperApplicationRef>
+
+    <Variable
+      Name="INSTALLDIR"
+      Type="string"
+      Value="[WindowsVolume]"
+      bal:Overridable="yes" />
 
     <Chain>
       <MsiPackage SourceFile="$(var.MSI_LOCATION)\toolchain.msi" Compressed="yes">
         <MsiProperty Name="INSTALL_DEBUGINFO" Value="[INSTALL_DEBUGINFO]" />
+        <MsiProperty Name="INSTALLDIR" Value="[INSTALLDIR]" />
       </MsiPackage>
-      <MsiPackage SourceFile="$(var.MSI_LOCATION)\sdk.msi" Compressed="yes" />
-      <MsiPackage SourceFile="$(var.MSI_LOCATION)\runtime.msi" Compressed="yes" />
-      <MsiPackage SourceFile="$(var.MSI_LOCATION)\icu.msi" Compressed="yes" />
+      <MsiPackage SourceFile="$(var.MSI_LOCATION)\sdk.msi" Compressed="yes">
+        <MsiProperty Name="INSTALLDIR" Value="[INSTALLDIR]" />
+      </MsiPackage>
+      <MsiPackage SourceFile="$(var.MSI_LOCATION)\runtime.msi" Compressed="yes">
+        <MsiProperty Name="INSTALLDIR" Value="[INSTALLDIR]" />
+      </MsiPackage>
+      <MsiPackage SourceFile="$(var.MSI_LOCATION)\icu.msi" Compressed="yes">
+        <MsiProperty Name="INSTALLDIR" Value="[INSTALLDIR]" />
+      </MsiPackage>
       <?if $(var.DEVTOOLS) = true ?>
-        <MsiPackage SourceFile="$(var.MSI_LOCATION)\devtools.msi" Compressed="yes" />
+        <MsiPackage SourceFile="$(var.MSI_LOCATION)\devtools.msi" Compressed="yes">
+          <MsiProperty Name="INSTALLDIR" Value="[INSTALLDIR]" />
+        </MsiPackage>
       <?endif?>
       <?if $(var.TENSORFLOW) = true ?>
-        <MsiPackage SourceFile="$(var.MSI_LOCATION)\tensorflow.msi" Compressed="yes" />
+        <MsiPackage SourceFile="$(var.MSI_LOCATION)\tensorflow.msi" Compressed="yes">
+          <MsiProperty Name="INSTALLDIR" Value="[INSTALLDIR]" />
+        </MsiPackage>
       <?endif?>
     </Chain>
   </Bundle>

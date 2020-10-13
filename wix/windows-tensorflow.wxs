@@ -21,7 +21,7 @@
 
     <!-- Directory Structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="WINDOWSVOLUME">
+      <Directory Id="INSTALLDIR">
         <Directory Id="LIBRARY" Name="Library">
           <Directory Id="TENSORFLOW" Name="tensorflow-2.3.0">
             <Directory Id="TENSORFLOW_USR" Name="usr">
@@ -33,7 +33,9 @@
       </Directory>
     </Directory>
 
-    <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />
+    <SetDirectory Id="INSTALLDIR" Value="[WindowsVolume]">
+      NOT INSTALLDIR
+    </SetDirectory>
 
     <!-- Components -->
     <DirectoryRef Id="TENSORFLOW_USR_BIN">
@@ -45,12 +47,12 @@
 
     <DirectoryRef Id="TARGETDIR">
       <Component Id="ENV_VARS" Guid="93a272cb-e23f-4263-85f5-f313bbb15500">
-        <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[WindowsVolume]Library\tensorflow-2.3.0\usr\bin" />
+        <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[INSTALLDIR]Library\tensorflow-2.3.0\usr\bin" />
       </Component>
     </DirectoryRef>
 
     <!-- Features -->
-    <Feature Id="RUNTIME" Level="1">
+    <Feature Id="RUNTIME" ConfigurableDirectory="INSTALLDIR" Level="1">
       <ComponentRef Id="TENSORFLOW_RUNTIME" />
       <ComponentRef Id="ENV_VARS" />
     </Feature>

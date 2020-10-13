@@ -30,7 +30,7 @@
 
     <!-- Directory Structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="WINDOWSVOLUME">
+      <Directory Id="INSTALLDIR">
         <Directory Id="LIBRARY" Name="Library">
           <Directory Id="DEVELOPER" Name="Developer">
             <Directory Id="TOOLCHAINS" Name="Toolchains">
@@ -86,7 +86,9 @@
       </Directory>
     </Directory>
 
-    <SetDirectory Id="WINDOWSVOLUME" Value="[WindowsVolume]" />
+    <SetDirectory Id="INSTALLDIR" Value="[WindowsVolume]">
+      NOT INSTALLDIR
+    </SetDirectory>
 
     <!-- Components -->
     <DirectoryRef Id="USR_BIN">
@@ -361,11 +363,11 @@
 
     <DirectoryRef Id="TARGETDIR">
       <Component Id="ENV_VARS" Guid="0697d5fa-75ed-491d-8e7e-e6584a362382">
-        <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[WindowsVolume]Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin" />
+        <Environment Id="PATH" Action="set" Name="PATH" Part="last" Permanent="no" System="yes" Value="[INSTALLDIR]Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin" />
       </Component>
     </DirectoryRef>
 
-    <Feature Id="TOOLCHAIN" Level="1">
+    <Feature Id="TOOLCHAIN" ConfigurableDirectory="INSTALLDIR" Level="1">
       <ComponentRef Id="TOOLCHAIN_BINS" />
       <ComponentRef Id="TOOLCHAIN_IMPLIBS" />
       <!--
