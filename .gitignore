@@ -6,4 +6,4 @@
 # *~
 
 .*.sw[nop]
-utilities/installer.exe*
+installer.exe*
