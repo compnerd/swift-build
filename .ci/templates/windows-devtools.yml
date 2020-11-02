@@ -415,7 +415,7 @@ jobs:
           inputs:
             command: custom
             customCommand: run createDevPackage
-            workingDir: $(Build.SourcesDirectory)/sourcekit-lsp/Editors/vsccode
+            workingDir: $(Build.SourcesDirectory)/sourcekit-lsp/Editors/vscode
 
         - task: CopyFiles@2
           inputs:
