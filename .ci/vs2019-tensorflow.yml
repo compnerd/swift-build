@@ -103,7 +103,7 @@ resources:
     - repository: pvieito/PythonKit
       type: github
       name: pvieito/PythonKit
-      ref: 175e90e4dbafd21c129a6b0d002524be5f98b272
+      ref: 59a868e84e1d6a5e01569cf92086554033415fa4
       endpoint: GitHub
 
     - repository: jpsim/Yams
