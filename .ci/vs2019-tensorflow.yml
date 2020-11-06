@@ -106,7 +106,7 @@ resources:
       ref: 175e90e4dbafd21c129a6b0d002524be5f98b272
       endpoint: GitHub
 
-    - repository: compnerd/Yams
+    - repository: jpsim/Yams
       type: github
       name: compnerd/Yams
       ref: 3.0.1-tensorflow
