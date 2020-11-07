@@ -121,7 +121,7 @@ resources:
     - repository: apple/swift-argument-parser
       type: github
       name: apple/swift-argument-parser
-      ref: refs/tags/0.3.1
+      ref: main
       endpoint: GitHub
 
 schedules:
