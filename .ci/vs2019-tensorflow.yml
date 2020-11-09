@@ -73,7 +73,7 @@ resources:
     - repository: apple/swift-tools-support-core
       type: github
       name: apple/swift-tools-support-core
-      ref: refs/tags/0.1.8
+      ref: refs/tags/swift-DEVELOPMENT-SNAPSHOT-2020-10-27-a
       endpoint: GitHub
 
     - repository: apple/swift-package-manager
