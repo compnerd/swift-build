@@ -18,7 +18,7 @@ pr:
 trigger:
   branches:
     include:
-      - master
+      - trunk
 
 variables:
   toolchain.directory: $(Pipeline.Workspace)/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain

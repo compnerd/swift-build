@@ -1,7 +1,7 @@
 pr:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/vs2017-swift-5.2.yml
@@ -103,13 +103,13 @@ schedules:
   - cron: "0 17 * * *"
     branches:
       include:
-        - master
+        - trunk
     always: true
     displayName: "Daily (5:00 PM) Build"
 trigger:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/vs2017-swift-5.2.yml

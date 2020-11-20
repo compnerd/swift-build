@@ -1,7 +1,7 @@
 pr:
   branches:
     include:
-      - master
+      - trunk
 
   paths:
     include:
@@ -126,7 +126,7 @@ resources:
 trigger:
   branches:
     include:
-      - master
+      - trunk
 
   paths:
     include:

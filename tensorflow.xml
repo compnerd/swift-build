@@ -2,7 +2,7 @@
 <manifest project="swift">
   <remote name="github" fetch="git://github.com" />
 
-  <default revision="master" />
+  <default revision="main" />
 
   <project remote="github" name="apple/llvm-project" path="llvm-project" revision="swift/tensorflow">
     <linkfile src="swift" dest="swift" />
@@ -18,11 +18,11 @@
   <project remote="github" name="apple/swift-tools-support-core" path="swift-tools-support-core" />
   <project remote="github" name="apple/sourcekit-lsp" path="sourcekit-lsp" />
 
-  <project remote="github" name="compnerd/swift-build" path="swift-build" />
+  <project remote="github" name="compnerd/swift-build" path="swift-build" revision="trunk" />
 
   <project remote="github" name="tensorflow/tensorflow" path="tensorflow" revision="r2.1" />
-  <project remote="github" name="tensorflow/swift-apis" path="tensorflow-swift-apis" />
-  <project remote="github" name="tensorflow/swift-models" path="tensorflow-swift-models" />
+  <project remote="github" name="tensorflow/swift-apis" path="tensorflow-swift-apis" revision="master" />
+  <project remote="github" name="tensorflow/swift-models" path="tensorflow-swift-models" revision="master" />
 
   <!-- <project remote="github" name="unicode-org/icu" path="icu" revision="maint/maint-66" /> -->
 </manifest>

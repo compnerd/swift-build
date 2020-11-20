@@ -1,7 +1,7 @@
 pr:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/tensorflow.yml
