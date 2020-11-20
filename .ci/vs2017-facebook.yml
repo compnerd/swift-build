@@ -1,7 +1,7 @@
 pr:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/vs2017-facebook.yml
@@ -9,7 +9,7 @@ pr:
 trigger:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/vs2017-facebook.yml
@@ -130,7 +130,7 @@ schedules:
   displayName: "Toolchain builds"
   branches:
     include:
-    - master
+    - trunk
   always: true
 stages:
   - stage: toolchain

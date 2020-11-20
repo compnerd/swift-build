@@ -19,14 +19,14 @@ schedules:
   - cron: "0 8 * * *"
     branches:
       include:
-        - master
+        - trunk
     always: true
     displayName: "Nightly (8:00 AM) Build"
 
 trigger:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/curl.yml

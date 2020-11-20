@@ -1,7 +1,7 @@
 pr:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/vs2019-google.yml
@@ -122,7 +122,7 @@ resources:
 trigger:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/vs2019-google.yml

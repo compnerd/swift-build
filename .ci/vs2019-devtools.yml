@@ -2,7 +2,7 @@ schedules:
   - cron: "0 */6 * * *"
     branches:
       include:
-        - master
+        - trunk
     always: true
     displayName: "Automated Build"
 

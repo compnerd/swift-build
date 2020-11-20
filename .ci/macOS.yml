@@ -1,7 +1,7 @@
 pr:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/macOS.yml
@@ -114,13 +114,13 @@ schedules:
   - cron: "0 0 * * *"
     branches:
       include:
-        - master
+        - trunk
     always: true
     displayName: "Nightly Build"
 trigger:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/macOS.yml

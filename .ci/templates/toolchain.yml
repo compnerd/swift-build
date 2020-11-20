@@ -25,7 +25,7 @@ parameters:
 
   - name: VERSION
     type: string
-    default: 'master'
+    default: 'trunk'
 
   - name: VisualStudio
     type: string

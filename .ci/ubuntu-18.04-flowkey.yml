@@ -1,7 +1,7 @@
 pr:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/toolchain-linux-x64.yml
@@ -10,7 +10,7 @@ pr:
 trigger:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/toolchain-linux-x64.yml
@@ -135,7 +135,7 @@ schedules:
   - cron: "0 * * * *"
     branches:
       include:
-        - master
+        - trunk
     always: true
     displayName: "Hourly Build"
 

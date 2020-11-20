@@ -1,7 +1,7 @@
 pr:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/vs2017.yml
@@ -124,13 +124,13 @@ schedules:
   - cron: "0 0 * * *"
     branches:
       include:
-        - master
+        - trunk
     always: true
     displayName: "Nightly (12:00 AM) Build"
 trigger:
   branches:
     include:
-      - master
+      - trunk
   paths:
     include:
       - .ci/vs2017.yml
