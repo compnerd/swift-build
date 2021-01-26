@@ -157,13 +157,17 @@
         <File Id="LTO_DLL" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\LTO.dll" Checksum="yes" />
         <!-- swift -->
         <!-- symlinks -->
-        <!-- swift-indent.exe -->
-        <File Id="SWIFT_AUTOLINK_EXTRACT_EXE" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\swift-autolink-extract.exe" Checksum="yes" />
+        <File Id="SWIFT_EXE" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\swift.exe" Checksum="yes" />
         <File Id="SWIFTC_EXE" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\swiftc.exe" Checksum="yes" />
+        <!-- swift-indent.exe -->
+        <!-- swift-symbolgraph-extract.exe -->
+        <File Id="SWIFT_AUTOLINK_EXTRACT_EXE" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\swift-autolink-extract.exe" Checksum="yes" />
         <!-- /symlinks -->
+        <?if $(var.HAVE_SWIFT_FRONTEND) = true ?>
+          <File Id="SWIFT_FRONTEND_EXE" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\swift-frontend.exe" Checksum="yes" />
+        <?endif?>
         <File Id="SWIFT_DEMANGLE_EXE" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\swift-demangle.exe" Checksum="yes" />
         <File Id="SWIFT_REFACTOR_EXE" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\swift-refactor.exe" Checksum="yes" />
-        <File Id="SWIFT_EXE" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\swift.exe" Checksum="yes" />
         <File Id="SWIFTDEMANGLE_DLL" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\swiftDemangle.dll" Checksum="yes" />
         <?if $(var.HAVE__INTERNAL_SWIFT_SCAN) = true ?>
           <File Id="_INTERNALSWIFTSCAN_DLL" Source="$(var.TOOLCHAIN_ROOT)\usr\bin\_InternalSwiftScan.dll" Checksum="yes" />
