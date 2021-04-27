@@ -15,7 +15,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          repository: apple/swift-format
+          # repository: apple/swift-format
+          repository: compnerd/swift-format
+          ref: async
 
       - uses: seanmiddleditch/gha-setup-vsdevenv@master
 
