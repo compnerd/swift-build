@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  windows@5.4:
+  windows_5_4:
     runs-on: windows-latest
 
     steps:
