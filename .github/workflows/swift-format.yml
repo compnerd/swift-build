@@ -21,7 +21,7 @@ jobs:
 
       - uses: seanmiddleditch/gha-setup-vsdevenv@master
 
-      - name: Install Swift v5.5
+      - name: Install Swift v5.5 (2021-04-19 Snapshot)
         run: |
           Install-Binary -Url "https://swift.org/builds/swift-5.5-branch/windows10/swift-5.5-DEVELOPMENT-SNAPSHOT-2021-04-19-a/swift-5.5-DEVELOPMENT-SNAPSHOT-2021-04-19-a-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
       - name: Set Environment Variables
@@ -42,3 +42,8 @@ jobs:
       - name: build
         run: |
           swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
+
+      - uses: actions/upload-artifact@2
+        with:
+          name: swift-format
+          path: .build\x86_64-unknown-windows-msvc\release\swift-format.exe
