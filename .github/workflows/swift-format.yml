@@ -39,4 +39,4 @@ jobs:
 
       - name: build
         run: |
-          swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -L:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib\swift\windows
+          swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib\swift\windows
