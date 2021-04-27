@@ -43,7 +43,7 @@ jobs:
         run: |
           swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
-      - uses: actions/upload-artifact@2
+      - uses: actions/upload-artifact@v2
         with:
           name: swift-format
           path: .build\x86_64-unknown-windows-msvc\release\swift-format.exe
