@@ -96,9 +96,10 @@ steps:
       cmakeArgs:
         -B $(Build.BinariesDirectory)/swift-atomics
         -D BUILD_SHARED_LIBS=YES
+        -D BUILD_TESTING=NO
         -D CMAKE_BUILD_TYPE=Release
         -D CMAKE_INSTALL_PREFIX=$(Build.StagingDirectory)/swift-atomics-windows-x64/Library/swift-atomics/usr
-        -D CMake_Swift_FLAGS="-sdk $(sdk.directory) -resource-dir $(sdk.directory)/usr/lib/swift -I$(sdk.directory)/usr/lib/swift -L$(sdk.directory)/usr/lib/swift/windows -I$(developer.directory)/XCTest-development/usr/lib/swift/windows/x86_64 -L$(developer.directory)/XCTest-development/usr/lib/swift/windows"
+        -D CMAKE_Swift_FLAGS="-resource-dir $(sdk.directory)/usr/lib/swift -L$(sdk.directory)/usr/lib/swift/windows"
         -G Ninja
         -S $(Build.SourcesDirectory)
 
