@@ -73,9 +73,15 @@ steps:
       artifactName: 'sdk-windows-x64'
       targetPath: '$(Pipeline.Workspace)'
 
-  - download: icu
-    artifact: icu-windows-x64
-    displayName: download ICU
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      buildType: 'specific'
+      project: '3133d6ab-80a8-4996-ac4f-03df25cd3224'
+      definition: '9'
+      buildVersionToDownload: 'latest'
+      allowPartiallySucceededBuilds: true
+      artifactName: 'icu-windows-x64'
+      targetPath: '$(Pipeline.Workspace)'
 
   - task: BatchScript@1
     displayName: VsDevCmd
