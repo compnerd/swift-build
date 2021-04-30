@@ -84,8 +84,10 @@ steps:
       targetPath: '$(Pipeline.Workspace)'
 
   - script: |
-      echo ##vso[task.setvariable variable=PATH]$(icu.directory)/usr/bin;$(sdk.directory)/usr/bin;$(developer.directory)/XCTest-development/usr/bin;%PATH%
-      where icuuc.dll
+      echo ##vso[task.prependpath]$(icu.directory)/usr/bin
+      echo ##vso[task.prependpath]$(sdk.directory)/usr/bin
+      echo ##vso[task.prependpath]$(developer.directory)/XCTest-development/usr/bin
+      where icuuc67.dll
       where swiftWinSDK.dll
       where Foundation.dll
       where swiftDispatch.dll
