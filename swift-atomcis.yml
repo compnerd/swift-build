@@ -73,9 +73,9 @@ steps:
       artifactName: 'sdk-windows-x64'
       targetPath: '$(Pipeline.Workspace)'
 
-    - download: icu
-      artifact: icu-${{ parameters.platform }}-${{ parameters.host }}
-      displayName: download ICU
+  - download: icu
+    artifact: icu-${{ parameters.platform }}-${{ parameters.host }}
+    displayName: download ICU
 
   - task: BatchScript@1
     displayName: VsDevCmd
