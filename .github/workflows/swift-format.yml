@@ -49,6 +49,8 @@ jobs:
           prerelease: true
           tag_name: swift-format@5.5
           files: .build\x86_64-unknown-windows-msvc\release\swift-format.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: test
         run: |
