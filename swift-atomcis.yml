@@ -94,6 +94,8 @@ steps:
       echo ##vso[task.prependpath]$(icu.directory)/usr/bin
       echo ##vso[task.prependpath]$(sdk.directory)/usr/bin
       echo ##vso[task.prependpath]$(developer.directory)/XCTest-development/usr/bin
+      echo ##vso[task.prependpath]$(toolchain.directory)/usr/bin
+  - script: |
       echo %PATH%
       where icuuc67.dll
       where swiftWinSDK.dll
@@ -101,7 +103,6 @@ steps:
       where swiftDispatch.dll
       where dispatch.dll
       where XCTest.dll
-    displayName: Update PATH
 
   - script: |
       curl -L "https://raw.githubusercontent.com/apple/swift/main/stdlib/public/Platform/ucrt.modulemap" -o "%UniversalCRTSdkDir%\Include\%UCRTVersion%\ucrt\module.modulemap"
