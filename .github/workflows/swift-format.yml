@@ -1,15 +1,24 @@
 name: swift-format
 
 on:
-  pull_request:
-    branches:
-      - main
-
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Swift Build Tag"
+        required: true
+        default: DEVELOPMENT-SNAPSHOT-2021-04-19-a
+      snapshot:
+        description: "Swift Snapshot Build"
+        required: true
+        default: true
 
 jobs:
-  windows_5_5:
+  windows:
     runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        version: [5.5]
 
     steps:
       - uses: actions/checkout@v2
@@ -21,8 +30,10 @@ jobs:
 
       - uses: seanmiddleditch/gha-setup-vsdevenv@master
 
-      - name: Install Swift v5.5 (2021-04-19 Snapshot)
+      - name: Install Swift v${{ matrix.version }}
+        if: ${{ matrix.version }} == 5.5
         run: |
+          echo swift-${{ matrix.version }}-branch/windows10/swift-${{ matrix.version }}-${{ github.event.inputs.snapshot }}/swift-${{ matrix.version }}-{{ github.event.inputs.sanpshot }}-windows10.exe
           Install-Binary -Url "https://swift.org/builds/swift-5.5-branch/windows10/swift-5.5-DEVELOPMENT-SNAPSHOT-2021-04-19-a/swift-5.5-DEVELOPMENT-SNAPSHOT-2021-04-19-a-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
       - name: Set Environment Variables
         run: |
@@ -39,6 +50,10 @@ jobs:
           Copy-Item "$env:SDKROOT\usr\share\visualc.apinotes" -destination "$env:VCToolsInstallDir\include\visualc.apinotes"
           Copy-Item "$env:SDKROOT\usr\share\winsdk.modulemap" -destination "$env:UniversalCRTSdkDir\Include\$env:UCRTVersion\um\module.modulemap"
 
+      - name: test
+        run: |
+          swift test -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
+
       - name: build
         run: |
           swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
@@ -46,12 +61,8 @@ jobs:
       - uses: softprops/action-gh-release@v1
         with:
           draft: true
-          prerelease: true
-          tag_name: swift-format@5.5
+          prerelease: ${{ github.event.inputs.snapshot }}
+          tag_name: swift-format@${{ matrix.version }}
           files: .build\x86_64-unknown-windows-msvc\release\swift-format.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: test
-      #   run: |
-      #     swift test -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
