@@ -74,7 +74,7 @@ steps:
       targetPath: '$(Pipeline.Workspace)'
 
   - download: icu
-    artifact: icu-${{ parameters.platform }}-${{ parameters.host }}
+    artifact: icu-windows-x64
     displayName: download ICU
 
   - task: BatchScript@1
