@@ -43,7 +43,12 @@ jobs:
         run: |
           swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
-      - uses: actions/upload-artifact@v2
+      - uses: softprops/action-gh-release@v1
         with:
-          name: swift-format
-          path: .build\x86_64-unknown-windows-msvc\release\swift-format.exe
+          draft: true
+          prerelease: true
+          files: .build\x86_64-unknown-windows-msvc\release\swift-format.exe
+
+      - name: test
+        run: |
+          swift test -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
