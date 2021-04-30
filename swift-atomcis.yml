@@ -83,6 +83,16 @@ steps:
       artifactName: 'icu-windows-x64'
       targetPath: '$(Pipeline.Workspace)'
 
+  - script: |
+      echo ##vso[task.setvariable variable=PATH]$(icu.directory)/usr/bin;$(sdk.directory)/usr/bin;$(developer.directory)/XCTest-development/usr/bin;%PATH%
+      where icuuc.dll
+      where swiftWinSDK.dll
+      where Foundation.dll
+      where swiftDispatch.dll
+      where dispatch.dll
+      where XCTest.dll
+    displayName: Update PATH
+
   - task: BatchScript@1
     displayName: VsDevCmd
     inputs:
