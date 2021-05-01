@@ -58,11 +58,12 @@ jobs:
         run: |
           swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
-      - uses: softprops/action-gh-release@v1
+      - uses: actions/upload-release-asset@v1.0.2
         with:
           draft: true
           prerelease: ${{ github.event.inputs.snapshot }}
           tag_name: swift-format@${{ matrix.version }}
-          files: .build\x86_64-unknown-windows-msvc\release\swift-format.exe
+          asset_path: .build\x86_64-unknown-windows-msvc\release\swift-format.exe
+          asset_name: swift-format.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
