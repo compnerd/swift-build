@@ -53,8 +53,8 @@ jobs:
         with:
           draft: true
           prerelease: true
-          release_name: ${{ matrix.tag }}
-          tag_name: ${{ matrix.tag }}
+          release_name: swift-format-${{ matrix.tag }}
+          tag_name: swift-format-${{ matrix.tag }}
       - uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
