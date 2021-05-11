@@ -17,7 +17,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          repository: SwiftDocOrg/swift-doc
+          # repository: SwiftDocOrg/swift-doc
+          repository: compnerd/swift-doc
+          ref: swift-semantics-main
 
       - uses: seanmiddleditch/gha-setup-vsdevenv@master
 
