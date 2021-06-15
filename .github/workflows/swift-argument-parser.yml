@@ -51,4 +51,4 @@ jobs:
 
       - name: test
         run: |
-          swift test -c release --enable-test-discovery
+          swift test -c debug --enable-test-discovery
