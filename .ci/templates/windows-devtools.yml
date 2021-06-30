@@ -417,16 +417,16 @@ jobs:
             customCommand: install
             workingDir: $(Build.SourcesDirectory)/sourcekit-lsp/Editors/vscode
             
-         - task: Npm@1
-           inputs:
-             command: custom
-             customCommand: vsce package -o sourcekit-lsp-development.vsix
-             workingDir: $(Build.SourcesDirectory)/sourcekit-lsp/Editors/vscode
+        - task: Npm@1
+          inputs:
+            command: custom
+            customCommand: vsce package -o sourcekit-lsp-development.vsix
+            workingDir: $(Build.SourcesDirectory)/sourcekit-lsp/Editors/vscode
 
         - task: CopyFiles@2
           inputs:
             sourceFolder: $(Build.SourcesDirectory)/sourcekit-lsp/Editors/vscode/out
-            contents: sourcekit-lsp-vscode-dev.vsix
+            contents: sourcekit-lsp-development.vsix
             targetFolder: $(devtools.toolchain.directory)/usr/share/vscode
 
       - script: |
