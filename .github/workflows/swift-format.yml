@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - tag: 5.5-DEVELOPMENT-SNAPSHOT-2021-08-14-a
+          - tag: 5.5-DEVELOPMENT-SNAPSHOT-2021-08-11-a
             branch: swift-5.5-branch
 
     steps:
