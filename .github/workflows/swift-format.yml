@@ -20,6 +20,8 @@ jobs:
           ref: refs/tags/0.50500.0
           repository: apple/swift-format
 
+      - uses: microsoft/setup-msbuild@v1.0.3
+
       - name: Install Swift ${{ matrix.tag }}
         run: |
           function Update-EnvironmentVariables {
