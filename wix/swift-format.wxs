@@ -6,7 +6,7 @@
            Name="swift-format"
            UpgradeCode="94c1f591-2751-450e-82cd-571f7223177a"
            Version="$(var.ProductVersion)">
-    <Package Contents+"Copyright 2021 Saleem Abdulrasool &lt;compnerd@compnerd.org&gt;"
+    <Package Contents="Copyright 2021 Saleem Abdulrasool &lt;compnerd@compnerd.org&gt;"
              Compressed="yes"
              Description="swift-format"
              InstallScope="perMachine"
