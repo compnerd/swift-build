@@ -45,15 +45,15 @@ jobs:
 
       - name: test
         run: |
-          swift test -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
+          swift test -Xcc -I$env:DEVLOPER_DIR\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -L$env:DEVELOPER_DIR\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
       - name: build
         run: |
-          swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
+          swift build -c release -Xcc -I$env:DEVELOPER_DIR\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -L$env:DEVELOPER_DIR\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
       - name: package
         run: |
-          msbuild wix/swift-format.wixproj -nologo -p:Configuration=Release -p:VERSION=5.5-pre -p:SWIFT_FORMAT_BUILD=$PWD\.build\release -p:OutputPath=$PWD\.build\artifacrts -p:RunWixToolsOutOfProc=true
+          msbuild ${{ github.workspace }}/wix/swift-format.wixproj -nologo -p:Configuration=Release -p:VERSION=5.5-pre -p:SWIFT_FORMAT_BUILD=$PWD\.build\release -p:OutputPath=$PWD\.build\artifacts -p:RunWixToolsOutOfProc=true
 
       - uses: actions/create-release@v1
         env:
