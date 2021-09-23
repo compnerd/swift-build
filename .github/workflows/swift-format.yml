@@ -51,9 +51,13 @@ jobs:
         run: |
           swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
+      - uses: actions/checkout@v2
+        with:
+          path: swift-build
+
       - name: package
         run: |
-          msbuild ${{ github.workspace }}/wix/swift-format.wixproj -nologo -p:Configuration=Release -p:VERSION=5.5-pre -p:SWIFT_FORMAT_BUILD=$PWD\.build\release -p:OutputPath=$PWD\.build\artifacts -p:RunWixToolsOutOfProc=true
+          msbuild swift-build/wix/swift-format.wixproj -nologo -p:Configuration=Release -p:VERSION=5.5-pre -p:SWIFT_FORMAT_BUILD=$PWD\.build\release -p:OutputPath=$PWD\.build\artifacts -p:RunWixToolsOutOfProc=true
 
       - uses: actions/create-release@v1
         env:
