@@ -37,7 +37,7 @@
 
     <SetDirectory Id="INSTALLDIR" Value="[WindowsVolume]">
       NOT INSTALLDIR
-    </SetDirectgory>
+    </SetDirectory>
 
     <!-- Components --!>
     <DirectoryRef Id="USR_BIN">
