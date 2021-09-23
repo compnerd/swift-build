@@ -45,11 +45,11 @@ jobs:
 
       - name: test
         run: |
-          swift test -Xcc -I$env:DEVLOPER_DIR\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -L$env:DEVELOPER_DIR\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
+          swift test -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
       - name: build
         run: |
-          swift build -c release -Xcc -I$env:DEVELOPER_DIR\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -L$env:DEVELOPER_DIR\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
+          swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
       - name: package
         run: |
