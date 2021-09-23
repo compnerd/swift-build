@@ -39,7 +39,7 @@
       NOT INSTALLDIR
     </SetDirectory>
 
-    <!-- Components --!>
+    <!-- Components -->
     <DirectoryRef Id="USR_BIN">
       <!-- swift-format -->
       <Component Id="SwiftFormat_BINS" Guid="1beb0b8c-4f3d-4ccc-beb1-36b9545a51d6">
