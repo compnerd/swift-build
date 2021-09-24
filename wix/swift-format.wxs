@@ -13,10 +13,10 @@
              Manufacturer="dt.compnerd.org" />
 
     <!-- NOTE(compnerd) use pre-3.0 schema for better compatibility. -->
-    <Media Id="1" Cabinet="swift-format.cab" EmbedCab="yes" />
+    <Media Id="1" Cabinet="swift_format.cab" EmbedCab="yes" />
 
     <?ifdef INCLUDE_DEBUG_INFO?>
-    <Media Id="2" Cabinet="swift-format_PDBs.cab" EmbedCab="yes" />
+    <Media Id="2" Cabinet="swift_format_PDBs.cab" EmbedCab="yes" />
     <?endif?>
 
     <!-- Directory Structure -->
