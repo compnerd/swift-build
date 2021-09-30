@@ -61,7 +61,9 @@ jobs:
       - name: setup ICU
         run: |
           curl.exe -sOL "https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip"
-          unzip.exe -o icu4c-67_1-Win64-MSVC2017.zip -d ${{ github.workspace }}/Library/icu-67.1
+          md ${{ github.workspace }}\Library
+          unzip.exe -o icu4c-67_1-Win64-MSVC2017.zip -d ${{ github.workspace }}\Library\icu-67.1
+        shell: cmd
 
       # TODO(compnerd) build and wire up dependencise (ICU, ZLIB, CURL, LIBXML2)
       - name: build Foundation
