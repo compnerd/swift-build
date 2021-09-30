@@ -132,5 +132,5 @@ jobs:
       - name: build xctest
         run: |
           $SDK_ROOT = cygpath -m $env:SDKROOT
-          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-xctest -D Foundation_DIR=${{ github.workspace }}/foundation/cmake/modules -D dispatch_DIR=${{ github.workspace }}/dispatch/cmake/modules
-          cmake --build foundation --config Release
+          cmake -B xctest -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-xctest -D Foundation_DIR=${{ github.workspace }}/foundation/cmake/modules -D dispatch_DIR=${{ github.workspace }}/dispatch/cmake/modules
+          cmake --build xctest --config Release
