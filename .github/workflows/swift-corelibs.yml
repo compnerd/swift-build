@@ -99,15 +99,27 @@ jobs:
 
       - name: build libxml2
         run: |
-          cmake -B xml2 -D BUILD_SHARED_LIBS=OFF -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=cl -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy" -D CMAKE_MT=mt -D LIBXML2_WITH_ICONV=NO -D LIBXML2_WITH_ICU=NO -D LIBXML2_WITH_LZMA=NO -D LIBXML2_WITH_PYTHON=NO -D LIBXML2_WITH_TESTS=NO -D LIBXML2_WITH_THREADS=YES -D LIBXML2_WITH_ZLIB=NO -G Ninja -S ${{ github.workspace }}/libxml2 -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/Library/libxml2-2.9.12/usr
+          cmake -B xml2 -D BUILD_SHARED_LIBS=NO -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=cl -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy" -D CMAKE_MT=mt -D LIBXML2_WITH_ICONV=NO -D LIBXML2_WITH_ICU=NO -D LIBXML2_WITH_LZMA=NO -D LIBXML2_WITH_PYTHON=NO -D LIBXML2_WITH_TESTS=NO -D LIBXML2_WITH_THREADS=YES -D LIBXML2_WITH_ZLIB=NO -G Ninja -S ${{ github.workspace }}/libxml2 -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/Library/libxml2-2.9.12/usr
           cmake --build xml2 --config Release
           cmake --build xml2 --config Release --target install
+
+      - name: build zlib
+        run: |
+          cmake -B libz -D BUILD_SHARED_LIBS=NO -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=cl -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy" -D CMAKE_MT=mt -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/Library/zlib-1.2.11/usr -D SKIP_INSTALL_FILES=YES -G Ninja -S ${{ github.workspace }}/zlib
+          cmake --build libz --config Release
+          cmake --build libz --config Release --target install 
+
+      - name: build curl
+        run: |
+          cmake -B libcurl -D BUILD_SHARED_LIBS=NO -D BUILD_TESTING=NO -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=cl -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy" -D CMAKE_MT=mt -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/Library/curl-7.77.0/usr -D BUILD_CURL_EXE=NO -D CMAKE_USE_OPENSSL=NO -D CURL_CA_PATH=none -D CMAKE_USE_SCHANNEL=YES -D CMAKE_USE_LIBSSH2=NO -D HAVE_POLL_FILE=NO -D CURL_DISABLE_LDAP=YES -D CURL_DISABLE_LDAPS=YES -D CURL_DISABLE_TELNET=YES -D CURL_DISABLE_DICT=YES -D CURL_DISABLE_FILE=YES -D CURL_DISABLE_TFTP=YES -D CURL_DISABLE_RSTP=YES -D CURL_DISABLE_PROXY=YES -D CURL_DISABLE_POP3=YES -D CURL_DISABLE_IMAP=YES -D CURL_DISABLE_SMTP=YES -D CURL_DISABLE_GOPHER=YES -D CURL_ZLIB=YES -D ENABLE_UNIX_SOCKETS=NO _D ENABLE_THREADED_RESOLVER=NO -D ZLIB_ROOT=${{ github.workspace }}/Library/zlib-1.2.11/usr -D ZLIB_LIBRARY=${{ github.workspace }}/Library/zlib-1.2.11/usr/lib/zlibstatic.lib
+          cmake --build libcurl --config Release
+          cmake --build libcurl --config Release --target install
 
       # TODO(compnerd) build and wire up dependencise (ICU, ZLIB, CURL, LIBXML2)
       - name: build Foundation
         run: |
           $SDK_ROOT = cygpath -m $env:SDKROOT
-          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-foundation -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules  -D ICU_ROOT=${{ github.workspace }}/Library/icu-67.1 -D ICU_UC_LIBRARY=${{ github.workspace }}/Libary/icu-67.1/usr/lib64/icuuc67.lib -D ICU_I18N_LIBRARY=${{ github.workspace }}/Library/icu-67.1/usr/lib64/icuin67.lib -D LIBXML2_LIBRARY=${{ github.workspace }}/Library/libxml2-2.9.12/usr/lib/libxml2s.lib -D LIBXML2_INCLUDE_DIR=${{ github.workspace }}/Library/libxml2-2.9.12/usr/include/libxml2 -D LIBXML2_DEFINITIONS="/DLIBXML_STATIC"
+          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-foundation -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules  -D ICU_ROOT=${{ github.workspace }}/Library/icu-67.1 -D ICU_UC_LIBRARY=${{ github.workspace }}/Libary/icu-67.1/usr/lib64/icuuc67.lib -D ICU_I18N_LIBRARY=${{ github.workspace }}/Library/icu-67.1/usr/lib64/icuin67.lib -D LIBXML2_LIBRARY=${{ github.workspace }}/Library/libxml2-2.9.12/usr/lib/libxml2s.lib -D LIBXML2_INCLUDE_DIR=${{ github.workspace }}/Library/libxml2-2.9.12/usr/include/libxml2 -D LIBXML2_DEFINITIONS="/DLIBXML_STATIC" -D CURL_DIR=${{ github.workspace }}\Library\curl-7.77.0\usr\lib\cmake\CURL
           cmake --build foundation --config Release
 
       - name: build xctest
