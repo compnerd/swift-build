@@ -16,6 +16,20 @@ on:
         required: true
         default: 'refs/heads/main'
 
+
+      curl_revision:
+        description: 'curl revision to build'
+        required: true
+        default: 'refs/tags/curl-7_77_0'
+      libxml2_revision:
+        description: 'libxml2 revision to build'
+        required: true
+        default: 'refs/tags/v2.9.12'
+      zlib_revision:
+        description: 'zlib revision to build'
+        required: true
+        default: 'refs/heads/master'
+
 jobs:
   windows:
     runs-on: windows-latest
@@ -37,6 +51,24 @@ jobs:
           repository: apple/swift-corelibs-libdispatch
           ref: ${{ github.event.inputs.dispatch_revision }}
           path: ${{ github.workspace }}/swift-corelibs-libdispatch
+
+      - uses: actions/checkout@v2
+        with:
+          repository: curl/curl
+          ref: ${{ github.event.inputs.curl_revision }}
+          path: ${{ github.workspace }}/curl
+
+      - uses: actions/checkout@v2
+        with:
+          repository: gnome/libxml2
+          ref: ${{ github.event.inputs.libxml2_revison }}
+          path: ${{ github.workspace }}/libxml2
+
+      - uses: actions/checkout@v2
+        with:
+          repository: madler/zlib
+          ref: ${{ github.event.inputs.zlib_revision }}
+          path: ${{ github.workspace }}/zlib
 
       - uses: actions/checkout@v2
         with:
@@ -65,11 +97,17 @@ jobs:
           unzip.exe -o icu4c-67_1-Win64-MSVC2017.zip -d ${{ github.workspace }}\Library\icu-67.1
         shell: cmd
 
+      - name: build libxml2
+        run: |
+          cmake -B xml2 -D BUILD_SHARED_LIBS=OFF -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=cl -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy" -D CMAKE_MT=mt -D LIBXML2_WITH_ICONV=NO -D LIBXML2_WITH_ICU=NO -D LIBXML2_WITH_LZMA=NO -D LIBXML2_WITH_PYTHON=NO -D LIBXML2_WITH_TESTS=NO -D LIBXML2_WITH_THREADS=YES -D LIBXML2_WITH_ZLIB=NO -G Ninja -S ${{ github.workspace }}/libxml2 -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/Library/libxml2-2.9.12/usr
+          cmake --build xml2 --config Release
+          cmake --build xml2 --config Release --target install
+
       # TODO(compnerd) build and wire up dependencise (ICU, ZLIB, CURL, LIBXML2)
       - name: build Foundation
         run: |
           $SDK_ROOT = cygpath -m $env:SDKROOT
-          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-foundation -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules  -D ICU_ROOT=${{ github.workspace }}/Library/icu-67.1 -D ICU_UC_LIBRARY=${{ github.workspace }}/Libary/icu-67.1/usr/lib64/icuuc67.lib -D ICU_I18N_LIBRARY=${{ github.workspace }}/Library/icu-67.1/usr/lib64/icuin67.lib
+          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-foundation -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules  -D ICU_ROOT=${{ github.workspace }}/Library/icu-67.1 -D ICU_UC_LIBRARY=${{ github.workspace }}/Libary/icu-67.1/usr/lib64/icuuc67.lib -D ICU_I18N_LIBRARY=${{ github.workspace }}/Library/icu-67.1/usr/lib64/icuin67.lib -D LIBXML2_LIBRARY=${{ github.workspace }}/Library/libxml2-2.9.12/usr/lib/libxml2s.lib -D LIBXML2_INCLUDE_DIR=${{ github.workspace }}/Library/libxml2-2.9.12/usr/include/libxml2 -D LIBXML2_DEFINITIONS="/DLIBXML_STATIC"
           cmake --build foundation --config Release
 
       - name: build xctest
