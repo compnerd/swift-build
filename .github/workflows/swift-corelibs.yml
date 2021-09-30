@@ -58,6 +58,11 @@ jobs:
           cmake -B libdispatch -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-libdispatch -D ENABLE_SWIFT=YES
           cmake --build libdispatch --config Release
 
+      - name: setup ICU
+      - run: |
+          curl.exe -sOL "https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-Win64-MSVC2017.zip"
+          unzip.exe -o icu4c-67_1-Win64-MSVC2017.zip -d ${{ github.workspace }}/Library/icu-67.1
+
       # TODO(compnerd) build and wire up dependencise (ICU, ZLIB, CURL, LIBXML2)
       - name: build Foundation
         run: |
@@ -68,5 +73,5 @@ jobs:
       - name: build xctest
         run: |
           $SDK_ROOT = cygpath -m $env:SDKROOT
-          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-xctest -D Foundation_DIR=${{ github.workspace }}/foundation/cmake/modules -D dispatch_DIR=${{ github.workspace }}/dispatch/cmake/modules
+          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-xctest -D Foundation_DIR=${{ github.workspace }}/foundation/cmake/modules -D dispatch_DIR=${{ github.workspace }}/dispatch/cmake/modules -D ICU_ROOT=${{ github.workspace }}/Library/icu-67.1 -D ICU_UC_LIBRARY=${{ github.workspace }}/Libary/icu-67.1/usr/lib64/icuuc67.lib -D ICU_I18N_LIBRARY=${{ github.workspace }}/Library/icu-67.1/usr/lib64/icuin67.lib
           cmake --build foundation --config Release
