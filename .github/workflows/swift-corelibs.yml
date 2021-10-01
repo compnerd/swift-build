@@ -24,6 +24,10 @@ on:
         description: 'libxml2 revision to build'
         required: true
         default: 'refs/tags/v2.9.12'
+      llvm_revision:
+        description: 'llvm revision to use'
+        required: true
+        default: 'refs/heads/main'
       zlib_revision:
         description: 'zlib revision to build'
         required: true
@@ -47,12 +51,6 @@ jobs:
 
       - uses: actions/checkout@v2
         with:
-          repository: apple/swift-corelibs-libdispatch
-          ref: ${{ github.event.inputs.dispatch_revision }}
-          path: ${{ github.workspace }}/swift-corelibs-libdispatch
-
-      - uses: actions/checkout@v2
-        with:
           repository: curl/curl
           ref: ${{ github.event.inputs.curl_revision }}
           path: ${{ github.workspace }}/curl
@@ -68,6 +66,18 @@ jobs:
           repository: madler/zlib
           ref: ${{ github.event.inputs.zlib_revision }}
           path: ${{ github.workspace }}/zlib
+
+      - uses: actions/checkout@v2
+        with:
+          repository: llvm/llvm-project
+          ref: ${{ github.event.inputs.llvm_revision }}
+          path: llvm-project
+
+      - uses: actions/checkout@v2
+        with:
+          repository: apple/swift-corelibs-libdispatch
+          ref: ${{ github.event.inputs.dispatch_revision }}
+          path: ${{ github.workspace }}/swift-corelibs-libdispatch
 
       - uses: actions/checkout@v2
         with:
@@ -120,14 +130,14 @@ jobs:
 
       - name: build curl
         run: |
-          cmake -B libcurl -D BUILD_SHARED_LIBS=NO -D BUILD_TESTING=NO -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=cl -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy" -D CMAKE_MT=mt -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/Library/curl-7.77.0/usr -D BUILD_CURL_EXE=NO -D CMAKE_USE_OPENSSL=NO -D CURL_CA_PATH=none -D CMAKE_USE_SCHANNEL=YES -D CMAKE_USE_LIBSSH2=NO -D HAVE_POLL_FILE=NO -D CURL_DISABLE_LDAP=YES -D CURL_DISABLE_LDAPS=YES -D CURL_DISABLE_TELNET=YES -D CURL_DISABLE_DICT=YES -D CURL_DISABLE_FILE=YES -D CURL_DISABLE_TFTP=YES -D CURL_DISABLE_RSTP=YES -D CURL_DISABLE_PROXY=YES -D CURL_DISABLE_POP3=YES -D CURL_DISABLE_IMAP=YES -D CURL_DISABLE_SMTP=YES -D CURL_DISABLE_GOPHER=YES -D CURL_ZLIB=YES -D ENABLE_UNIX_SOCKETS=NO -D ENABLE_THREADED_RESOLVER=NO -D ZLIB_ROOT=${{ github.workspace }}/Library/zlib-1.2.11/usr -D ZLIB_LIBRARY=${{ github.workspace }}/Library/zlib-1.2.11/usr/lib/zlibstatic.lib -G Ninja -S ${{ github.workspace }}/curl
+          cmake -B libcurl -D BUILD_SHARED_LIBS=NO -D BUILD_TESTING=NO -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=cl -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy" -D CMAKE_MT=mt -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/Library/curl-7.77.0/usr -D BUILD_CURL_EXE=NO -D CMAKE_USE_OPENSSL=NO -D CURL_CA_PATH=none -D CMAKE_USE_SCHANNEL=YES -D CMAKE_USE_LIBSSH2=NO -D HAVE_POLL_FINE=NO -D CURL_DISABLE_LDAP=YES -D CURL_DISABLE_LDAPS=YES -D CURL_DISABLE_TELNET=YES -D CURL_DISABLE_DICT=YES -D CURL_DISABLE_FILE=YES -D CURL_DISABLE_TFTP=YES -D CURL_DISABLE_RTSP=YES -D CURL_DISABLE_PROXY=YES -D CURL_DISABLE_POP3=YES -D CURL_DISABLE_IMAP=YES -D CURL_DISABLE_SMTP=YES -D CURL_DISABLE_GOPHER=YES -D CURL_ZLIB=YES -D ENABLE_UNIX_SOCKETS=NO -D ENABLE_THREADED_RESOLVER=NO -D ZLIB_ROOT=${{ github.workspace }}/Library/zlib-1.2.11/usr -D ZLIB_LIBRARY=${{ github.workspace }}/Library/zlib-1.2.11/usr/lib/zlibstatic.lib -G Ninja -S ${{ github.workspace }}/curl
           cmake --build libcurl --config Release
           cmake --build libcurl --config Release --target install
 
       - name: build Foundation
         run: |
           $SDK_ROOT = cygpath -m $env:SDKROOT
-          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-foundation -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules -D BUILD_TESTING=NO -D ENABLE_TESTING=NO -D ICU_ROOT=${{ github.workspace }}/Library/icu-67.1 -D ICU_UC_LIBRARY=${{ github.workspace }}/Libary/icu-67.1/usr/lib64/icuuc67.lib -D ICU_I18N_LIBRARY=${{ github.workspace }}/Library/icu-67.1/usr/lib64/icuin67.lib -D LIBXML2_LIBRARY=${{ github.workspace }}/Library/libxml2-2.9.12/usr/lib/libxml2s.lib -D LIBXML2_INCLUDE_DIR=${{ github.workspace }}/Library/libxml2-2.9.12/usr/include/libxml2 -D LIBXML2_DEFINITIONS="/DLIBXML_STATIC" -D CURL_DIR=${{ github.workspace }}\Library\curl-7.77.0\usr\lib\cmake\CURL -D ZLIB_LIBRARY=${{ github.workspace }}\Library\zlib-1.2.11\usr\lib\zlibstatic.lib -D ZLIB_INCLUDE_DIR=${{ github.workspace }}\Library\zlib-1.2.11\usr\include
+          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-foundation -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules -D ENABLE_TESTING=NO -D ICU_ROOT=${{ github.workspace }}/Library/icu-67.1 -D ICU_UC_LIBRARY=${{ github.workspace }}/Libary/icu-67.1/usr/lib64/icuuc67.lib -D ICU_I18N_LIBRARY=${{ github.workspace }}/Library/icu-67.1/usr/lib64/icuin67.lib -D LIBXML2_LIBRARY=${{ github.workspace }}/Library/libxml2-2.9.12/usr/lib/libxml2s.lib -D LIBXML2_INCLUDE_DIR=${{ github.workspace }}/Library/libxml2-2.9.12/usr/include/libxml2 -D LIBXML2_DEFINITIONS="/DLIBXML_STATIC" -D CURL_DIR=${{ github.workspace }}\Library\curl-7.77.0\usr\lib\cmake\CURL -D ZLIB_LIBRARY=${{ github.workspace }}\Library\zlib-1.2.11\usr\lib\zlibstatic.lib -D ZLIB_INCLUDE_DIR=${{ github.workspace }}\Library\zlib-1.2.11\usr\include
           cmake --build foundation --config Release
 
       - name: build XCTest
@@ -141,6 +151,7 @@ jobs:
           echo "${{ github.workspace }}\Library\icu-67.1\usr\bin;$env:Path" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
           echo "${{ github.workspace }}\libdispatch;${{ github.workspace }}\foundation\Foundation;${{ github.workspace }}\xctest;$env:Path" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
           echo "CTEST_OUTPUT_ON_FAILURE=1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "CTEST_PARALLEL_LEVEL=4" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
       - name: Test libdispatch
@@ -154,7 +165,7 @@ jobs:
       - name: Test Foundation
         run: |
           $SDK_ROOT = cygpath -m $env:SDKROOT
-          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-foundation -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules -D XCTest_DIR=${{ github.workspace }}/xctest/cmake/modules -D BUILD_TESTING=YES -D ICU_ROOT=${{ github.workspace }}/Library/icu-67.1 -D ICU_UC_LIBRARY=${{ github.workspace }}/Libary/icu-67.1/usr/lib64/icuuc67.lib -D ICU_I18N_LIBRARY=${{ github.workspace }}/Library/icu-67.1/usr/lib64/icuin67.lib -D LIBXML2_LIBRARY=${{ github.workspace }}/Library/libxml2-2.9.12/usr/lib/libxml2s.lib -D LIBXML2_INCLUDE_DIR=${{ github.workspace }}/Library/libxml2-2.9.12/usr/include/libxml2 -D LIBXML2_DEFINITIONS="/DLIBXML_STATIC" -D CURL_DIR=${{ github.workspace }}\Library\curl-7.77.0\usr\lib\cmake\CURL -D ZLIB_LIBRARY=${{ github.workspace }}\Library\zlib-1.2.11\usr\lib\zlibstatic.lib -D ZLIB_INCLUDE_DIR=${{ github.workspace }}\Library\zlib-1.2.11\usr\include
+          cmake -B foundation -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-foundation -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules -D XCTest_DIR=${{ github.workspace }}/xctest/cmake/modules -D ENABLE_TESTING=YES -D ICU_ROOT=${{ github.workspace }}/Library/icu-67.1 -D ICU_UC_LIBRARY=${{ github.workspace }}/Libary/icu-67.1/usr/lib64/icuuc67.lib -D ICU_I18N_LIBRARY=${{ github.workspace }}/Library/icu-67.1/usr/lib64/icuin67.lib -D LIBXML2_LIBRARY=${{ github.workspace }}/Library/libxml2-2.9.12/usr/lib/libxml2s.lib -D LIBXML2_INCLUDE_DIR=${{ github.workspace }}/Library/libxml2-2.9.12/usr/include/libxml2 -D LIBXML2_DEFINITIONS="/DLIBXML_STATIC" -D CURL_DIR=${{ github.workspace }}\Library\curl-7.77.0\usr\lib\cmake\CURL -D ZLIB_LIBRARY=${{ github.workspace }}\Library\zlib-1.2.11\usr\lib\zlibstatic.lib -D ZLIB_INCLUDE_DIR=${{ github.workspace }}\Library\zlib-1.2.11\usr\include
           cmake --build foundation --config Release
           cmake --build foundation --config Release --target test
         continue-on-error: true
@@ -162,7 +173,7 @@ jobs:
       - name: Test XCTest
         run: |
           $SDK_ROOT = cygpath -m $env:SDKROOT
-          cmake -B xctest -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-xctest -D Foundation_DIR=${{ github.workspace }}/foundation/cmake/modules -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules -D ENABLE_TESTING=YES -D XCTEST_PATH_TO_LIBDISPATCH_BUILD=${{ github.workspace }}\libdispatch -D XCTEST_PATH_TO_LIBDISPATCH_SOURCE=${{ github.workspace }}\swift-corelibs-libdispatch -D XCTEST_PATH_TO_FOUNDATION_BUILD=${{ github.workspace }}\foundation
+          cmake -B xctest -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-xctest -D Foundation_DIR=${{ github.workspace }}/foundation/cmake/modules -D dispatch_DIR=${{ github.workspace }}/libdispatch/cmake/modules -D LLVM_MAIN_SRC_DIR=${{ github.workspace }}/llvm-project/llvm -D ENABLE_TESTING=YES -D XCTEST_PATH_TO_LIBDISPATCH_BUILD=${{ github.workspace }}\libdispatch -D XCTEST_PATH_TO_LIBDISPATCH_SOURCE=${{ github.workspace }}\swift-corelibs-libdispatch -D XCTEST_PATH_TO_FOUNDATION_BUILD=${{ github.workspace }}\foundation
           cmake --build xctest --config Release
           cmake --build xctest --config Release --target check-xctest
         continue-on-error: true
