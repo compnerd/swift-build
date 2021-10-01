@@ -151,7 +151,6 @@ jobs:
           echo "${{ github.workspace }}\Library\icu-67.1\usr\bin;$env:Path" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
           echo "${{ github.workspace }}\libdispatch;${{ github.workspace }}\foundation\Foundation;${{ github.workspace }}\xctest;$env:Path" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
           echo "CTEST_OUTPUT_ON_FAILURE=1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "CTEST_PARALLEL_LEVEL=4" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
       - name: Test libdispatch
@@ -159,9 +158,13 @@ jobs:
           $SDK_ROOT = cygpath -m $env:SDKROOT
           cmake -B libdispatch -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=clang-cl -D CMAKE_CXX_COMPILER=clang-cl -D CMAKE_MT=mt -D CMAKE_Swift_FLAGS="-sdk $SDK_ROOT" -G Ninja -S ${{ github.workspace }}/swift-corelibs-libdispatch -D BUILD_TESTING=YES -D ENABLE_SWIFT=YES
           cmake --build libdispatch --config Release
-          set CTEST_PARALLEL_LEVEL=2
           cmake --build libdispatch --config Release --target ExperimentalTest
         continue-on-error: true
+
+      - name: configure runner
+        run: |
+          echo "CTEST_PARALLEL_LEVEL=4" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
 
       - name: Test Foundation
         run: |
