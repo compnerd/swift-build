@@ -45,43 +45,43 @@ on:
         required: true
         default: 'refs/heads/main'
 
-      # devtools
-      llbuild_revision:
-        description: 'swift-llbuild revision'
-        required: true
-        default: 'refs/heads/main'
-      tools_support_core_revision:
-        description: 'swift-tools-support-core revision'
-        required: true
-        default: 'refs/heads/main'
-      yams_revision:
-        description: 'Yams revision'
-        required: true
-        default: 'refs/heads/main'
-      swift_argument_parser_revision:
-        description: 'swift-argument-parser revision'
-        required: true
-        default: 'refs/heads/main'
-      swift_driver_revision:
-        description: 'swift-driver revision'
-        required: true
-        default: 'refs/heads/main'
-      swift_crypto_revision:
-        description: 'swift-crypto revision'
-        required: true
-        default: 'refs/heads/main'
-      swift_package_manager_revision:
-        description: 'swift-package-manager revision'
-        required: true
-        default: 'refs/heads/main'
-      indexstore_db_revision:
-        description: 'indexstore-db revision'
-        required: true
-        default: 'refs/heads/main'
-      sourcekit_lsp_revision:
-        description: 'sourcekit-lsp revision'
-        required: true
-        default: 'refs/heads/main'
+      # # devtools
+      # llbuild_revision:
+      #   description: 'swift-llbuild revision'
+      #   required: true
+      #   default: 'refs/heads/main'
+      # tools_support_core_revision:
+      #   description: 'swift-tools-support-core revision'
+      #   required: true
+      #   default: 'refs/heads/main'
+      # yams_revision:
+      #   description: 'Yams revision'
+      #   required: true
+      #   default: 'refs/heads/main'
+      # swift_argument_parser_revision:
+      #   description: 'swift-argument-parser revision'
+      #   required: true
+      #   default: 'refs/heads/main'
+      # swift_driver_revision:
+      #   description: 'swift-driver revision'
+      #   required: true
+      #   default: 'refs/heads/main'
+      # swift_crypto_revision:
+      #   description: 'swift-crypto revision'
+      #   required: true
+      #   default: 'refs/heads/main'
+      # swift_package_manager_revision:
+      #   description: 'swift-package-manager revision'
+      #   required: true
+      #   default: 'refs/heads/main'
+      # indexstore_db_revision:
+      #   description: 'indexstore-db revision'
+      #   required: true
+      #   default: 'refs/heads/main'
+      # sourcekit_lsp_revision:
+      #   description: 'sourcekit-lsp revision'
+      #   required: true
+      #   default: 'refs/heads/main'
 
   jobs:
     windows:
@@ -143,52 +143,52 @@ on:
           ref: ${{ github.event.inputs.xctest_revision }}
           path: ${{ github.workspace }}/SourceCache/swift-corelibs-xctest
 
-      # devtools
-      - uses: actions/checkout@v2
-        with:
-          repository: apple/swift-llbuild
-          ref: ${{ github.event.inputs.llbuild_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-llbuild
-      - uses: actions/checkout@v2
-        with:
-          repository: apple/swift-tools-support-core
-          ref: ${{ github.event.inputs.llbuild_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-tools-support-core
-      - uses: actions/checkout@v2
-        with:
-          repository: jpsim/Yams
-          ref: ${{ github.event.inputs.yams_revision }}
-          path: ${{ github.workspace }}/SourceCache/Yams
-      - uses: actions/checkout@v2
-        with:
-          repository: apple/swift-argument-parser
-          ref: ${{ github.event.inputs.swift_argument_parser_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-argument-parser
-      - uses: actions/checkout@v2
-        with:
-          repository: apple/swift-driver
-          ref: ${{ github.event.inputs.swift_driver_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-driver
-      - uses: actions/checkout@v2
-        with:
-          repository: apple/swift-crypto
-          ref: ${{ github.event.inputs.swift_crypto_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-crypto
-      - uses: actions/checkout@v2
-        with:
-          repository: apple/swift-package-manager
-          ref: ${{ github.event.inputs.swift_package_manager_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-package-manager
-      - uses: actions/checkout@v2
-        with:
-          repository: apple/indexstore-db
-          ref: ${{ github.event.inputs.indexstore_db_revision }}
-          path: ${{ github.workspace }}/SourceCache/indexstore-db
-      - uses: actions/checkout@v2
-        with:
-          repository: apple/sourcekit-lsp
-          ref: ${{ github.event.inputs.sourcekit_lsp_revision }}
-          path: ${{ github.workspace }}/SourceCache/sourcekit-lsp
+      # # devtools
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: apple/swift-llbuild
+      #     ref: ${{ github.event.inputs.llbuild_revision }}
+      #     path: ${{ github.workspace }}/SourceCache/swift-llbuild
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: apple/swift-tools-support-core
+      #     ref: ${{ github.event.inputs.llbuild_revision }}
+      #     path: ${{ github.workspace }}/SourceCache/swift-tools-support-core
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: jpsim/Yams
+      #     ref: ${{ github.event.inputs.yams_revision }}
+      #     path: ${{ github.workspace }}/SourceCache/Yams
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: apple/swift-argument-parser
+      #     ref: ${{ github.event.inputs.swift_argument_parser_revision }}
+      #     path: ${{ github.workspace }}/SourceCache/swift-argument-parser
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: apple/swift-driver
+      #     ref: ${{ github.event.inputs.swift_driver_revision }}
+      #     path: ${{ github.workspace }}/SourceCache/swift-driver
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: apple/swift-crypto
+      #     ref: ${{ github.event.inputs.swift_crypto_revision }}
+      #     path: ${{ github.workspace }}/SourceCache/swift-crypto
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: apple/swift-package-manager
+      #     ref: ${{ github.event.inputs.swift_package_manager_revision }}
+      #     path: ${{ github.workspace }}/SourceCache/swift-package-manager
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: apple/indexstore-db
+      #     ref: ${{ github.event.inputs.indexstore_db_revision }}
+      #     path: ${{ github.workspace }}/SourceCache/indexstore-db
+      # - uses: actions/checkout@v2
+      #   with:
+      #     repository: apple/sourcekit-lsp
+      #     ref: ${{ github.event.inputs.sourcekit_lsp_revision }}
+      #     path: ${{ github.workspace }}/SourceCache/sourcekit-lsp
 
       - uses: seanmiddleditch/gha-setup-vsdevenv@master
 
