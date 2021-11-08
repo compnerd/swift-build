@@ -51,6 +51,8 @@ jobs:
         with:
           nuget-version: 'latest'
 
+      - uses: microsoft/setup-msbuild@v1.1
+
       - name: Package SDK
         run: |
           cd ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
