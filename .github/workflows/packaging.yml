@@ -41,7 +41,7 @@ jobs:
           ref: ${{ github.event.inputs.swift_tag }}
           path: ${{ github.workspace }}/SourceCache/swift
 
-      - uses: microsoft/setup-msbuild@v1.0.1
+      - uses: microsoft/setup-msbuild@v1.1.1
 
       - run: msbuild ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk.wixproj -t:restore
 
