@@ -53,8 +53,7 @@ jobs:
 
       - name: Package SDK
         run: |
-          Install-Package Microsoft.VisualStudio.Setup.Configuration.Native -Version 2.3.2262
-          msbuild -nologo ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk.wixproj -t:restore
+          dotnet add package Microsoft.VisualStudio.Setup.Configuration.Native --version 2.3.2262
           # TODO(compnerd) determine why PlatformToolset is set to v100 on GHA
           msbuild -nologo `
             -p:Configuration=Release `
