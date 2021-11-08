@@ -41,6 +41,10 @@ jobs:
           ref: ${{ github.event.inputs.swift_tag }}
           path: ${{ github.workspace }}/SourceCache/swift
 
+      - uses: microsoft/setup-msbuild@v1.0.1
+
+      - run: msbuild ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk.wixproj -t:restore
+
       - uses: seanmiddleditch/gha-setup-vsdevenv@v4
         with:
           host_arch: amd64
@@ -55,8 +59,6 @@ jobs:
 
       - name: Package SDK
         run: |
-          cd ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
-          dotnet add package Microsoft.VisualStudio.Setup.Configuration.Native --version 2.3.2262
           # TODO(compnerd) determine why PlatformToolset is set to v100 on GHA
           msbuild -nologo `
             -p:Configuration=Release `
