@@ -49,6 +49,15 @@ jobs:
 
       - name: Package SDK
         run: |
+          @'<?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <!-- To inherit the global NuGet package sources remove the <clear/> line below -->
+              <clear />
+              <add key="nuget" value="https://api.nuget.org/v3/index.json" />
+            </packageSources>
+          </configuration>
+          '@ | Out-File -FilePath ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/nuget.config
           msbuild -nologo ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk.wixproj -t:restore
           # TODO(compnerd) determine why PlatformToolset is set to v100 on GHA
           msbuild -nologo `
