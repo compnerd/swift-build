@@ -43,7 +43,8 @@ jobs:
 
       - uses: microsoft/setup-msbuild@v1
 
-      - run: msbuild ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk.wixproj -t:restore
+      - run: |
+          msbuild ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk.wixproj -t:restore -verbosity:diag
 
       - uses: seanmiddleditch/gha-setup-vsdevenv@v4
         with:
