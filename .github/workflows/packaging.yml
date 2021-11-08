@@ -47,6 +47,10 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
+      - uses: nuget/setup-nuget@v1
+        with:
+          nuget-version: 'latest'
+
       - name: Package SDK
         run: |
           @'
