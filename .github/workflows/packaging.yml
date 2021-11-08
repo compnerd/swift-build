@@ -53,6 +53,7 @@ jobs:
 
       - name: Package SDK
         run: |
+          cd ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
           dotnet add package Microsoft.VisualStudio.Setup.Configuration.Native --version 2.3.2262
           # TODO(compnerd) determine why PlatformToolset is set to v100 on GHA
           msbuild -nologo `
