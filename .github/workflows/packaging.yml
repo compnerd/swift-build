@@ -63,7 +63,7 @@ jobs:
               </packageRestore>
           </configuration>
           '@ | Out-File -FilePath $env:AppData\Nuget\Nuget.Config
-          dotnet restore -v
+          dotnet restore -v diag
         working-directory: ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
 
       - name: Package SDK
