@@ -55,7 +55,7 @@ jobs:
       
       - run: |
           (Get-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj).replace('ToolsVersion="4.0"', 'ToolsVersion="Current"') | Set-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj
-          msbuild -v diag
+          msbuild -v diag -restore
         working-directory: ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
 
       - name: Package SDK
