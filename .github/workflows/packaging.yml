@@ -63,7 +63,7 @@ jobs:
               </packageRestore>
           </configuration>
           '@ | Out-File -FilePath $env:AppData\Nuget\Nuget.Config
-          (Get-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk.wixproj).replace('ToolsVersion="4.0"', 'ToolsVersion="Current"') | Set-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk.wixproj
+          (Get-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj).replace('ToolsVersion="4.0"', 'ToolsVersion="Current"') | Set-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj
           dotnet restore -v diag
         working-directory: ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
 
