@@ -41,11 +41,6 @@ jobs:
           ref: ${{ github.event.inputs.swift_tag }}
           path: ${{ github.workspace }}/SourceCache/swift
 
-      - uses: microsoft/setup-msbuild@v1
-
-      - run: |
-          msbuild ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk.wixproj -t:restore -verbosity:diag
-
       - uses: seanmiddleditch/gha-setup-vsdevenv@v4
         with:
           host_arch: amd64
@@ -57,6 +52,10 @@ jobs:
           nuget-version: 'latest'
 
       - uses: actions/setup-dotnet@v1
+      
+      - run: |
+          cd ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
+          dotnet restore
 
       - name: Package SDK
         run: |
