@@ -64,7 +64,7 @@ jobs:
           </configuration>
           '@ | Out-File -FilePath $env:AppData\Nuget\Nuget.Config
           (Get-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj).replace('ToolsVersion="4.0"', 'ToolsVersion="Current"') | Set-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj
-          dotnet restore -v diag
+          dotnet add package Microsoft.VisualStudio.Setup.Configuration.Native --version 3.0.4492
         working-directory: ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
 
       - name: Package SDK
