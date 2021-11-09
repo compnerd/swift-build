@@ -54,8 +54,17 @@ jobs:
       - uses: actions/setup-dotnet@v1
       
       - run: |
-          cd ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
+          @'
+          <configuration>
+              <packageRestore>
+                  <!-- The 'enabled' key is True when the "Allow NuGet to download missing packages" checkbox is set.
+                       Clearing the box sets this to False, disabling command-line, automatic, and MSBuild-integrated restore. -->
+                  <add key="enabled" value="True" />
+              </packageRestore>
+          </configuration>
+          '@ | Out-File -FilePath $env:AppData\Nuget\Nuget.Config
           dotnet restore
+        working-directory: ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
 
       - name: Package SDK
         run: |
