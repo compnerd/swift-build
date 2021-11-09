@@ -54,17 +54,8 @@ jobs:
       - uses: actions/setup-dotnet@v1
       
       - run: |
-          @'
-          <configuration>
-              <packageRestore>
-                  <!-- The 'enabled' key is True when the "Allow NuGet to download missing packages" checkbox is set.
-                       Clearing the box sets this to False, disabling command-line, automatic, and MSBuild-integrated restore. -->
-                  <add key="enabled" value="True" />
-              </packageRestore>
-          </configuration>
-          '@ | Out-File -FilePath $env:AppData\Nuget\Nuget.Config
           (Get-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj).replace('ToolsVersion="4.0"', 'ToolsVersion="Current"') | Set-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj
-          dotnet add package Microsoft.VisualStudio.Setup.Configuration.Native --version 3.0.4492
+          msbuild -v diag
         working-directory: ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
 
       - name: Package SDK
