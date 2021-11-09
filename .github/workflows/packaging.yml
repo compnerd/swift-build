@@ -50,12 +50,10 @@ jobs:
       - uses: nuget/setup-nuget@v1
         with:
           nuget-version: 'latest'
-
-      - uses: actions/setup-dotnet@v1
       
       - run: |
           (Get-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj).replace('ToolsVersion="4.0"', 'ToolsVersion="Current"') | Set-Content ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj
-          msbuild -v diag -restore
+          msbuild -v:diag -restore
         working-directory: ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller
 
       - name: Package SDK
