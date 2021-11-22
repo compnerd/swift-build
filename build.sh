@@ -75,6 +75,7 @@ cmake --build "${BinaryCache}/curl-7.77.0" --target install
 
 # ICU
 [[ -f "${SourceCache}/icu/icu4c/CMakeLists.txt" ]] || cp -v "${SourceCache}/swift-build/cmake/ICU/CMakeLists69.txt" "${SourceCache}/icu/icu4c/CMakeLists.txt"
+[[ -f "${SourceCache}/icu/icu4c/icupkg.inc.cmake" ]] || cp -v "${SourceCache}/swift-build/cmake/ICU/icupkg.inc.cmake" "${SourceCache}/icu/icu4c/icupkg.inc.cmake"
 
 cmake                                                                           \
   -B "${BinaryCache}/icu-69.1"                                                  \
