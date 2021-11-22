@@ -134,8 +134,8 @@ for module in _InternalSwiftScan _InternalSwiftSyntaxParser ; do
   if [[ -d "${ToolchainInstallRoot}/usr/include/${module}" ]] ; then
     rm -rf "${ToolchainInstallRoot}/usr/include/${module}"
   fi
-  mv -v "${ToolchainInstallRoot}/usr/lib/${module}" "${ToolchainInstallRoot}/usr/include"
-  mv -v "${ToolchainInstallRoot}/usr/lib/swift/linux/lib${module}.a" "${ToolchainInstallRoot}/usr/lib"
+  mv -v "${ToolchainInstallRoot}/usr/lib/swift/${module}" "${ToolchainInstallRoot}/usr/include"
+  mv -v "${ToolchainInstallRoot}/usr/lib/swift/linux/lib${module}.so" "${ToolchainInstallRoot}/usr/lib"
 done
 
 # Runtime
