@@ -89,11 +89,11 @@ cmake --build "${BinaryCache}/icu-69.1"
 cmake --build "${BinaryCache}/icu-69.1" --target install
 
 # sqlite
-[[ -f /var/cache/sqlite-amalgamation-3360000.zip ]] || curl -sL https://sqlite.org/2021/sqlite-amalgamation-3360000.zip -o /var/cache/sqlite-amalgamation-3360000.zip
+[[ -f /var/tmp/sqlite-amalgamation-3360000.zip ]] || curl -sL https://sqlite.org/2021/sqlite-amalgamation-3360000.zip -o /var/tmp/sqlite-amalgamation-3360000.zip
 
 if [[ ! -d "${SourceCache}/sqlite-3.36.0" ]] ; then
   mkdir -p "${SourceCache}/sqlite-3.36.0"
-  unzip -j -o /var/cache/sqlite-amalgamation-3360000.zip -d "${SourceCache}/sqlite-3.36.0"
+  unzip -j -o /var/tmp/sqlite-amalgamation-3360000.zip -d "${SourceCache}/sqlite-3.36.0"
   cp -v "${SourceCache}/swift-build/cmake/SQLite/CMakeLists.txt" "${SourceCache}/sqlite-3.36.0"
 fi
 
