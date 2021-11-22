@@ -126,8 +126,8 @@ cmake                                                                           
   -D SWIFT_LINUX_x86_64_ICU_UC_INCLUDE=/Library/icu-69.1/usr/include            \
   -G Ninja                                                                      \
   -S "${SourceCache}/llvm-project/llvm"
-cmake --build "${BinaryCache}/llvm-project/llvm"
-cmake --build "${BinaryCache}/llvm-project/llvm" --target install
+cmake --build "${BinaryCache}/toolchain"
+cmake --build "${BinaryCache}/toolchain" --target install
 
 # Restructure Internal Modules
 for module in _InternalSwiftScan _InternalSwiftSyntaxParser ; do
