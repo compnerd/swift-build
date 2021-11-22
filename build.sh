@@ -23,7 +23,7 @@ cmake --build "${BinaryCache}/zlib-1.2.11" --target install
 
 # libxml2
 cmake                                                                           \
-  -B "${BinaryCache}/libxml2"                                                   \
+  -B "${BinaryCache}/libxml2-2.9.12"                                            \
   -D BUILD_SHARED_LIBS=NO                                                       \
   -D CMAKE_BUILD_TYPE=Release                                                   \
   -D CMAKE_INSTALL_PREFIX=/Library/libxml2-2.9.12/usr                           \
