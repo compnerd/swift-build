@@ -119,13 +119,13 @@ cmake                                                                           
   -D SWIFT_ENABLE_EXPERIMENTAL_DIFFERENTIABLE_PROGRAMMING=YES                   \
   -D SWIFT_ENABLE_EXPERIMENTAL_DISTRIBUTED=YES                                  \
   -D SWIFT_ENABLE_EXPERIMENTAL_STRING_PROCESSING=YES                            \
-  -D SWIFT_PATH_TO_LIBDISPATCH_SOURCE=${SourceCache}\swift-corelibs-libdispatch \
+  -D SWIFT_PATH_TO_LIBDISPATCH_SOURCE=${SourceCache}/swift-corelibs-libdispatch \
   -D SWIFT_LINUX_x86_64_ICU_I18N=/Library/icu-69.1/usr/lib/libicuin69.so        \
   -D SWIFT_LINUX_x86_64_ICU_I18N_INCLUDE=/Library/icu-69.1/usr/include          \
   -D SWIFT_LINUX_x86_64_ICU_UC=/Library/icu-69.1/usr/lib/libicuuc69.so          \
   -D SWIFT_LINUX_x86_64_ICU_UC_INCLUDE=/Library/icu-69.1/usr/include            \
   -G Ninja                                                                      \
-  -S "${SourceCache}\llvm-project\llvm"
+  -S "${SourceCache}/llvm-project/llvm"
 cmake --build "${BinaryCache}/llvm-project/llvm"
 cmake --build "${BinaryCache}/llvm-project/llvm" --target install
 
