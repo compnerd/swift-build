@@ -1406,7 +1406,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}/SourceCache/vscode-swift
           npm install
-          npm run dev-package
+          npm run package
       - uses: actions/upload-artifact@v2
         with:
           name: swift-lang-vsix
