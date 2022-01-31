@@ -1406,11 +1406,11 @@ jobs:
         run: |
           cd ${{ github.workspace }}/SourceCache/vscode-swift
           npm install
-          npm run package
+          npm run dev-package
       - uses: actions/upload-artifact@v2
         with:
           name: swift-lang-vsix
-          path: ${{ github.workspace }}/SourceCache/vscode-swift/swift-lang-0.2.0.vsix
+          path: ${{ github.workspace }}/SourceCache/vscode-swift/swift-lang-development.vsix
 
   package_icu:
     runs-on: windows-latest
