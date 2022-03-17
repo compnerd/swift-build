@@ -612,23 +612,16 @@ stages:
           - script: |
               git config --global --add core.autocrlf false
               git config --global --add core.symlinks true
-          #- download: current
-          #  artifact: icu-$(arch)-69.1
-          #- download: current
-          #  artifact: libxml2-$(arch)-2.9.12
-          #- download: current
-          #  artifact: curl-$(arch)-7.77.0
-          #- download: current
-          #  artifact: zlib-$(arch)-1.2.11
-          #- task: DownloadPipelineArtifact@2
-          #  inputs:
-          #    buildType: 'specific'
-          #    project: '3133d6ab-80a8-4996-ac4f-03df25cd3224'
-          #    definition: '65'
-          #    buildVersionToDownload: 'specific'
-          #    pipelineId: '57530'
-          #    artifactName: 'toolchain-amd64'
-          #    targetPath: '$(Pipeline.Workspace)'
+          - download: current
+            artifact: icu-$(arch)-69.1
+          - download: current
+            artifact: libxml2-$(arch)-2.9.12
+          - download: current
+            artifact: curl-$(arch)-7.77.0
+          - download: current
+            artifact: zlib-$(arch)-1.2.11
+          - download: current
+            artifact: toolchain-amd64
           - checkout: apple/llvm-project
             fetchDepth: 1
           - checkout: apple/swift
@@ -655,7 +648,6 @@ stages:
                 Copy-Item "$(Build.SourcesDirectory)\swift\stdlib\public\Platform\visualc.apinotes" -destination "$env:VCToolsInstallDir\include\visualc.apinotes"
                 Copy-Item "$(Build.SourcesDirectory)\swift\stdlib\public\Platform\winsdk.modulemap" -destination "$env:UniversalCRTSdkDir\Include\$env:UCRTVersion\um\module.modulemap"
           - bash: |
-              set -x
               echo "##vso[task.setvariable variable=root;isOutput=true]$(cygpath -m '$(Pipeline.Workspace)')"
             name: workspace
           - task: CMake@1
@@ -866,7 +858,7 @@ stages:
                 Copy-Item "$(Build.SourcesDirectory)\swift\stdlib\public\Platform\visualc.apinotes" -destination "$env:VCToolsInstallDir\include\visualc.apinotes"
                 Copy-Item "$(Build.SourcesDirectory)\swift\stdlib\public\Platform\winsdk.modulemap" -destination "$env:UniversalCRTSdkDir\Include\$env:UCRTVersion\um\module.modulemap"
           - bash: |
-              echo ##vso[task.setvariable variable=root;isOutput=true]$(cygpath -m '$(Pipeline.Workspace)')
+              echo "##vso[task.setvariable variable=root;isOutput=true]$(cygpath -m '$(Pipeline.Workspace)')"
             name: workspace
           - task: CMake@1
             inputs:
