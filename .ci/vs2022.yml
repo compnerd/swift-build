@@ -1201,8 +1201,8 @@ stages:
             fetchDepth: 1
           - script: |
               cd $(Build.SourcesDirectory)
-              npm install
-              npm run dev-package -- --verbose
+              call npm install
+              call npm run dev-package
           - publish: $(Build.SourcesDirectory)/swift-lang-development.vsix
             artifact: swift-lang-vsix
   - stage: package_icu
