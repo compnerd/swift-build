@@ -1202,7 +1202,7 @@ stages:
           - script: |
               cd $(Build.SourcesDirectory)
               npm install
-              npm run dev-package
+              npm run dev-package -- --verbose
           - publish: $(Build.SourcesDirectory)/swift-lang-development.vsix
             artifact: swift-lang-vsix
   - stage: package_icu
