@@ -622,12 +622,13 @@ stages:
             artifact: zlib-$(arch)-1.2.11
           - task: DownloadPipelineArtifact@2
             inputs:
-              buildType: specific
-              project: 3133d6ab-80a8-4996-ac4f-03df25cd3224 
-              definition: 65
-              allowPartiallySucceededBuilds: true
-              specificBuildWithTriggering: true
-              artifact: toolchain-amd64
+              buildType: 'specific'
+              project: '3133d6ab-80a8-4996-ac4f-03df25cd3224'
+              definition: '65'
+              buildVersionToDownload: 'specific'
+              pipelineId: '57530'
+              artifactName: 'toolchain-amd64'
+              targetPath: '$(Pipeline.Workspace)'
           - checkout: apple/llvm-project
             fetchDepth: 1
           - checkout: apple/swift
