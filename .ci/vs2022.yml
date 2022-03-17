@@ -629,8 +629,8 @@ stages:
           #    pipelineId: '57530'
           #    artifactName: 'toolchain-amd64'
           #    targetPath: '$(Pipeline.Workspace)'
-          #- checkout: apple/llvm-project
-          #  fetchDepth: 1
+          - checkout: apple/llvm-project
+            fetchDepth: 1
           - checkout: apple/swift
             fetchDepth: 1
           - checkout: apple/swift-corelibs-libdispatch
@@ -656,7 +656,7 @@ stages:
                 Copy-Item "$(Build.SourcesDirectory)\swift\stdlib\public\Platform\winsdk.modulemap" -destination "$env:UniversalCRTSdkDir\Include\$env:UCRTVersion\um\module.modulemap"
           - bash: |
               set -x
-              echo ##vso[task.setvariable variable=root;]$(cygpath -m '$(Pipeline.Workspace)')
+              echo "##vso[task.setvariable variable=root;]$(cygpath -m '$(Pipeline.Workspace)')"
             name: workspace
           - task: CMake@1
             inputs:
