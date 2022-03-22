@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          ref: release/5.6
+          ref: refs/tags/0.50600.1
           repository: apple/swift-format
 
       - uses: compnerd/gha-setup-swift@main
