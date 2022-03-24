@@ -620,8 +620,19 @@ stages:
             artifact: curl-$(arch)-7.77.0
           - download: current
             artifact: zlib-$(arch)-1.2.11
-          - download: current
-            artifact: toolchain-amd64
+          # - download: current
+          #   artifact: toolchain-amd64
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: specific
+              project: 3133d6ab-80a8-4996-ac4f-03df25cd3224
+              definition: 65
+              allowPartiallySucceededBuilds: true
+              specificBuildWithTriggering: true
+              buildVersionToDownload: 'specific'
+              pipelineId: 57711
+              targetPath: $(Pipeline.Workspace)/toolchain-amd64
+              artifact: toolchain-amd64
           - checkout: apple/llvm-project
             fetchDepth: 1
           - checkout: apple/swift
@@ -829,10 +840,32 @@ stages:
               git config --global --add core.symlinks true
           - download: current
             artifact: sqlite-$(arch)-3.36.0
-          - download: current
-            artifact: toolchain-amd64
-          - download: current
-            artifact: windows-sdk-$(arch)
+          # - download: current
+          #   artifact: toolchain-amd64
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: specific
+              project: 3133d6ab-80a8-4996-ac4f-03df25cd3224
+              definition: 65
+              allowPartiallySucceededBuilds: true
+              specificBuildWithTriggering: true
+              buildVersionToDownload: 'specific'
+              pipelineId: 57878
+              targetPath: $(Pipeline.Workspace)/toolchain-amd64
+              artifact: toolchain-amd64
+          # - download: current
+          #   artifact: windows-sdk-$(arch)
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: specific
+              project: 3133d6ab-80a8-4996-ac4f-03df25cd3224
+              definition: 65
+              allowPartiallySucceededBuilds: true
+              specificBuildWithTriggering: true
+              buildVersionToDownload: 'specific'
+              pipelineId: 57878
+              targetPath: $(Pipeline.Workspace)/windows-sdk-$(arch)
+              artifact: windows-sdk-$(arch)
           - checkout: apple/indexstore-db
             fetchDepth: 1
           - checkout: apple/sourcekit-lsp
@@ -1318,22 +1351,32 @@ stages:
             #  arch: arm64
             #  platform: aarch64
         steps:
-          - download: current
-            artifact: windows-sdk-$(arch)
+          # - download: current
+          #   artifact: windows-sdk-$(arch)
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: specific
+              project: 3133d6ab-80a8-4996-ac4f-03df25cd3224
+              definition: 65
+              allowPartiallySucceededBuilds: true
+              specificBuildWithTriggering: true
+              buildVersionToDownload: 'specific'
+              pipelineId: 57878
+              targetPath: $(Pipeline.Workspace)/windows-sdk-$(arch)
+              artifact: windows-sdk-$(arch)
           - checkout: apple/swift-installer-scripts
             fetchDepth: 1
           - checkout: apple/swift
             fetchDepth: 1
-          - task: NuGetToolInstaller@1
           - task: MSBuild@1
             inputs:
-              solution: $(Build.SourcesDirectory)/swift-installer-scripts/platforms/Windows/sdk.wixproj
-              msbuildArchitecture: $(arch)
+              solution: $(Build.SourcesDirectory)/swift-installer-scripts/platforms/Windows/CustomActions/SwiftInstaller/SwiftInstaller.vcxproj
+              msbuildArchitecture: x64
               platform: $(platform)
               configuration: Release
-              maximumCpuCount: true
               msbuildArguments:
-                -t:restore
+                -restore
+              maximumCpuCount: true
           - task: MSBuild@1
             inputs:
               solution: $(Build.SourcesDirectory)/swift-installer-scripts/platforms/Windows/sdk.wixproj
@@ -1341,8 +1384,6 @@ stages:
               platform: $(platform)
               configuration: Release
               maximumCpuCount: true
-              restoreNugetPackages: true
-              createLogFile: true
               msbuildArguments:
                 -p:RunWixToolsOutOfProc=true
                 -p:PLATFORM_ROOT=$(Pipeline.Workspace)/windows-sdk-$(arch)/Library/Developer/Platforms/Windows.platform
@@ -1357,8 +1398,6 @@ stages:
               platform: $(platform)
               configuration: Release
               maximumCpuCount: true
-              restoreNugetPackages: false
-              createLogFile: true
               msbuildArguments:
                 -p:RunWixToolsOutOfProc=true
                 -p:PLATFORM_ROOT=$(Pipeline.Workspace)/windows-sdk-$(arch)/Library/Developer/Platforms/Windows.platform
