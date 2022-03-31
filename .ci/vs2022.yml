@@ -1548,7 +1548,7 @@ stages:
               maximumCpuCount: true
               msbuildArguments:
                 -p:RunWixToolsOutOfProc=true
-                -p:PlatformArchitecture=$(arch)
+                -p:ProductArchitecture=$(arch)
                 -p:PLATFORM_ROOT=$(Pipeline.Workspace)/windows-sdk-$(arch)/Library/Developer/Platforms/Windows.platform
                 -p:SDK_ROOT=$(Pipeline.Workspace)/windows-sdk-$(arch)/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk
                 -p:SWIFT_SOURCE_DIR=$(Build.SourcesDirectory)/swift
@@ -1563,7 +1563,7 @@ stages:
               maximumCpuCount: true
               msbuildArguments:
                 -p:RunWixToolsOutOfProc=true
-                -p:PlatformArchitecture=$(arch)
+                -p:ProductArchitecture=$(arch)
                 -p:PLATFORM_ROOT=$(Pipeline.Workspace)/windows-sdk-$(arch)/Library/Developer/Platforms/Windows.platform
                 -p:SDK_ROOT=$(Pipeline.Workspace)/windows-sdk-$(arch)/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk
                 -p:SWIFT_SOURCE_DIR=$(Build.SourcesDirectory)/swift
