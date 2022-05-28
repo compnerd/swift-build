@@ -439,7 +439,7 @@ stages:
                 -D CMAKE_C_COMPILER=cl
                 -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy"
                 -D CMAKE_CXX_COMPILER=cl
-                -D CMAKE_CXX_FLAGS="/GS- /Oy /Gw /Gy"
+                -D CMAKE_CXX_FLAGS="/GS- /Oy /Gw /Gy /FI use_ansi.h"
                 -D CMAKE_MT=mt
                 -D CMAKE_INSTALL_PREFIX=$(Build.StagingDirectory)/Library/icu-69.1/usr
                 -G Ninja
