@@ -370,15 +370,14 @@ stages:
           - checkout: unicode-org/icu
             fetchDepth: 1
           - powershell: |
-              if ("$(arch)" -eq "amd64" -Or "$(arch)" -eq "x86") {
-                $ArchComponent = ".x86.x64"
-                $AtlArchComponent = ""
-              } else {
-                $ArchComponent = ".ARM64"
-                $AtlArchComponent = ".ARM64"
-              }
-              $InstallerArguments = "modify --quiet --norestart --productId Microsoft.VisualStudio.Product.Enterprise --channelId VisualStudio.17.Release --add Microsoft.VisualStudio.Component.VC.14.31.17.1$ArchComponent --add Microsoft.VisualStudio.Component.VC.14.31.17.1.ATL$AtlArchComponent"
+              $InstallerArguments = "modify --quiet --norestart --productId Microsoft.VisualStudio.Product.Enterprise --channelId VisualStudio.17.Release --add Microsoft.VisualStudio.Component.VC.14.31.17.1.x86.x64 --add Microsoft.VisualStudio.Component.VC.14.31.17.1.ATL --add Microsoft.VisualStudio.Component.VC.14.31.17.1.ARM64 --add Microsoft.VisualStudio.Component.VC.14.31.17.1.ATL.ARM64"
               Start-Process -FilePath "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe" -Wait -ArgumentList $InstallerArguments
+              do {
+                Start-Sleep -Seconds 5
+                Write-Host "Checking for setup process..."
+                $SetupProcess = Get-Process setup -ErrorAction SilentlyContinue
+                Write-Host $SetupProcess
+              } while ($SetupProcess -ne $Null)
           - script: |
               copy $(Build.SourcesDirectory)\swift-installer-scripts\shared\ICU\CMakeLists.txt $(Build.SourcesDirectory)\icu\icu4c\CMakeLists.txt
           - script: |
@@ -767,7 +766,7 @@ stages:
           - task: DownloadBuildArtifacts@1
             inputs:
               buildType: 'specific'
-              project: 'compnerd/swift-build'
+              project: 'swift-build'
               pipeline: '65'
               buildVersionToDownload: 'specific'
               buildId: '59029'
