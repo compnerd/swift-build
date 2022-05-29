@@ -372,14 +372,7 @@ stages:
           - script: |
               copy $(Build.SourcesDirectory)\swift-installer-scripts\shared\ICU\CMakeLists.txt $(Build.SourcesDirectory)\icu\icu4c\CMakeLists.txt
           - powershell: |
-              if ("$(arch)" -eq "amd64" -Or "$(arch)" -eq "x86") {
-                $ArchComponent = ".x86.x64"
-                $AtlArchComponent = ""
-              } else {
-                $ArchComponent = ".ARM64"
-                $AtlArchComponent = ".ARM64"
-              }
-              $InstallerArguments = "modify --quiet --norestart --productId Microsoft.VisualStudio.Product.Enterprise --channelId VisualStudio.17.Release --add Microsoft.VisualStudio.Component.VC.14.31.17.1$ArchComponent --add Microsoft.VisualStudio.Component.VC.14.31.17.1.ATL$AtlArchComponent"
+              $InstallerArguments = "modify --quiet --norestart --productId Microsoft.VisualStudio.Product.Enterprise --channelId VisualStudio.17.Release --add Microsoft.VisualStudio.Component.VC.14.31.17.1.x86.x64 --add Microsoft.VisualStudio.Component.VC.14.31.17.1.ARM64 --add Microsoft.VisualStudio.Component.VC.14.31.17.1.ATL --add Microsoft.VisualStudio.Component.VC.14.31.17.1.ATL.ARM64"
               Start-Process -FilePath "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe" -Wait -ArgumentList $InstallerArguments
           - script: |
               SET vswhere="%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
