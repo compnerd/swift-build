@@ -371,6 +371,16 @@ stages:
             fetchDepth: 1
           - script: |
               copy $(Build.SourcesDirectory)\swift-installer-scripts\shared\ICU\CMakeLists.txt $(Build.SourcesDirectory)\icu\icu4c\CMakeLists.txt
+          - powershell: |
+              if ("$(arch)" -eq "amd64" -Or "$(arch)" -eq "x86") {
+                $ArchComponent = ".x86.x64"
+                $AtlArchComponent = ""
+              } else {
+                $ArchComponent = ".ARM64"
+                $AtlArchComponent = ".ARM64"
+              }
+              $InstallerArguments = "modify --quiet --norestart --productId Microsoft.VisualStudio.Product.Enterprise --channelId VisualStudio.17.Release --add Microsoft.VisualStudio.Component.VC.14.31.17.1$ArchComponent --add Microsoft.VisualStudio.Component.VC.14.31.17.1.ATL$AtlArchComponent"
+              Start-Process -FilePath "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe" -Wait -ArgumentList $InstallerArguments
           - script: |
               SET vswhere="%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
               FOR /f "usebackq delims=" %%i IN (`%vswhere% -latest -property installationPath`) DO (
@@ -384,7 +394,7 @@ stages:
           - task: BatchScript@1
             inputs:
               filename: $(VsDevCmd)
-              arguments: -no_logo -arch=amd64 -host_arch=amd64
+              arguments: -no_logo -arch=amd64 -host_arch=amd64 -vcvars_ver=14.31
               modifyEnvironment: true
             condition: eq(variables['BUILD_TOOLS'], 'NO')
           - task: CMake@1
@@ -411,7 +421,7 @@ stages:
           - task: BatchScript@1
             inputs:
               filename: $(VsDevCmd)
-              arguments: -no_logo -arch=$(arch) -host_arch=amd64
+              arguments: -no_logo -arch=$(arch) -host_arch=amd64 -vcvars_ver=14.31
               modifyEnvironment: true
           - task: CMake@1
             inputs:
@@ -439,7 +449,7 @@ stages:
                 -D CMAKE_C_COMPILER=cl
                 -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy"
                 -D CMAKE_CXX_COMPILER=cl
-                -D CMAKE_CXX_FLAGS="/GS- /Oy /Gw /Gy /FI use_ansi.h"
+                -D CMAKE_CXX_FLAGS="/GS- /Oy /Gw /Gy"
                 -D CMAKE_MT=mt
                 -D CMAKE_INSTALL_PREFIX=$(Build.StagingDirectory)/Library/icu-69.1/usr
                 -G Ninja
