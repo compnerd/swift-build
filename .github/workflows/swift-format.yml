@@ -12,12 +12,19 @@ jobs:
         include:
           - tag: 5.6-RELEASE
             branch: swift-5.6-release
+            version: release/5.6
+            release: 5.6.0
+            
+          - tag: 5.7-DEVELOPMENT-SNAPSHOT-2022-06-04-a
+            branch: swift-5.7-branch
+            version: release/5.7
+            release: 5.7.20220604
 
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
-          ref: refs/tags/0.50600.1
+          ref: ${{ matrix.version }}
           repository: apple/swift-format
 
       - uses: compnerd/gha-setup-swift@main
@@ -40,7 +47,7 @@ jobs:
       - uses: microsoft/setup-msbuild@v1.0.3
       - name: package
         run: |
-          msbuild swift-build/wix/swift-format.wixproj -nologo -p:Configuration=Release -p:ProductVersion=5.5 -p:SWIFT_FORMAT_BUILD=$PWD\.build\release -p:OutputPath=$PWD\.build\artifacts -p:RunWixToolsOutOfProc=true
+          msbuild swift-build/wix/swift-format.wixproj -nologo -p:Configuration=Release -p:ProductVersion=${{ matrix.release }} -p:SWIFT_FORMAT_BUILD=$PWD\.build\release -p:OutputPath=$PWD\.build\artifacts -p:RunWixToolsOutOfProc=true
 
       - uses: actions/create-release@v1
         env:
