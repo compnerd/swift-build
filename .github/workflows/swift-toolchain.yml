@@ -1504,7 +1504,7 @@ jobs:
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
               -p:OutputPath=${{ github.workspace }}\BinaryCache\toolchain\ `
-              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\toolchain\ `
+              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\toolchain\obj\ `
               -p:SignOutput=true `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
@@ -1568,7 +1568,7 @@ jobs:
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
               -p:OutputPath=${{ github.workspace }}\BinaryCache\sdk\ `
-              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\sdk\ `
+              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\sdk\obj\ `
               -p:SignOutput=true `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
@@ -1584,7 +1584,7 @@ jobs:
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
               -p:OutputPath=${{ github.workspace }}\BinaryCache\runtime\ `
-              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\runtime\ `
+              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\runtime\obj\ `
               -p:SignOutput=true `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
@@ -1643,7 +1643,7 @@ jobs:
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
               -p:OutputPath=${{ github.workspace }}\BinaryCache\devtools\ `
-              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\devtools\ `
+              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\devtools\obj\ `
               -p:SignOutput=true `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
@@ -1708,7 +1708,7 @@ jobs:
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
               -p:OutputPath=${{ github.workspace }}\BinaryCache\installer\ `
-              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
+              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\installer\obj\ `
               -p:SignOutput=true `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
