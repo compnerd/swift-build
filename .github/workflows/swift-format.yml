@@ -19,6 +19,14 @@ jobs:
           fetch-depth: 1
           ref: refs/tags/swift-5.7.2-RELEASE
           repository: apple/swift-format
+          path: ${{ github.workspace }}/SourceCache/swift-format
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          ref: refs/heads/main
+          repository: apple/swift-installer-scripts
+          path: ${{ github.workspace }}/SourceCache/swift-installer-scripts
 
       - uses: compnerd/gha-setup-swift@main
         with:
@@ -27,20 +35,19 @@ jobs:
 
       - name: test
         run: |
+          cd ${{ github.workspace }}/SourceCache/swift-format
           swift test -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
       - name: build
         run: |
+          cd ${{ github.workspace }}/SourceCache/swift-format
           swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
       # Package
-      - uses: actions/checkout@v2
-        with:
-          path: swift-build
       - uses: microsoft/setup-msbuild@v1.0.3
       - name: package
         run: |
-          msbuild swift-build/wix/swift-format.wixproj -nologo -p:Configuration=Release -p:ProductVersion=5.5 -p:SWIFT_FORMAT_BUILD=$PWD\.build\release -p:OutputPath=$PWD\.build\artifacts -p:RunWixToolsOutOfProc=true
+          msbuild ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/swift-format.wixproj -nologo -p:Configuration=Release -p:ProductVersion=5.7.2 -p:SWIFT_FORMAT_BUILD=${{ github.workspace }}\SourceCache\swift-format\.build\release -p:OutputPath=${{ github.workspace }}\artifacts -p:RunWixToolsOutOfProc=true
 
       - uses: actions/create-release@v1
         env:
@@ -65,5 +72,5 @@ jobs:
         with:
           asset_content_type: application/octet-stream
           asset_name: swift-format.msi
-          asset_path: .build\artifacts\swift-format.msi
+          asset_path: ${{ github.workspace }}\artifacts\swift-format.msi
           upload_url: ${{ steps.create_release.outputs.upload_url }}
