@@ -14,19 +14,12 @@ jobs:
             branch: swift-5.7.2-release
 
     steps:
+      # Build
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
           ref: refs/tags/swift-5.7.2-RELEASE
           repository: apple/swift-format
-          path: ${{ github.workspace }}/SourceCache/swift-format
-
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-          ref: refs/heads/main
-          repository: apple/swift-installer-scripts
-          path: ${{ github.workspace }}/SourceCache/swift-installer-scripts
 
       - uses: compnerd/gha-setup-swift@main
         with:
@@ -35,20 +28,27 @@ jobs:
 
       - name: test
         run: |
-          cd ${{ github.workspace }}/SourceCache/swift-format
           swift test -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
       - name: build
         run: |
-          cd ${{ github.workspace }}/SourceCache/swift-format
           swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
 
       # Package
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          ref: refs/heads/main
+          repository: apple/swift-installer-scripts
+          path: ${{ github.workspace }}/SourceCache/swift-installer-scripts
+
       - uses: microsoft/setup-msbuild@v1.0.3
+
       - name: package
         run: |
           msbuild ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/swift-format.wixproj -nologo -p:Configuration=Release -p:ProductVersion=5.7.2 -p:SWIFT_FORMAT_BUILD=${{ github.workspace }}\SourceCache\swift-format\.build\release -p:OutputPath=${{ github.workspace }}\artifacts -p:RunWixToolsOutOfProc=true
 
+      # Release
       - uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
