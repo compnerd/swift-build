@@ -46,7 +46,7 @@ jobs:
 
       - name: package
         run: |
-          msbuild ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/swift-format.wixproj -nologo -p:Configuration=Release -p:ProductVersion=5.7.2 -p:SWIFT_FORMAT_BUILD=${{ github.workspace }}\SourceCache\swift-format\.build\release -p:OutputPath=${{ github.workspace }}\artifacts -p:RunWixToolsOutOfProc=true
+          msbuild ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/swift-format.wixproj -nologo -p:Configuration=Release -p:ProductVersion=5.7.2 -p:SWIFT_FORMAT_BUILD=${{ github.workspace }}\.build\release -p:OutputPath=${{ github.workspace }}\artifacts -p:RunWixToolsOutOfProc=true
 
       # Release
       - uses: actions/create-release@v1
