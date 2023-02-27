@@ -63,7 +63,7 @@ function Build-CMakeProject
   # Build all requested targets
   foreach ($Target in $Targets)
   {
-    if ($null -eq $Target)
+    if ($null -eq $Target -or "" -eq $Target)
     {
       cmake --build $B
       Check-LastExitCode
