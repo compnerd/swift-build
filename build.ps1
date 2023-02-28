@@ -151,7 +151,7 @@ function Build-Toolchain($Arch)
   Move-Item -Force $ToolchainInstallRoot\usr\lib\swift\windows\_InternalSwiftScan.lib $ToolchainInstallRoot\usr\lib
 }
 
-function Build-LLLVM($Arch)
+function Build-LLVM($Arch)
 {
   $BinDir = Get-ProjectBuildDir $Arch 0
 
