@@ -260,11 +260,26 @@ function Build-ICU($Arch)
     Copy-Item $SourceCache\swift-installer-scripts\shared\ICU\icupkg.inc.cmake $SourceCache\icu\icu4c\
   }
 
+  if ($Arch -eq $ArchARM64)
+  {
+    # Use previously built x64 tools
+    $BuildToolsArgs = @(
+      "-D", "BUILD_TOOLS=NO",
+      "-D", "ICU_TOOLS_DIR=S:\b\icu-69.1.x64\Tools"
+    )
+  }
+  else
+  {
+    $BuildToolsArgs = @(
+      "-D", "BUILD_TOOLS=YES"
+    )
+  }
+
   Build-CMakeProject `
     -Arch $Arch `
     -B $BinaryCache\icu-69.1.$ArchName `
     -D BUILD_SHARED_LIBS=NO `
-    -D BUILD_TOOLS=YES `
+    @BuildToolsArgs `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_MT=mt `
     -D CMAKE_INSTALL_PREFIX=$InstallRoot\icu-69.1\usr `
