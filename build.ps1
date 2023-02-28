@@ -89,7 +89,9 @@ function Build-CMakeProject
     [string] $B, # Build directory, passed to CMake
     [string] $S, # Source directory, passed to CMake
     [string] $G, # Generator, passed to CMake
-    [string[]] $Targets = @() # Targets to build
+    [switch] $BuildDefaultTarget = $false,
+    [string[]] $BuildTargets = @(),
+    [switch] $Install = $false
     # Any other arguments are passed to the CMake generate step as @args
   )
   
@@ -106,18 +108,22 @@ function Build-CMakeProject
   Check-LastExitCode
 
   # Build all requested targets
-  foreach ($Target in $Targets)
+  if ($BuildDefaultTarget)
   {
-    if ($null -eq $Target -or "" -eq $Target)
-    {
-      cmake --build $B
-      Check-LastExitCode
-    }
-    else
-    {
-      cmake --build $B --target $Target
-      Check-LastExitCode
-    }
+    cmake --build $B
+    Check-LastExitCode
+  }
+
+  foreach ($Target in $BuildTargets)
+  {
+    cmake --build $B --target $Target
+    Check-LastExitCode
+  }
+  
+  if ($Install)
+  {
+    cmake --build $B --target install
+    Check-LastExitCode
   }
 }
 
@@ -143,7 +149,7 @@ function Build-Toolchain($Arch)
     -D SWIFT_PATH_TO_STRING_PROCESSING_SOURCE=$SourceCache\swift-experimental-string-processing `
     -G Ninja `
     -S $SourceCache\llvm-project\llvm `
-    -Targets ("distribution", "install-distribution")
+    -BuildTargets "distribution","install-distribution"
 
   # Restructure Internal Modules
   Remove-Item -Recurse -Force $ToolchainInstallRoot\usr\include\_InternalSwiftScan -ErrorAction Ignore
@@ -181,7 +187,8 @@ function Build-ZLib($Arch)
     -D SKIP_INSTALL_FILES=YES `
     -G Ninja `
     -S $SourceCache\zlib `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-XML2($Arch)
@@ -206,7 +213,8 @@ function Build-XML2($Arch)
     -D LIBXML2_WITH_ZLIB=NO `
     -G Ninja `
     -S $SourceCache\libxml2 `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-CURL($Arch)
@@ -247,7 +255,8 @@ function Build-CURL($Arch)
     -D ZLIB_LIBRARY=$InstallRoot\zlib-1.2.11\usr\lib\$ArchName\zlibstatic.lib `
     -G Ninja `
     -S $SourceCache\curl `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-ICU($Arch)
@@ -287,7 +296,8 @@ function Build-ICU($Arch)
     -D CMAKE_INSTALL_LIBDIR=lib/$ArchName `
     -G Ninja `
     -S $SourceCache\icu\icu4c `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-SwiftRuntime($Arch)
@@ -320,7 +330,8 @@ function Build-SwiftRuntime($Arch)
     -D SWIFT_PATH_TO_SWIFT_SYNTAX_SOURCE=$SourceCache\swift-syntax `
     -G Ninja `
     -S $SourceCache\swift `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 
   # Restructure runtime
   mkdir $InstallRoot\swift-development\usr\bin\$ArchShortName -ErrorAction Ignore
@@ -353,7 +364,8 @@ function Build-Dispatch($Arch)
     -D ENABLE_SWIFT=YES `
     -G Ninja `
     -S $SourceCache\swift-corelibs-libdispatch `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 
   # Restructure Runtime
   Move-Item -Force $SDKInstallRoot\usr\bin\*.dll $InstallRoot\swift-development\usr\bin\x64\
@@ -416,7 +428,8 @@ function Build-Foundation($Arch)
     -D ENABLE_TESTING=NO `
     -G Ninja `
     -S $SourceCache\swift-corelibs-foundation `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 
   # Restructure Runtime
   Move-Item -Force $SDKInstallRoot\usr\bin\*.dll $InstallRoot\swift-development\usr\bin\$ShortArch\
@@ -425,7 +438,7 @@ function Build-Foundation($Arch)
   # Remove CoreFoundation Headers
   foreach ($module in ("CoreFoundation", "CFXMLInterface", "CFURLSessionInterface"))
   {
-    Remove-Item -Recurse -Force $SDKInstallRoot\usr\lib\swift\$module
+    Remove-Item -Recurse -Force $SDKInstallRoot\usr\lib\swift\$module -ErrorAction Ignore
   }
 
   # Restructure Import Libraries, Modules
@@ -463,10 +476,11 @@ function Build-XCTest($Arch)
     -D Foundation_DIR=$FoundationBinDir\cmake\modules `
     -G Ninja `
     -S $SourceCache\swift-corelibs-xctest `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 
   # Restructure Runtime
-  Remove-Item -Recurse -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$BinaryDir
+  Remove-Item -Recurse -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$BinaryDir -ErrorAction Ignore
   Move-Item -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\bin $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$BinaryDir
 
   # Restructure Import Libraries
@@ -508,7 +522,8 @@ function Build-SQLite($Arch)
     -D CMAKE_MT=mt `
     -G Ninja `
     -S $SourceCache\sqlite-3.36.0 `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-SwiftSystem($Arch)
@@ -527,7 +542,8 @@ function Build-SwiftSystem($Arch)
     -D CMAKE_MT=mt `
     -G Ninja `
     -S $SourceCache\swift-system `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-ToolsSupportCore($Arch)
@@ -551,10 +567,11 @@ function Build-ToolsSupportCore($Arch)
     -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
     -D SwiftSystem_DIR=$BinaryCache\2\cmake\modules `
     -D SQLite3_INCLUDE_DIR=$InstallRoot\sqlite-3.36.0\usr\include `
-    -D SQLite3_LIBRARY=$InstallRoot\sqlite-3.36.0\usr\lib\$ArchName\SQLite3.lib `
+    -D SQLite3_LIBRARY=$InstallRoot\sqlite-3.36.0\usr\lib\SQLite3.lib `
     -G Ninja `
     -S $SourceCache\swift-tools-support-core `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-LLBuild($Arch)
@@ -578,10 +595,11 @@ function Build-LLBuild($Arch)
     -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
     -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
     -D SQLite3_INCLUDE_DIR=$InstallRoot\sqlite-3.36.0\usr\include `
-    -D SQLite3_LIBRARY=$InstallRoot\sqlite-3.36.0\usr\lib\$ArchName\SQLite3.lib `
+    -D SQLite3_LIBRARY=$InstallRoot\sqlite-3.36.0\usr\lib\SQLite3.lib `
     -G Ninja `
     -S $SourceCache\llbuild `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-Yams($Arch)
@@ -604,7 +622,7 @@ function Build-Yams($Arch)
     -D XCTest_DIR=$XCTestBuildDir\cmake\modules `
     -G Ninja `
     -S $SourceCache\Yams `
-    -Targets ($null)
+    -BuildDefaultTarget
 }
 
 function Build-ArgumentParser($Arch)
@@ -628,7 +646,8 @@ function Build-ArgumentParser($Arch)
     -D XCTest_DIR=$XCTestBuildDir\cmake\modules `
     -G Ninja `
     -S $SourceCache\swift-argument-parser `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-Driver($Arch)
@@ -654,10 +673,11 @@ function Build-Driver($Arch)
     -D Yams_DIR=$BinaryCache\5\cmake\modules `
     -D ArgumentParser_DIR=$BinaryCache\6\cmake\modules `
     -D SQLite3_INCLUDE_DIR=$InstallRoot\sqlite-3.36.0\usr\include `
-    -D SQLite3_LIBRARY=$InstallRoot\sqlite-3.36.0\usr\lib\$ArchName\SQLite3.lib `
+    -D SQLite3_LIBRARY=$InstallRoot\sqlite-3.36.0\usr\lib\SQLite3.lib `
     -G Ninja `
     -S $SourceCache\swift-driver `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-Crypto($Arch)
@@ -678,7 +698,7 @@ function Build-Crypto($Arch)
     -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
     -G Ninja `
     -S $SourceCache\swift-crypto `
-    -Targets ($null)
+    -BuildDefaultTarget
 }
 
 function Build-Collections($Arch)
@@ -695,7 +715,8 @@ function Build-Collections($Arch)
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -G Ninja `
     -S $SourceCache\swift-collections `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-PackageManager($Arch)
@@ -725,10 +746,11 @@ function Build-PackageManager($Arch)
     -D SwiftCrypto_DIR=$BinaryCache\8\cmake\modules `
     -D SwiftCollections_DIR=$BinaryCache\9\cmake\modules `
     -D SQLite3_INCLUDE_DIR=$InstallRoot\sqlite-3.36.0\usr\include `
-    -D SQLite3_LIBRARY=$InstallRoot\sqlite-3.36.0\usr\lib\$ArchName\SQLite3.lib `
+    -D SQLite3_LIBRARY=$InstallRoot\sqlite-3.36.0\usr\lib\SQLite3.lib `
     -G Ninja `
     -S $SourceCache\swift-package-manager `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-IndexStoreDB($Arch)
@@ -753,7 +775,7 @@ function Build-IndexStoreDB($Arch)
     -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
     -G Ninja `
     -S $SourceCache\indexstore-db `
-    -Targets ($null)
+    -BuildDefaultTarget
 }
 
 function Build-Syntax($Arch)
@@ -770,7 +792,8 @@ function Build-Syntax($Arch)
     -D CMAKE_MT=mt `
     -G Ninja `
     -S $SourceCache\swift-syntax `
-    -Targets ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 function Build-SourceKitLSP($Arch)
@@ -800,7 +823,8 @@ function Build-SourceKitLSP($Arch)
     -D SwiftSyntax_DIR=$BinaryCache\12\cmake\modules `
     -G Ninja `
     -S $SourceCache\sourcekit-lsp `
-    -Target ($null, "install")
+    -BuildDefaultTarget `
+    -Install
 }
 
 #-------------------------------------------------------------------
