@@ -1,10 +1,6 @@
 # Copyright 2020 Saleem Abdulrasool <compnerd@compnerd.org>
 #
 
-param(
-  [switch] $OnlyX64 = $false
-)
-
 Set-StrictMode -Version 3.0
 
 $SourceCache = "S:\SourceCache"
