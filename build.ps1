@@ -47,6 +47,17 @@ $ArchARM64 = @{
   BuildID = 300
 }
 
+$CurrentVSDevShellTargetArch = $null
+
+$InitialEnvPaths = @{
+  EXTERNAL_INCLUDE = $env:EXTERNAL_INCLUDE;
+  INCLUDE = $env:INCLUDE;
+  LIB = $env:LIB;
+  LIBPATH = $env:LIBPATH;
+  Path = $env:Path;
+  __VSCMD_PREINIT_PATH = $env:__VSCMD_PREINIT_PATH
+}
+
 # Build functions
 function Get-ProjectBuildDir($Arch, $ID)
 {
@@ -64,7 +75,13 @@ function Check-LastExitCode
 
 function Invoke-VsDevShell($Arch)
 {
-  .$VsDevShell -VsInstallationPath $VSInstallRoot -HostArch amd64 -Arch $Arch.VSName | Out-Null
+  # Restore path-style environment variables to avoid appending ever more entries
+  foreach ($entry in $InitialEnvPaths.GetEnumerator())
+  {
+    [Environment]::SetEnvironmentVariable($entry.Name, $entry.Value, "Process")
+  }
+
+  & $VsDevShell -VsInstallationPath $VSInstallRoot -HostArch amd64 -Arch $Arch.VSName | Out-Null
   Check-LastExitCode
 }
 
@@ -72,14 +89,21 @@ function Build-CMakeProject
 {
   param
   (
+    $Arch,
     [string] $B, # Build directory, passed to CMake
     [string] $S, # Source directory, passed to CMake
     [string] $G, # Generator, passed to CMake
     [string[]] $Targets = @() # Targets to build
     # Any other arguments are passed to the CMake generate step as @args
   )
+  
+  Write-Host -ForegroundColor Cyan "Building '$S' to '$B' for arch '$($Arch.ShortName)'..."
 
-  Write-Host -ForegroundColor Cyan "Building '$S' to '$B' with VS target arch '$env:VSCMD_ARG_TGT_ARCH'..."
+  # Make sure we have the right VSDevShell target architecture for building
+  if ($Arch -ne $CurrentVSDevShellTargetArch) {
+    Invoke-VsDevShell $Arch
+    $CurrentVSDevShellTargetArch = $Arch
+  }
 
   # Generate the project
   cmake -B $B -S $S -G $G @args
@@ -103,10 +127,10 @@ function Build-CMakeProject
 
 function Build-Toolchain($Arch)
 {
-
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\1 `
-    -C $SourceCache\swift\cmake\caches\Windows-$Arch.LLVMName.cmake `
+    -C $SourceCache\swift\cmake\caches\Windows-$($Arch.LLVMName).cmake `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D CMAKE_MT=mt `
@@ -136,6 +160,7 @@ function Build-LLLVM($Arch)
   $BinDir = Get-ProjectBuildDir $Arch 0
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinDir `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_MT=mt `
@@ -149,6 +174,7 @@ function Build-ZLib($Arch)
   $ArchName = $Arch.ShortName
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\zlib-1.2.11.$ArchName `
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
@@ -167,6 +193,7 @@ function Build-XML2($Arch)
   $ArchName = $Arch.ShortName
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\libxml2-2.9.12.$ArchName `
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
@@ -191,6 +218,7 @@ function Build-CURL($Arch)
   $ArchName = $Arch.ShortName
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\curl-7.77.0.$ArchName `
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
@@ -237,6 +265,7 @@ function Build-ICU($Arch)
   }
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\icu-69.1.$ArchName `
     -D BUILD_SHARED_LIBS=NO `
     -D BUILD_TOOLS=YES `
@@ -257,6 +286,7 @@ function Build-SwiftRuntime($Arch)
   $LlvmArch = $Arch.LLVMName
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinDir `
     -C "$SourceCache\swift\cmake\caches\Runtime-Windows-$LlvmArch.cmake" `
     -D CMAKE_BUILD_TYPE=Release `
@@ -294,6 +324,7 @@ function Build-Dispatch($Arch)
   $CMakeArch = $Arch.CMakeName
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinDir `
     -D BUILD_TESTING=NO `
     -D CMAKE_BUILD_TYPE=Release `
@@ -345,6 +376,7 @@ function Build-Foundation($Arch)
   $CMakeArch = $Arch.CMakeName
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinDir `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_ASM_COMPILER=S:/b/1/bin/clang-cl.exe `
@@ -407,6 +439,7 @@ function Build-XCTest($Arch)
   $BinaryDir = $Arch.BinaryDir
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinDir `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
@@ -423,14 +456,14 @@ function Build-XCTest($Arch)
 
   # Restructure Runtime
   Remove-Item -Recurse -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$BinaryDir
-  Move-Item $PlatformInstallRoot\Developer\Library\XCTest-development\usr\bin $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$BinaryDir
+  Move-Item -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\bin $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$BinaryDir
 
   # Restructure Import Libraries
-  mkdir $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\ -ErorAction Ignore
-  Move-Item $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.lib $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.lib
+  mkdir $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\ -ErrorAction Ignore
+  Move-Item -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.lib $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.lib
 
   # Restructure Module
-  mkdir $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule -ErorAction Ignore
+  mkdir $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule -ErrorAction Ignore
   Move-Item -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.swiftdoc $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule\$LlvmArch-unknown-windows-msvc.swiftdoc
   Move-Item -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.swiftmodule $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule\$LlvmArch-unknown-windows-msvc.swiftmodule
 }
@@ -455,6 +488,7 @@ function Build-SQLite($Arch)
   }
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\sqlite-3.36.0.$ArchName `
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
@@ -468,9 +502,10 @@ function Build-SQLite($Arch)
 
 function Build-SwiftSystem($Arch)
 {
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\2 `
     -D BUILD_SHARED_LIBS=YES `
     -D CMAKE_BUILD_TYPE=Release `
@@ -487,11 +522,12 @@ function Build-SwiftSystem($Arch)
 function Build-ToolsSupportCore($Arch)
 {
   $ArchName = $Arch.ShortName
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
-  $DispatchBuildDir = Get-ProjectBuildDir($Arch, 2)
-  $FoundationBuildDir = Get-ProjectBuildDir($Arch, 3)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
+  $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
+  $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\3 `
     -D BUILD_SHARED_LIBS=YES `
     -D CMAKE_BUILD_TYPE=Release `
@@ -513,11 +549,12 @@ function Build-ToolsSupportCore($Arch)
 function Build-LLBuild($Arch)
 {
   $ArchName = $Arch.ShortName
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
-  $DispatchBuildDir = Get-ProjectBuildDir($Arch, 2)
-  $FoundationBuildDir = Get-ProjectBuildDir($Arch, 3)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
+  $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
+  $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\4 `
     -D BUILD_SHARED_LIBS=YES `
     -D CMAKE_BUILD_TYPE=Release `
@@ -538,12 +575,13 @@ function Build-LLBuild($Arch)
 
 function Build-Yams($Arch)
 {
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
-  $DispatchBuildDir = Get-ProjectBuildDir($Arch, 2)
-  $FoundationBuildDir = Get-ProjectBuildDir($Arch, 3)
-  $XCTestBuildDir = Get-ProjectBuildDir($Arch, 4)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
+  $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
+  $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
+  $XCTestBuildDir = Get-ProjectBuildDir $Arch 4
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\5 `
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
@@ -560,12 +598,13 @@ function Build-Yams($Arch)
 
 function Build-ArgumentParser($Arch)
 {
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
-  $DispatchBuildDir = Get-ProjectBuildDir($Arch, 2)
-  $FoundationBuildDir = Get-ProjectBuildDir($Arch, 3)
-  $XCTestBuildDir = Get-ProjectBuildDir($Arch, 4)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
+  $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
+  $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
+  $XCTestBuildDir = Get-ProjectBuildDir $Arch 4
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\6 `
     -D BUILD_SHARED_LIBS=YES `
     -D BUILD_TESTING=NO `
@@ -584,11 +623,12 @@ function Build-ArgumentParser($Arch)
 function Build-Driver($Arch)
 {
   $ArchName = $Arch.ShortName
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
-  $DispatchBuildDir = Get-ProjectBuildDir($Arch, 2)
-  $FoundationBuildDir = Get-ProjectBuildDir($Arch, 3)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
+  $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
+  $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\7 `
     -D BUILD_SHARED_LIBS=YES `
     -D CMAKE_BUILD_TYPE=Release `
@@ -611,11 +651,12 @@ function Build-Driver($Arch)
 
 function Build-Crypto($Arch)
 {
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
-  $DispatchBuildDir = Get-ProjectBuildDir($Arch, 2)
-  $FoundationBuildDir = Get-ProjectBuildDir($Arch, 3)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
+  $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
+  $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\8 `
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
@@ -631,9 +672,10 @@ function Build-Crypto($Arch)
 
 function Build-Collections($Arch)
 {
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\9 `
     -D BUILD_SHARED_LIBS=YES `
     -D CMAKE_BUILD_TYPE=Release `
@@ -648,11 +690,12 @@ function Build-Collections($Arch)
 function Build-PackageManager($Arch)
 {
   $ArchName = $Arch.ShortName
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
-  $DispatchBuildDir = Get-ProjectBuildDir($Arch, 2)
-  $FoundationBuildDir = Get-ProjectBuildDir($Arch, 3)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
+  $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
+  $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\10 `
     -D BUILD_SHARED_LIBS=YES `
     -D CMAKE_BUILD_TYPE=Release `
@@ -679,11 +722,12 @@ function Build-PackageManager($Arch)
 
 function Build-IndexStoreDB($Arch)
 {
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
-  $DispatchBuildDir = Get-ProjectBuildDir($Arch, 2)
-  $FoundationBuildDir = Get-ProjectBuildDir($Arch, 3)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
+  $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
+  $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\11 `
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
@@ -703,9 +747,10 @@ function Build-IndexStoreDB($Arch)
 
 function Build-Syntax($Arch)
 {
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\12 `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
@@ -719,11 +764,12 @@ function Build-Syntax($Arch)
 
 function Build-SourceKitLSP($Arch)
 {
-  $SwiftBuildDir = Get-ProjectBuildDir($Arch, 1)
-  $DispatchBuildDir = Get-ProjectBuildDir($Arch, 2)
-  $FoundationBuildDir = Get-ProjectBuildDir($Arch, 3)
+  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
+  $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
+  $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
 
   Build-CMakeProject `
+    -Arch $Arch `
     -B $BinaryCache\13 `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
@@ -749,13 +795,11 @@ function Build-SourceKitLSP($Arch)
 #-------------------------------------------------------------------
 
 # Compilers
-Invoke-VsDevShell $ArchX64
 Build-Toolchain $ArchX64
 Build-LLVM $ArchX64
 
 foreach ($Arch in $ArchX64,$ArchX86,$ArchARM64)
 {
-  Invoke-VsDevShell $Arch
   Build-ZLib $Arch
   Build-XML2 $Arch
   Build-CURL $Arch
@@ -766,7 +810,6 @@ foreach ($Arch in $ArchX64,$ArchX86,$ArchARM64)
   Build-XCTest $Arch
 }
 
-Invoke-VsDevShell $ArchX64
 Build-SQLite $ArchX64
 Build-SwiftSystem $ArchX64
 Build-ToolsSupportCore $ArchX64
