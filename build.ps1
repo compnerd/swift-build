@@ -10,10 +10,8 @@ $ToolchainInstallRoot = "$InstallRoot\Developer\Toolchains\unknown-Asserts-devel
 $PlatformInstallRoot = "$InstallRoot\Developer\Platforms\Windows.platform"
 $SDKInstallRoot = "$PlatformInstallRoot\Developer\SDKs\Windows.sdk"
 
-$python = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Shared\Python39_64\python.exe"
 $vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSInstallRoot = .$vswhere -nologo -latest -products "*" -all -prerelease -property installationPath
-$VsDevShell = "$VSInstallRoot\Common7\Tools\Launch-VsDevShell.ps1"
 
 # Architecture definitions
 $ArchX64 = @{
@@ -80,7 +78,7 @@ function Invoke-VsDevShell($Arch)
     [Environment]::SetEnvironmentVariable($entry.Name, $entry.Value, "Process")
   }
 
-  & $VsDevShell -VsInstallationPath $VSInstallRoot -HostArch amd64 -Arch $Arch.VSName | Out-Null
+  & "$VSInstallRoot\Common7\Tools\Launch-VsDevShell.ps1" -VsInstallationPath $VSInstallRoot -HostArch amd64 -Arch $Arch.VSName | Out-Null
   Check-LastExitCode
 }
 
@@ -906,8 +904,18 @@ Build-SourceKitLSP $ArchX64
 Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\bin\swift.exe
 Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\bin\swiftc.exe
 
+$python = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Shared\Python39_64\python.exe"
+if (-not (Test-Path $python))
+{
+  $python = ((where.exe python) | Out-String).Trim()
+  if (-not (Test-Path $python))
+  {
+    throw "Python.exe not found"
+  }
+}
+
 # SDKSettings.plist
-.$python -c "import plistlib; print(str(plistlib.dumps({ 'DefaultProperties': { 'DEFAULT_USE_RUNTIME': 'MD' } }), encoding='utf-8'))" > $SDKInstallRoot\SDKSettings.plist
+& $python -c "import plistlib; print(str(plistlib.dumps({ 'DefaultProperties': { 'DEFAULT_USE_RUNTIME': 'MD' } }), encoding='utf-8'))" > $SDKInstallRoot\SDKSettings.plist
 
 # Info.plist
-.$python -c "import plistlib; print(str(plistlib.dumps({ 'DefaultProperties': { 'XCTEST_VERSION': 'development' } }), encoding='utf-8'))" > $PlatformInstallRoot\Info.plist
+& $python -c "import plistlib; print(str(plistlib.dumps({ 'DefaultProperties': { 'XCTEST_VERSION': 'development' } }), encoding='utf-8'))" > $PlatformInstallRoot\Info.plist
