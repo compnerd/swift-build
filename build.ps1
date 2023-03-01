@@ -20,6 +20,7 @@ $ArchX64 = @{
   VSName = "amd64";
   ShortName = "x64";
   LLVMName = "x86_64";
+  LLVMTarget = "x86_64-unknown-windows-msvc";
   CMakeName = "AMD64";
   BinaryDir = "bin64";
   BuildID = 100
@@ -29,6 +30,7 @@ $ArchX86 = @{
   VSName = "x86";
   ShortName = "x86";
   LLVMName = "i686";
+  LLVMTarget = "i686-unknown-windows-msvc";
   CMakeName = "i686";
   BinaryDir = "bin32";
   BuildID = 200
@@ -38,6 +40,7 @@ $ArchARM64 = @{
   VSName = "arm64";
   ShortName = "arm64";
   LLVMName = "aarch64";
+  LLVMTarget = "aarch64-unknown-windows-msvc";
   CMakeName = "aarch64";
   BinaryDir = "bin64a";
   BuildID = 300
@@ -85,14 +88,20 @@ function Build-CMakeProject
 {
   param
   (
+    [CmdletBinding(PositionalBinding = $false)]
     $Arch,
+    [CmdletBinding(PositionalBinding = $false)]
     [string] $B, # Build directory, passed to CMake
+    [CmdletBinding(PositionalBinding = $false)]
     [string] $S, # Source directory, passed to CMake
+    [CmdletBinding(PositionalBinding = $false)]
     [string] $G, # Generator, passed to CMake
+    [CmdletBinding(PositionalBinding = $false)]
     [switch] $BuildDefaultTarget = $false,
+    [CmdletBinding(PositionalBinding = $false)]
     [string[]] $BuildTargets = @(),
+    [CmdletBinding(PositionalBinding = $false)]
     [switch] $Install = $false
-    # Any other arguments are passed to the CMake generate step as @args
   )
   
   Write-Host -ForegroundColor Cyan "Building '$S' to '$B' for arch '$($Arch.ShortName)'..."
@@ -152,9 +161,14 @@ function Build-Toolchain($Arch)
     -BuildTargets "distribution","install-distribution"
 
   # Restructure Internal Modules
-  Remove-Item -Recurse -Force $ToolchainInstallRoot\usr\include\_InternalSwiftScan -ErrorAction Ignore
-  Move-Item -Force $ToolchainInstallRoot\usr\lib\swift\_InternalSwiftScan $ToolchainInstallRoot\usr\include
-  Move-Item -Force $ToolchainInstallRoot\usr\lib\swift\windows\_InternalSwiftScan.lib $ToolchainInstallRoot\usr\lib
+  Remove-Item -Recurse -Force  -ErrorAction Ignore `
+    $ToolchainInstallRoot\usr\include\_InternalSwiftScan
+  Move-Item -Force `
+    $ToolchainInstallRoot\usr\lib\swift\_InternalSwiftScan `
+    $ToolchainInstallRoot\usr\include
+  Move-Item -Force `
+    $ToolchainInstallRoot\usr\lib\swift\windows\_InternalSwiftScan.lib `
+    $ToolchainInstallRoot\usr\lib
 }
 
 function Build-LLVM($Arch)
@@ -166,7 +180,7 @@ function Build-LLVM($Arch)
     -B $BinDir `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_MT=mt `
-    -D LLVM_HOST_TRIPLE=$Arch.LLVMName-unknown-windows-msvc `
+    -D LLVM_HOST_TRIPLE=$($Arch.LLVMTarget) `
     -G Ninja `
     -S $SourceCache\llvm-project\llvm
 }
@@ -284,6 +298,9 @@ function Build-ICU($Arch)
     )
   }
 
+  # Specifying "-BuildTargets @()" works around a PowerShell bug,
+  # where the first @-expanded argument would be passed to
+  # -BuildTargets because it is an array.
   Build-CMakeProject `
     -Arch $Arch `
     -B $BinaryCache\icu-69.1.$ArchName `
@@ -297,24 +314,23 @@ function Build-ICU($Arch)
     -G Ninja `
     -S $SourceCache\icu\icu4c `
     -BuildDefaultTarget `
+    -BuildTargets @() `
     -Install
 }
 
 function Build-SwiftRuntime($Arch)
 {
   $BinDir = Get-ProjectBuildDir $Arch 1
-  $ArchShortName = $Arch.ShortName
-  $LlvmArch = $Arch.LLVMName
 
   Build-CMakeProject `
     -Arch $Arch `
     -B $BinDir `
-    -C "$SourceCache\swift\cmake\caches\Runtime-Windows-$LlvmArch.cmake" `
+    -C "$SourceCache\swift\cmake\caches\Runtime-Windows-$($Arch.LLVMName).cmake" `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
-    -D CMAKE_C_COMPILER_TARGET=$LlvmArch-unknown-windows-msvc `
+    -D CMAKE_C_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_CXX_COMPILER=S:/b/1/bin/clang-cl.exe `
-    -D CMAKE_CXX_COMPILER_TARGET=$LlvmArch-unknown-windows-msvc `
+    -D CMAKE_CXX_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_INSTALL_PREFIX=$SDKInstallRoot\usr `
     -D CMAKE_MT=mt `
     -D LLVM_DIR=$BinaryCache\100\lib\cmake\llvm `
@@ -334,16 +350,17 @@ function Build-SwiftRuntime($Arch)
     -Install
 
   # Restructure runtime
-  mkdir $InstallRoot\swift-development\usr\bin\$ArchShortName -ErrorAction Ignore
-  Move-Item -Force $SDKInstallRoot\usr\bin\*.dll $InstallRoot\swift-development\usr\bin\$ArchShortName\
+  mkdir  -ErrorAction Ignore `
+    $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)
+  Move-Item -Force `
+    $SDKInstallRoot\usr\bin\*.dll `
+    $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)\
 }
 
 function Build-Dispatch($Arch)
 {
   $BinDir = Get-ProjectBuildDir $Arch 2
   $SwiftLibDir = (Get-ProjectBuildDir $Arch 1) + "\lib\swift"
-  $LlvmArch = $Arch.LLVMName
-  $CMakeArch = $Arch.CMakeName
 
   Build-CMakeProject `
     -Arch $Arch `
@@ -351,14 +368,14 @@ function Build-Dispatch($Arch)
     -D BUILD_TESTING=NO `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
-    -D CMAKE_C_COMPILER_TARGET=$LlvmArch-unknown-windows-msvc `
+    -D CMAKE_C_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_CXX_COMPILER=S:/b/1/bin/clang-cl.exe `
-    -D CMAKE_CXX_COMPILER_TARGET=$LlvmArch-unknown-windows-msvc `
+    -D CMAKE_CXX_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_COMPILER_TARGET=$LlvmArch-unknown-windows-msvc `
+    -D CMAKE_Swift_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_Swift_FLAGS="-resource-dir $SwiftLibDir -L $SwiftLibDir\windows" `
     -D CMAKE_SYSTEM_NAME=Windows `
-    -D CMAKE_SYSTEM_PROCESSOR=$CMakeArch `
+    -D CMAKE_SYSTEM_PROCESSOR=$($Arch.CMakeName) `
     -D CMAKE_INSTALL_PREFIX=$SDKInstallRoot\usr `
     -D CMAKE_MT=mt `
     -D ENABLE_SWIFT=YES `
@@ -368,25 +385,37 @@ function Build-Dispatch($Arch)
     -Install
 
   # Restructure Runtime
-  Move-Item -Force $SDKInstallRoot\usr\bin\*.dll $InstallRoot\swift-development\usr\bin\x64\
+  Move-Item -Force `
+    $SDKInstallRoot\usr\bin\*.dll `
+    $InstallRoot\swift-development\usr\bin\x64\
 
   # Restructure BlocksRuntime, dispatch headers
   foreach ($module in ("Block", "dispatch", "os"))
   {
-    Remove-Item -Recurse -Force $SDKInstallRoot\usr\include\$module -ErrorAction Ignore
-    Move-Item -Force $SDKInstallRoot\usr\lib\swift\$module $SDKInstallRoot\usr\include\
+    Remove-Item -Recurse -Force -ErrorAction Ignore `
+      $SDKInstallRoot\usr\include\$module
+    Move-Item -Force `
+      $SDKInstallRoot\usr\lib\swift\$module `
+      $SDKInstallRoot\usr\include\
   }
 
   # Restructure Import Libraries
   foreach ($module in ("BlocksRuntime", "dispatch", "swiftDispatch"))
   {
-    Move-Item -Force $SDKInstallRoot\usr\lib\swift\windows\$($module).lib $SDKInstallRoot\usr\lib\swift\windows\$LlvmArch
+    Move-Item -Force `
+      $SDKInstallRoot\usr\lib\swift\windows\$($module).lib `
+      $SDKInstallRoot\usr\lib\swift\windows\$($Arch.LLVMName)
   }
 
   # Restructure Module
-  mkdir $SDKInstallRoot\usr\lib\swift\windows\Dispatch.swiftmodule -ErrorAction Ignore
-  Move-Item -Force $SDKInstallRoot\usr\lib\swift\windows\$LlvmArch\Dispatch.swiftmodule $SDKInstallRoot\usr\lib\swift\windows\Dispatch.swiftmodule\$LlvmArch-unknown-windows-msvc.swiftmodule
-  Move-Item -Force $SDKInstallRoot\usr\lib\swift\windows\$LlvmArch\Dispatch.swiftdoc $SDKInstallRoot\usr\lib\swift\windows\Dispatch.swiftmodule\$LlvmArch-unknown-windows-msvc.swiftdoc
+  mkdir -ErrorAction Ignore `
+    $SDKInstallRoot\usr\lib\swift\windows\Dispatch.swiftmodule
+  Move-Item -Force `
+    $SDKInstallRoot\usr\lib\swift\windows\$($Arch.LLVMName)\Dispatch.swiftmodule `
+    $SDKInstallRoot\usr\lib\swift\windows\Dispatch.swiftmodule\$($Arch.LLVMTarget).swiftmodule
+  Move-Item -Force `
+    $SDKInstallRoot\usr\lib\swift\windows\$($Arch.LLVMName)\Dispatch.swiftdoc `
+    $SDKInstallRoot\usr\lib\swift\windows\Dispatch.swiftmodule\$($Arch.LLVMTarget).swiftdoc
 }
 
 function Build-Foundation($Arch)
@@ -395,22 +424,20 @@ function Build-Foundation($Arch)
   $SwiftLibDir = (Get-ProjectBuildDir $Arch 1) + "\lib\swift"
   $DispatchBinDir = Get-ProjectBuildDir $Arch 2
   $ShortArch = $Arch.ShortName
-  $LlvmArch = $Arch.LLVMName
-  $CMakeArch = $Arch.CMakeName
 
   Build-CMakeProject `
     -Arch $Arch `
     -B $BinDir `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_ASM_COMPILER=S:/b/1/bin/clang-cl.exe `
-    -D CMAKE_ASM_FLAGS="--target=$LlvmArch-unknown-windows-msvc" `
+    -D CMAKE_ASM_FLAGS="--target=$($Arch.LLVMTarget)" `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
-    -D CMAKE_C_COMPILER_TARGET=$LlvmArch-unknown-windows-msvc `
+    -D CMAKE_C_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_COMPILER_TARGET=$LlvmArch-unknown-windows-msvc `
+    -D CMAKE_Swift_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_Swift_FLAGS="-resource-dir $SwiftLibDir -L $SwiftLibDir\windows" `
     -D CMAKE_SYSTEM_NAME=Windows `
-    -D CMAKE_SYSTEM_PROCESSOR=$CMakeArch `
+    -D CMAKE_SYSTEM_PROCESSOR=$($Arch.CMakeName) `
     -D CMAKE_INSTALL_PREFIX=$SDKInstallRoot\usr `
     -D CMAKE_ASM_COMPILE_OPTIONS_MSVC_RUNTIME_LIBRARY_MultiThreadedDLL="/MD" `
     -D CMAKE_MT=mt `
@@ -432,23 +459,34 @@ function Build-Foundation($Arch)
     -Install
 
   # Restructure Runtime
-  Move-Item -Force $SDKInstallRoot\usr\bin\*.dll $InstallRoot\swift-development\usr\bin\$ShortArch\
-  Move-Item -Force $SDKInstallRoot\usr\bin\*.exe $InstallRoot\swift-development\usr\bin\$ShortArch\
+  Move-Item -Force `
+    $SDKInstallRoot\usr\bin\*.dll `
+    $InstallRoot\swift-development\usr\bin\$ShortArch\
+  Move-Item -Force `
+    $SDKInstallRoot\usr\bin\*.exe `
+    $InstallRoot\swift-development\usr\bin\$ShortArch\
 
   # Remove CoreFoundation Headers
   foreach ($module in ("CoreFoundation", "CFXMLInterface", "CFURLSessionInterface"))
   {
-    Remove-Item -Recurse -Force $SDKInstallRoot\usr\lib\swift\$module -ErrorAction Ignore
+    Remove-Item -Recurse -Force -ErrorAction Ignore `
+      $SDKInstallRoot\usr\lib\swift\$module
   }
 
   # Restructure Import Libraries, Modules
   foreach ($module in ("Foundation", "FoundationNetworking", "FoundationXML"))
   {
-    Move-Item -Force $SDKInstallRoot\usr\lib\swift\windows\$($module).lib $SDKInstallRoot\usr\lib\swift\windows\$LlvmArch
+    Move-Item -Force `
+      $SDKInstallRoot\usr\lib\swift\windows\$($module).lib `
+      $SDKInstallRoot\usr\lib\swift\windows\$($Arch.LLVMName)
 
     mkdir $SDKInstallRoot\usr\lib\swift\windows\$($module).swiftmodule -ErrorAction Ignore
-    Move-Item -Force $SDKInstallRoot\usr\lib\swift\windows\$LlvmArch\$($module).swiftmodule $SDKInstallRoot\usr\lib\swift\windows\$($module).swiftmodule\$LlvmArch-unknown-windows-msvc.swiftmodule
-    Move-Item -Force $SDKInstallRoot\usr\lib\swift\windows\$LlvmArch\$($module).swiftdoc $SDKInstallRoot\usr\lib\swift\windows\$($module).swiftmodule\$LlvmArch-unknown-windows-msvc.swiftdoc
+    Move-Item -Force `
+      $SDKInstallRoot\usr\lib\swift\windows\$($Arch.LLVMName)\$($module).swiftmodule `
+      $SDKInstallRoot\usr\lib\swift\windows\$($module).swiftmodule\$($Arch.LLVMTarget).swiftmodule
+    Move-Item -Force `
+      $SDKInstallRoot\usr\lib\swift\windows\$($Arch.LLVMName)\$($module).swiftdoc `
+      $SDKInstallRoot\usr\lib\swift\windows\$($module).swiftmodule\$($Arch.LLVMTarget).swiftdoc
   }
 }
 
@@ -458,19 +496,16 @@ function Build-XCTest($Arch)
   $SwiftLibDir = (Get-ProjectBuildDir $Arch 1) + "\lib\swift"
   $DispatchBinDir = Get-ProjectBuildDir $Arch 2
   $FoundationBinDir = Get-ProjectBuildDir $Arch 3
-  $LlvmArch = $Arch.LLVMName
-  $CMakeArch = $Arch.CMakeName
-  $BinaryDir = $Arch.BinaryDir
 
   Build-CMakeProject `
     -Arch $Arch `
     -B $BinDir `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_COMPILER_TARGET=$LlvmArch-unknown-windows-msvc `
+    -D CMAKE_Swift_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_Swift_FLAGS="-resource-dir $SwiftLibDir -L $SwiftLibDir\windows" `
     -D CMAKE_SYSTEM_NAME=Windows `
-    -D CMAKE_SYSTEM_PROCESSOR=$CMakeArch `
+    -D CMAKE_SYSTEM_PROCESSOR=$($Arch.CMakeName) `
     -D CMAKE_INSTALL_PREFIX=$PlatformInstallRoot\Developer\Library\XCTest-development\usr `
     -D dispatch_DIR=$DispatchBinDir\cmake\modules `
     -D Foundation_DIR=$FoundationBinDir\cmake\modules `
@@ -480,17 +515,29 @@ function Build-XCTest($Arch)
     -Install
 
   # Restructure Runtime
-  Remove-Item -Recurse -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$BinaryDir -ErrorAction Ignore
-  Move-Item -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\bin $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$BinaryDir
+  Remove-Item -Recurse -Force -ErrorAction Ignore `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$($Arch.BinaryDir)
+  Move-Item -Force `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\bin `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$($Arch.BinaryDir)
+
+  $LlvmArch = $Arch.LLVMName
 
   # Restructure Import Libraries
-  mkdir $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\ -ErrorAction Ignore
-  Move-Item -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.lib $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.lib
+  mkdir -ErrorAction Ignore `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\
+  Move-Item -Force `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.lib `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.lib
 
   # Restructure Module
   mkdir $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule -ErrorAction Ignore
-  Move-Item -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.swiftdoc $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule\$LlvmArch-unknown-windows-msvc.swiftdoc
-  Move-Item -Force $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.swiftmodule $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule\$LlvmArch-unknown-windows-msvc.swiftmodule
+  Move-Item -Force `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.swiftdoc `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule\$($Arch.LLVMTarget).swiftdoc
+  Move-Item -Force `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.swiftmodule `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule\$($Arch.LLVMTarget).swiftmodule
 }
 
 function Build-SQLite($Arch)
@@ -548,7 +595,6 @@ function Build-SwiftSystem($Arch)
 
 function Build-ToolsSupportCore($Arch)
 {
-  $ArchName = $Arch.ShortName
   $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
   $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
   $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
@@ -576,7 +622,6 @@ function Build-ToolsSupportCore($Arch)
 
 function Build-LLBuild($Arch)
 {
-  $ArchName = $Arch.ShortName
   $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
   $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
   $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
@@ -652,7 +697,6 @@ function Build-ArgumentParser($Arch)
 
 function Build-Driver($Arch)
 {
-  $ArchName = $Arch.ShortName
   $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
   $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
   $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
@@ -721,7 +765,6 @@ function Build-Collections($Arch)
 
 function Build-PackageManager($Arch)
 {
-  $ArchName = $Arch.ShortName
   $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
   $DispatchBuildDir = Get-ProjectBuildDir $Arch 2
   $FoundationBuildDir = Get-ProjectBuildDir $Arch 3
