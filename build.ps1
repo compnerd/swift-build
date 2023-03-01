@@ -139,7 +139,7 @@ function Build-CMakeProject
   }
 }
 
-function Build-Toolchain($Arch)
+function Build-Compilers($Arch)
 {
   Build-CMakeProject `
     -Arch $Arch `
@@ -879,8 +879,7 @@ function Build-SourceKitLSP($Arch)
 
 #-------------------------------------------------------------------
 
-# Compilers
-Build-Toolchain $HostArch
+Build-Compilers $HostArch
 
 foreach ($Arch in $ArchX64,$ArchX86,$ArchARM64)
 {
