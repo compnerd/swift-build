@@ -348,7 +348,7 @@ function Build-SwiftRuntime($Arch)
     -Install
 
   # Restructure runtime
-  mkdir  -ErrorAction Ignore `
+  mkdir -ErrorAction Ignore `
     $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)
   Move-Item -Force `
     $SDKInstallRoot\usr\bin\*.dll `
@@ -383,9 +383,11 @@ function Build-Dispatch($Arch)
     -Install
 
   # Restructure Runtime
+  mkdir -ErrorAction Ignore `
+    $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)
   Move-Item -Force `
     $SDKInstallRoot\usr\bin\*.dll `
-    $InstallRoot\swift-development\usr\bin\x64\
+    $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)\
 
   # Restructure BlocksRuntime, dispatch headers
   foreach ($module in ("Block", "dispatch", "os"))
@@ -869,6 +871,9 @@ function Build-SourceKitLSP($Arch)
 }
 
 #-------------------------------------------------------------------
+
+Build-Dispatch $ArchX64
+exit
 
 # Compilers
 Build-Toolchain $ArchX64
