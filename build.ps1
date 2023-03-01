@@ -44,6 +44,11 @@ $ArchARM64 = @{
   BuildID = 300
 }
 
+$HostArch = switch (${Env:PROCESSOR_ARCHITECTURE}) {
+  'ARM64' { $ArchARM64 }
+  default { $ArchX64 }
+}
+
 $CurrentVSDevShellTargetArch = $null
 
 $InitialEnvPaths = @{
@@ -873,8 +878,8 @@ function Build-SourceKitLSP($Arch)
 #-------------------------------------------------------------------
 
 # Compilers
-Build-Toolchain $ArchX64
-Build-LLVM $ArchX64
+Build-Toolchain $HostArch
+Build-LLVM $HostArch
 
 foreach ($Arch in $ArchX64,$ArchX86,$ArchARM64)
 {
@@ -888,19 +893,19 @@ foreach ($Arch in $ArchX64,$ArchX86,$ArchARM64)
   Build-XCTest $Arch
 }
 
-Build-SQLite $ArchX64
-Build-SwiftSystem $ArchX64
-Build-ToolsSupportCore $ArchX64
-Build-LLBuild $ArchX64
-Build-Yams $ArchX64
-Build-ArgumentParser $ArchX64
-Build-Driver $ArchX64
-Build-Crypto $ArchX64
-Build-Collections $ArchX64
-Build-PackageManager $ArchX64
-Build-IndexStoreDB $ArchX64
-Build-Syntax $ArchX64
-Build-SourceKitLSP $ArchX64
+Build-SQLite $HostArch
+Build-SwiftSystem $HostArch
+Build-ToolsSupportCore $HostArch
+Build-LLBuild $HostArch
+Build-Yams $HostArch
+Build-ArgumentParser $HostArch
+Build-Driver $HostArch
+Build-Crypto $HostArch
+Build-Collections $HostArch
+Build-PackageManager $HostArch
+Build-IndexStoreDB $HostArch
+Build-Syntax $HostArch
+Build-SourceKitLSP $HostArch
 
 # Switch to swift-driver
 Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\bin\swift.exe
