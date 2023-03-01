@@ -288,7 +288,7 @@ function Build-ICU($Arch)
     # Use previously built x64 tools
     $BuildToolsArgs = @(
       "-D", "BUILD_TOOLS=NO",
-      "-D", "ICU_TOOLS_DIR=S:\b\icu-69.1.x64\Tools"
+      "-D", "ICU_TOOLS_DIR=S:\b\icu-69.1.x64"
     )
   }
   else
