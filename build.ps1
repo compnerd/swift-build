@@ -324,6 +324,7 @@ function Build-ICU($Arch)
 function Build-SwiftRuntime($Arch)
 {
   $BinDir = Get-ProjectBuildDir $Arch 1
+  $LLVMBuildDir = Get-ProjectBuildDir $Arch 0
 
   Build-CMakeProject `
     -Arch $Arch `
@@ -336,7 +337,7 @@ function Build-SwiftRuntime($Arch)
     -D CMAKE_CXX_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_INSTALL_PREFIX=$SDKInstallRoot\usr `
     -D CMAKE_MT=mt `
-    -D LLVM_DIR=$BinaryCache\100\lib\cmake\llvm `
+    -D LLVM_DIR=$LLVMBuildDir\lib\cmake\llvm `
     -D SWIFT_ENABLE_EXPERIMENTAL_CONCURRENCY=YES `
     -D SWIFT_ENABLE_EXPERIMENTAL_DIFFERENTIABLE_PROGRAMMING=YES `
     -D SWIFT_ENABLE_EXPERIMENTAL_DISTRIBUTED=YES `
@@ -880,7 +881,6 @@ function Build-SourceKitLSP($Arch)
 
 # Compilers
 Build-Toolchain $HostArch
-Build-LLVM $HostArch
 
 foreach ($Arch in $ArchX64,$ArchX86,$ArchARM64)
 {
@@ -888,6 +888,7 @@ foreach ($Arch in $ArchX64,$ArchX86,$ArchARM64)
   Build-XML2 $Arch
   Build-CURL $Arch
   Build-ICU $Arch
+  Build-LLVM $Arch
   Build-SwiftRuntime $Arch
   Build-Dispatch $Arch
   Build-Foundation $Arch
