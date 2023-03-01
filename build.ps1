@@ -1,5 +1,5 @@
 # Copyright 2020 Saleem Abdulrasool <compnerd@compnerd.org>
-#
+# Copyright 2023 Tristan Labelle <tristan@thebrowser.company>
 
 Set-StrictMode -Version 3.0
 
