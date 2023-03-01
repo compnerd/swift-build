@@ -353,8 +353,8 @@ function Build-SwiftRuntime($Arch)
     -Install
 
   # Restructure runtime
-  mkdir -ErrorAction Ignore `
-    $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)
+  New-Item -ErrorAction Ignore -Type Directory `
+    -Path $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)
   Move-Item -Force `
     $SDKInstallRoot\usr\bin\*.dll `
     $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)\
@@ -388,8 +388,8 @@ function Build-Dispatch($Arch)
     -Install
 
   # Restructure Runtime
-  mkdir -ErrorAction Ignore `
-    $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)
+  New-Item -ErrorAction Ignore -Type Directory `
+    -Path $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)
   Move-Item -Force `
     $SDKInstallRoot\usr\bin\*.dll `
     $InstallRoot\swift-development\usr\bin\$($Arch.ShortName)\
@@ -413,8 +413,8 @@ function Build-Dispatch($Arch)
   }
 
   # Restructure Module
-  mkdir -ErrorAction Ignore `
-    $SDKInstallRoot\usr\lib\swift\windows\Dispatch.swiftmodule
+  New-item -ErrorAction Ignore -Type Directory `
+    -Path $SDKInstallRoot\usr\lib\swift\windows\Dispatch.swiftmodule
   Move-Item -Force `
     $SDKInstallRoot\usr\lib\swift\windows\$($Arch.LLVMName)\Dispatch.swiftmodule `
     $SDKInstallRoot\usr\lib\swift\windows\Dispatch.swiftmodule\$($Arch.LLVMTarget).swiftmodule
@@ -485,7 +485,8 @@ function Build-Foundation($Arch)
       $SDKInstallRoot\usr\lib\swift\windows\$($module).lib `
       $SDKInstallRoot\usr\lib\swift\windows\$($Arch.LLVMName)
 
-    mkdir $SDKInstallRoot\usr\lib\swift\windows\$($module).swiftmodule -ErrorAction Ignore
+    New-Item -ErrorAction Ignore -Type Directory `
+      -Path $SDKInstallRoot\usr\lib\swift\windows\$($module).swiftmodule
     Move-Item -Force `
       $SDKInstallRoot\usr\lib\swift\windows\$($Arch.LLVMName)\$($module).swiftmodule `
       $SDKInstallRoot\usr\lib\swift\windows\$($module).swiftmodule\$($Arch.LLVMTarget).swiftmodule
@@ -529,14 +530,15 @@ function Build-XCTest($Arch)
   $LlvmArch = $Arch.LLVMName
 
   # Restructure Import Libraries
-  mkdir -ErrorAction Ignore `
-    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\
+  New-Item -ErrorAction Ignore -Type Directory `
+    -Path $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch
   Move-Item -Force `
     $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.lib `
     $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.lib
 
   # Restructure Module
-  mkdir $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule -ErrorAction Ignore
+  New-Item -ErrorAction Ignore -Type Directory `
+    -Path $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule
   Move-Item -Force `
     $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.swiftdoc `
     $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule\$($Arch.LLVMTarget).swiftdoc
@@ -551,7 +553,8 @@ function Build-SQLite($Arch)
   $Dest = "$SourceCache\sqlite-3.36.0"
 
   # Download the sources
-  mkdir "S:\var\cache" -ErrorAction Ignore
+  New-Item -ErrorAction Ignore -Type Directory `
+    -Path "S:\var\cache"
   if (-not (Test-Path -Path "S:\var\cache\sqlite-amalgamation-3360000.zip"))
   {
     curl.exe -sL https://sqlite.org/2021/sqlite-amalgamation-3360000.zip -o S:\var\cache\sqlite-amalgamation-3360000.zip
@@ -559,7 +562,7 @@ function Build-SQLite($Arch)
 
   if (-not (Test-Path -Path $Dest))
   {
-    mkdir $Dest -ErrorAction Ignore
+    New-Item -ErrorAction Ignore -Type Directory -Path $Dest 
     ."$env:ProgramFiles\Git\usr\bin\unzip.exe" -j -o S:\var\cache\sqlite-amalgamation-3360000.zip -d $Dest
     Copy-Item $SourceCache\swift-build\cmake\SQLite\CMakeLists.txt $Dest\
   }
