@@ -527,23 +527,21 @@ function Build-XCTest($Arch)
     $PlatformInstallRoot\Developer\Library\XCTest-development\usr\bin `
     $PlatformInstallRoot\Developer\Library\XCTest-development\usr\$($Arch.BinaryDir)
 
-  $LlvmArch = $Arch.LLVMName
-
   # Restructure Import Libraries
   New-Item -ErrorAction Ignore -Type Directory `
-    -Path $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch
+    -Path $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$($Arch.LLVMName)
   Move-Item -Force `
     $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.lib `
-    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.lib
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$($Arch.LLVMName)\XCTest.lib
 
   # Restructure Module
   New-Item -ErrorAction Ignore -Type Directory `
     -Path $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule
   Move-Item -Force `
-    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.swiftdoc `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$($Arch.LLVMName)\XCTest.swiftdoc `
     $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule\$($Arch.LLVMTarget).swiftdoc
   Move-Item -Force `
-    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$LlvmArch\XCTest.swiftmodule `
+    $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\$($Arch.LLVMName)\XCTest.swiftmodule `
     $PlatformInstallRoot\Developer\Library\XCTest-development\usr\lib\swift\windows\XCTest.swiftmodule\$($Arch.LLVMTarget).swiftmodule
 }
 
