@@ -872,9 +872,6 @@ function Build-SourceKitLSP($Arch)
 
 #-------------------------------------------------------------------
 
-Build-Dispatch $ArchX64
-exit
-
 # Compilers
 Build-Toolchain $ArchX64
 Build-LLVM $ArchX64
