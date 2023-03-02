@@ -378,7 +378,7 @@ function Build-Dispatch($Arch)
     -D CMAKE_CXX_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
     -D CMAKE_Swift_COMPILER_TARGET=$($Arch.LLVMTarget) `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_SYSTEM_NAME=Windows `
     -D CMAKE_SYSTEM_PROCESSOR=$($Arch.CMakeName) `
     -D CMAKE_INSTALL_PREFIX=$SDKInstallRoot\usr `
@@ -429,8 +429,8 @@ function Build-Foundation($Arch)
 {
   $RuntimeBuildDir = Get-ProjectBuildDir $Arch 1
   $SwiftResourceDir = "${RuntimeBuildDir}\lib\swift"
-  $BinDir = Get-ProjectBuildDir $Arch 3
   $DispatchBinDir = Get-ProjectBuildDir $Arch 2
+  $BinDir = Get-ProjectBuildDir $Arch 3
   $ShortArch = $Arch.ShortName
 
   Build-CMakeProject `
@@ -443,7 +443,7 @@ function Build-Foundation($Arch)
     -D CMAKE_C_COMPILER_TARGET=$($Arch.LLVMTarget) `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
     -D CMAKE_Swift_COMPILER_TARGET=$($Arch.LLVMTarget) `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_SYSTEM_NAME=Windows `
     -D CMAKE_SYSTEM_PROCESSOR=$($Arch.CMakeName) `
     -D CMAKE_INSTALL_PREFIX=$SDKInstallRoot\usr `
@@ -503,9 +503,9 @@ function Build-XCTest($Arch)
 {
   $RuntimeBuildDir = Get-ProjectBuildDir $Arch 1
   $SwiftResourceDir = "${RuntimeBuildDir}\lib\swift"
-  $BinDir = Get-ProjectBuildDir $Arch 4
   $DispatchBinDir = Get-ProjectBuildDir $Arch 2
   $FoundationBinDir = Get-ProjectBuildDir $Arch 3
+  $BinDir = Get-ProjectBuildDir $Arch 4
 
   Build-CMakeProject `
     -Arch $Arch `
@@ -513,7 +513,7 @@ function Build-XCTest($Arch)
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
     -D CMAKE_Swift_COMPILER_TARGET=$($Arch.LLVMTarget) `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_SYSTEM_NAME=Windows `
     -D CMAKE_SYSTEM_PROCESSOR=$($Arch.CMakeName) `
     -D CMAKE_INSTALL_PREFIX=$PlatformInstallRoot\Developer\Library\XCTest-development\usr `
@@ -564,7 +564,7 @@ function Build-SQLite($Arch)
 
   if (-not (Test-Path -Path $Dest))
   {
-    New-Item -ErrorAction Ignore -Type Directory -Path $Dest 
+    New-Item -ErrorAction Ignore -Type Directory -Path $Dest
     ."$env:ProgramFiles\Git\usr\bin\unzip.exe" -j -o S:\var\cache\sqlite-amalgamation-3360000.zip -d $Dest
     Copy-Item $SourceCache\swift-build\cmake\SQLite\CMakeLists.txt $Dest\
   }
@@ -587,7 +587,6 @@ function Build-System($Arch)
 {
   $RuntimeBuildDir = Get-ProjectBuildDir $Arch 1
   $SwiftResourceDir = "${RuntimeBuildDir}\lib\swift"
-  $SwiftBuildDir = Get-ProjectBuildDir $Arch 1
 
   Build-CMakeProject `
     -Arch $Arch `
@@ -596,7 +595,7 @@ function Build-System($Arch)
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D CMAKE_MT=mt `
     -G Ninja `
@@ -619,7 +618,7 @@ function Build-ToolsSupportCore($Arch)
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D CMAKE_MT=mt `
     -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
@@ -647,7 +646,7 @@ function Build-LLBuild($Arch)
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_CXX_COMPILER=cl `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D CMAKE_MT=mt `
     -D LLBUILD_SUPPORT_BINDINGS=Swift `
@@ -675,7 +674,7 @@ function Build-Yams($Arch)
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
     -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
@@ -700,7 +699,7 @@ function Build-ArgumentParser($Arch)
     -D BUILD_TESTING=NO `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
     -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
@@ -724,7 +723,7 @@ function Build-Driver($Arch)
     -D BUILD_SHARED_LIBS=YES `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
     -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
@@ -754,7 +753,7 @@ function Build-Crypto($Arch)
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
     -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
@@ -774,7 +773,7 @@ function Build-Collections($Arch)
     -D BUILD_SHARED_LIBS=YES `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -G Ninja `
     -S $SourceCache\swift-collections `
@@ -796,7 +795,7 @@ function Build-PackageManager($Arch)
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-DCRYPTO_v2 -resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-DCRYPTO_v2 -resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D CMAKE_MT=mt `
     -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
@@ -832,7 +831,7 @@ function Build-IndexStoreDB($Arch)
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
     -D CMAKE_CXX_COMPILER=S:/b/1/bin/clang-cl.exe `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D CMAKE_MT=mt `
     -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
@@ -852,7 +851,7 @@ function Build-Syntax($Arch)
     -B $BinaryCache\12 `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D CMAKE_MT=mt `
     -G Ninja `
@@ -874,7 +873,7 @@ function Build-SourceKitLSP($Arch)
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
-    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows" `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
     -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
     -D CMAKE_MT=mt `
     -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
