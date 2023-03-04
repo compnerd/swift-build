@@ -781,6 +781,48 @@ function Build-Collections($Arch)
     -Install
 }
 
+function Build-ASN1($Arch)
+{
+  $RuntimeBuildDir = Get-ProjectBuildDir $Arch 1
+  $SwiftResourceDir = "${RuntimeBuildDir}\lib\swift"
+
+  Build-CMakeProject `
+    -Arch $Arch `
+    -B $BinaryCache\10 `
+    -D BUILD_SHARED_LIBS=NO `
+    -D CMAKE_BUILD_TYPE=Release `
+    -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
+    -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
+    -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
+    -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
+    -G Ninja `
+    -S $SourceCache\swift-asn1 `
+    -BuildDefaultTarget `
+    -Install
+}
+
+function Build-Certificates($Arch)
+{
+  $RuntimeBuildDir = Get-ProjectBuildDir $Arch 1
+  $SwiftResourceDir = "${RuntimeBuildDir}\lib\swift"
+
+  Build-CMakeProject `
+    -Arch $Arch `
+    -B $BinaryCache\11 `
+    -D BUILD_SHARED_LIBS=NO `
+    -D CMAKE_BUILD_TYPE=Release `
+    -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
+    -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
+    -D CMAKE_INSTALL_PREFIX=$ToolchainInstallRoot\usr `
+    -D dispatch_DIR=$DispatchBuildDir\cmake\modules `
+    -D Foundation_DIR=$FoundationBuildDir\cmake\modules `
+    -G Ninja `
+    -S $SourceCache\swift-certificates `
+    -BuildDefaultTarget `
+    -Install
+}
+
 function Build-PackageManager($Arch)
 {
   $RuntimeBuildDir = Get-ProjectBuildDir $Arch 1
@@ -790,7 +832,7 @@ function Build-PackageManager($Arch)
 
   Build-CMakeProject `
     -Arch $Arch `
-    -B $BinaryCache\10 `
+    -B $BinaryCache\12 `
     -D BUILD_SHARED_LIBS=YES `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
@@ -807,6 +849,8 @@ function Build-PackageManager($Arch)
     -D SwiftDriver_DIR=$BinaryCache\7\cmake\modules `
     -D SwiftCrypto_DIR=$BinaryCache\8\cmake\modules `
     -D SwiftCollections_DIR=$BinaryCache\9\cmake\modules `
+    -D SwiftASN1_DIR=$BinaryCache\10\cmake\modules `
+    -D SwiftCertificates_DIR=$BinaryCache\11\cmake\modules `
     -D SQLite3_INCLUDE_DIR=$InstallRoot\sqlite-3.36.0\usr\include `
     -D SQLite3_LIBRARY=$InstallRoot\sqlite-3.36.0\usr\lib\SQLite3.lib `
     -G Ninja `
@@ -824,7 +868,7 @@ function Build-IndexStoreDB($Arch)
 
   Build-CMakeProject `
     -Arch $Arch `
-    -B $BinaryCache\11 `
+    -B $BinaryCache\13 `
     -D BUILD_SHARED_LIBS=NO `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_CXX_FLAGS="-Xclang -fno-split-cold-code" `
@@ -848,7 +892,7 @@ function Build-Syntax($Arch)
 
   Build-CMakeProject `
     -Arch $Arch `
-    -B $BinaryCache\12 `
+    -B $BinaryCache\14 `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
     -D CMAKE_Swift_FLAGS="-resource-dir $SwiftResourceDir -L $SwiftResourceDir\windows -vfsoverlay $RuntimeBuildDir\stdlib\windows-vfs-overlay.yaml" `
@@ -869,7 +913,7 @@ function Build-SourceKitLSP($Arch)
 
   Build-CMakeProject `
     -Arch $Arch `
-    -B $BinaryCache\13 `
+    -B $BinaryCache\15 `
     -D CMAKE_BUILD_TYPE=Release `
     -D CMAKE_C_COMPILER=S:/b/1/bin/clang-cl.exe `
     -D CMAKE_Swift_COMPILER=S:/b/1/bin/swiftc.exe `
@@ -883,9 +927,9 @@ function Build-SourceKitLSP($Arch)
     -D LLBuild_DIR=$BinaryCache\4\cmake\modules `
     -D ArgumentParser_DIR=$BinaryCache\6\cmake\modules `
     -D SwiftCollections_DIR=$BinaryCache\9\cmake\modules `
-    -D SwiftPM_DIR=$BinaryCache\10\cmake\modules `
-    -D IndexStoreDB_DIR=$BinaryCache\11\cmake\modules `
-    -D SwiftSyntax_DIR=$BinaryCache\12\cmake\modules `
+    -D SwiftPM_DIR=$BinaryCache\12\cmake\modules `
+    -D IndexStoreDB_DIR=$BinaryCache\13\cmake\modules `
+    -D SwiftSyntax_DIR=$BinaryCache\14\cmake\modules `
     -G Ninja `
     -S $SourceCache\sourcekit-lsp `
     -BuildDefaultTarget `
@@ -918,6 +962,8 @@ Build-ArgumentParser $HostArch
 Build-Driver $HostArch
 Build-Crypto $HostArch
 Build-Collections $HostArch
+Build-ASN1 $HostArch
+Build-Certificates $HostArch
 Build-PackageManager $HostArch
 Build-IndexStoreDB $HostArch
 Build-Syntax $HostArch
