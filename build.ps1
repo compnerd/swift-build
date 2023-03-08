@@ -185,7 +185,7 @@ function Build-CMakeProject
       "-Xlinker /OPT:ICF"
     ) -Join " "
 
-    Append-FlagsDefine $Defines CMAKE_Swift_FLAGS  $SwiftcFlags
+    Append-FlagsDefine $Defines CMAKE_Swift_FLAGS $SwiftcFlags
   }
   if ("" -ne $InstallTo) {
     TryAdd-Define $Defines CMAKE_INSTALL_PREFIX $InstallTo
