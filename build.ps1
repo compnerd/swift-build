@@ -2,7 +2,7 @@
 # Copyright 2023 Tristan Labelle <tristan@thebrowser.company>
 
 param(
-  [string[]] $Archs = @("X64","X86","Arm64")
+  [string[]] $SDKs = @("X64","X86","Arm64")
 )
 
 $ErrorActionPreference = "Stop"
@@ -55,7 +55,7 @@ $HostArch = switch (${Env:PROCESSOR_ARCHITECTURE}) {
 }
 
 # Resolve the architectures received as argument
-[hashtable[]]$Archs = $Archs | ForEach-Object {
+$SDKArchs = $SDKs | ForEach-Object {
   switch ($_) {
     "X64" { $ArchX64 }
     "X86" { $ArchX86 }
@@ -916,7 +916,7 @@ function Build-SourceKitLSP($Arch)
 
 Build-Compilers $HostArch
 
-foreach ($Arch in $Archs)
+foreach ($Arch in $SDKArchs)
 {
   Build-ZLib $Arch
   Build-XML2 $Arch
