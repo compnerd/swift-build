@@ -900,9 +900,6 @@ function Build-SourceKitLSP($Arch)
 
 #-------------------------------------------------------------------
 
-Build-PackageManager $ArchX64
-exit
-
 Build-Compilers $HostArch
 
 foreach ($Arch in $ArchX64,$ArchX86,$ArchARM64)
