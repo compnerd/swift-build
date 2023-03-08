@@ -945,6 +945,10 @@ if (-not (Test-Path $python))
   }
 }
 
+foreach ($module in ("ucrt.modulemap", "vcruntime.modulemap", "vcruntime.apinotes", "winsdk.modulemap")) {
+  Copy-Item -Force $SourceCache\swift\stdlib\public\platform\$module $SDKInstallRoot\usr\share\
+}
+
 # SDKSettings.plist
 & $python -c "import plistlib; print(str(plistlib.dumps({ 'DefaultProperties': { 'DEFAULT_USE_RUNTIME': 'MD' } }), encoding='utf-8'))" > $SDKInstallRoot\SDKSettings.plist
 
