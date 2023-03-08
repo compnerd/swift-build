@@ -851,6 +851,7 @@ function Build-IndexStoreDB($Arch)
     -BuildDefaultTarget `
     -Defines @{
       BUILD_SHARED_LIBS = "NO";
+      CMAKE_C_FLAGS = "-Xclang -fno-split-cold-code";
       CMAKE_CXX_FLAGS = "-Xclang -fno-split-cold-code";
       dispatch_DIR = "$DispatchBuildDir\cmake\modules";
       Foundation_DIR = "$FoundationBuildDir\cmake\modules";
