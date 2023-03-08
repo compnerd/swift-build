@@ -927,7 +927,7 @@ Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\b
 $python = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Shared\Python39_64\python.exe"
 if (-not (Test-Path $python))
 {
-  $python = ((where.exe python) | Select -Frist 1 | Out-String).Trim()
+  $python = (where.exe python) | Select -First 1
   if (-not (Test-Path $python))
   {
     throw "Python.exe not found"
