@@ -385,7 +385,7 @@ jobs:
             ${{ github.workspace }}/BinaryCache/0/bin/swift-serialize-diagnostics.exe
             ${{ github.workspace }}/BinaryCache/0/bin/swift-compatibility-symbols.exe
 
-  toolchain:
+  compilers:
     runs-on: windows-latest
     needs: [context, build_tools]
 
@@ -550,7 +550,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: toolchain-${{ matrix.arch }}
+          name: compilers-${{ matrix.arch }}
           path: |
             ${{ github.workspace }}/BuildRoot/Library
             !${{ github.workspace }}/BuildRoot/Library/icu-69.1
@@ -559,7 +559,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: false # ${{ needs.context.outputs.debug_info }}
         with:
-          name: toolchain-${{ matrix.arch }}-debug-info
+          name: compilers-${{ matrix.arch }}-debug-info
           path: |
             ${{ github.workspace }}/BinaryCache/1/**/*.pdb
 
@@ -745,7 +745,7 @@ jobs:
   sdk:
     continue-on-error: ${{ matrix.arch != 'amd64' }}
     runs-on: windows-latest
-    needs: [context, icu, libxml2, curl, zlib, toolchain]
+    needs: [context, icu, libxml2, curl, zlib, compilers]
 
     strategy:
       fail-fast: false
@@ -782,7 +782,7 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-1.2.11/usr
       - uses: actions/download-artifact@v3
         with:
-          name: toolchain-amd64
+          name: compilers-amd64
           path: ${{ github.workspace }}/BuildRoot/Library
 
       - uses: actions/checkout@v3
@@ -1023,7 +1023,7 @@ jobs:
 
   devtools:
     runs-on: windows-latest
-    needs: [context, sqlite, toolchain, sdk]
+    needs: [context, sqlite, compilers, sdk]
 
     strategy:
       fail-fast: false
@@ -1044,7 +1044,7 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/sqlite-3.36.0/usr
       - uses: actions/download-artifact@v3
         with:
-          name: toolchain-amd64
+          name: compilers-amd64
           path: ${{ github.workspace }}/BuildRoot/Library
       - uses: actions/download-artifact@v3
         with:
@@ -1515,9 +1515,9 @@ jobs:
           name: devtools-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot-DevTools/Library
 
-  package_toolchain:
+  package_compilers:
     runs-on: windows-latest
-    needs: [context, toolchain, devtools]
+    needs: [context, compilers, devtools]
 
     strategy:
       fail-fast: false
@@ -1527,7 +1527,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: toolchain-${{ matrix.arch }}
+          name: compilers-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
       - uses: actions/download-artifact@v3
         with:
@@ -1558,8 +1558,8 @@ jobs:
           msbuild -nologo `
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
-              -p:OutputPath=${{ github.workspace }}\BinaryCache\toolchain\ `
-              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\toolchain\obj\ `
+              -p:OutputPath=${{ github.workspace }}\BinaryCache\compilers\ `
+              -p:IntermediateOutputPath=${{ github.workspace }}\BinaryCache\compilers\obj\ `
               -p:SignOutput=true `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
@@ -1569,8 +1569,8 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: toolchain-${{ matrix.arch }}-msi
-          path: ${{ github.workspace }}/BinaryCache/toolchain/toolchain.msi
+          name: compilers-${{ matrix.arch }}-msi
+          path: ${{ github.workspace }}/BinaryCache/compilers/toolchain.msi
 
   package_sdk_runtime:
     runs-on: windows-latest
@@ -1710,7 +1710,7 @@ jobs:
 
   installer:
     runs-on: windows-latest
-    needs: [context, package_toolchain, package_sdk_runtime, package_devtools]
+    needs: [context, package_compilers, package_sdk_runtime, package_devtools]
 
     strategy:
       fail-fast: false
@@ -1720,7 +1720,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: toolchain-${{ matrix.arch }}-msi
+          name: compilers-${{ matrix.arch }}-msi
           path: ${{ github.workspace }}/BuildRoot
       - uses: actions/download-artifact@v3
         with:
