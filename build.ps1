@@ -259,13 +259,13 @@ function Build-WiXProject()
   TryAdd-KeyValue $Properties OutputPath $BinaryCache\msi\
   TryAdd-KeyValue $Properties IntermediateOutputPath BinaryCache\$Name\
 
-  $MsbuildArgs = @("$SourceCache\swift-installer-scripts\platforms\Windows\$FileName")
-  $MsbuildArgs += "-noLogo"
+  $MSBuildArgs = @("$SourceCache\swift-installer-scripts\platforms\Windows\$FileName")
+  $MSBuildArgs += "-noLogo"
   foreach ($Property in $Properties.GetEnumerator()) {
-    $MsbuildArgs += "-p:$($Property.Key)=$($Property.Value)"
+    $MSBuildArgs += "-p:$($Property.Key)=$($Property.Value)"
   }
 
-  & $msbuild @MsbuildArgs
+  & $msbuild @MSBuildArgs
   Check-LastExitCode
 }
 
