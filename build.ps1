@@ -924,6 +924,7 @@ function Build-SourceKitLSP($Arch)
 
 function Build-Installer()
 {
+  # Currently fails due to _InternalSwiftScan paths
   # Build-WiXProject toolchain.wixproj -Properties @{
   #   DEVTOOLS_ROOT = "$ToolchainInstallRoot\";
   #   TOOLCHAIN_ROOT = "$ToolchainInstallRoot\";
