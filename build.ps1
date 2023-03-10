@@ -245,13 +245,6 @@ function Build-WiXProject()
     [hashtable]$Properties = @{}
   )
 
-  $WiXVersion = "3.11.2"
-  if (-not (Test-Path "$BinaryCache\WiX.$WiXVersion"))
-  {
-    nuget.exe install WiX -Version $WiXVersion -Source https://api.nuget.org/v3/index.json -OutputDirectory $BinaryCache
-    Check-LastExitCode
-  }
-
   $Name = $FileName.Split('.')[0]
 
   $Properties = $Properties.Clone()
