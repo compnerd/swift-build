@@ -329,6 +329,7 @@ function Build-Compilers($Arch)
       CLANG_TABLEGEN = "$BinaryCache\0\bin\clang-tblgen.exe";
       CLANG_TIDY_CONFUSABLE_CHARS_GEN = "$BinaryCache\0\bin\clang-tidy-confusable-chars-gen.exe";
       CMAKE_INSTALL_PREFIX = "$ToolchainInstallRoot\usr";
+      LLDB_PYTHON_EXT_SUFFIX = ".pyd";
       LLDB_TABLEGEN = "$BinaryCache\0\bin\lldb-tblgen.exe";
       LLVM_CONFIG_PATH = "$BinaryCache\0\bin\llvm-config.exe";
       LLVM_ENABLE_PDB = "YES";
@@ -350,16 +351,6 @@ function Build-Compilers($Arch)
       SWIFT_PATH_TO_SWIFT_SYNTAX_SOURCE = "$SourceCache\swift-syntax";
       SWIFT_PATH_TO_STRING_PROCESSING_SOURCE = "$SourceCache\swift-experimental-string-processing";
     }
-
-  # Restructure Internal Modules
-  Remove-Item -Recurse -Force  -ErrorAction Ignore `
-    $ToolchainInstallRoot\usr\include\_InternalSwiftScan
-  Move-Item -Force `
-    $ToolchainInstallRoot\usr\lib\swift\_InternalSwiftScan `
-    $ToolchainInstallRoot\usr\include
-  Move-Item -Force `
-    $ToolchainInstallRoot\usr\lib\swift\windows\_InternalSwiftScan.lib `
-    $ToolchainInstallRoot\usr\lib
 }
 
 function Build-LLVM($Arch)
@@ -940,11 +931,10 @@ function Build-SourceKitLSP($Arch)
 
 function Build-Installer()
 {
-  # Currently fails due to _InternalSwiftScan paths
-  # Build-WiXProject toolchain.wixproj -Properties @{
-  #   DEVTOOLS_ROOT = "$ToolchainInstallRoot\";
-  #   TOOLCHAIN_ROOT = "$ToolchainInstallRoot\";
-  # }
+  Build-WiXProject toolchain.wixproj -Properties @{
+    DEVTOOLS_ROOT = "$ToolchainInstallRoot\";
+    TOOLCHAIN_ROOT = "$ToolchainInstallRoot\";
+  }
 
   # TODO: The XCTest depends on the architecture
   # Build-WiXProject sdk.wixproj -Properties @{
