@@ -951,7 +951,7 @@ function Build-Installer()
     }
 
     Build-WiXProject runtime.wixproj -Arch $Arch -Properties @{
-      SDK_ROOT = (Get-RuntimeInstallDir $ArchX64) + "\";
+      SDK_ROOT = (Get-RuntimeInstallDir $Arch) + "\";
     }
     
     # TODO: The XCTest depends on the architecture
