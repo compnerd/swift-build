@@ -1,0 +1,209 @@
+name: swift-toolchain
+
+on:
+  workflow_dispatch:
+    inputs:
+      snapshot:
+        description: 'Build Swift at a tagged snapshot'
+        default: false
+        type: boolean
+      swift_tag:
+        description: 'swift tag'
+        required: false
+
+      debug_info:
+        description: 'Emit PDBs (Debug Info)'
+        default: false
+        type: boolean
+
+jobs:
+  context:
+    runs-on: ubuntu-latest
+    outputs:
+      curl_revision: ${{ steps.context.outputs.curl_revision }}
+      icu_revision: ${{ steps.context.outputs.icu_revision }}
+      indexstore_db_revision: ${{ steps.context.outputs.indexstore_db_revision }}
+      libxml2_revision: ${{ steps.context.outputs.libxml2_revision }}
+      llvm_project_revision: ${{ steps.context.outputs.llvm_project_revision }}
+      sourcekit_lsp_revision: ${{ steps.context.outputs.sourcekit_lsp_revision }}
+      swift_argument_parser_revision: ${{ steps.context.outputs.swift_argument_parser_revision }}
+      swift_cmark_revision: ${{ steps.context.outputs.swift_cmark_revision }}
+      swift_collections_revision: ${{ steps.context.outputs.swift_collections_revision }}
+      swift_corelibs_foundation_revision: ${{ steps.context.outputs.swift_corelibs_foundation_revision }}
+      swift_corelibs_libdispatch_revision: ${{ steps.context.outputs.swift_corelibs_libdispatch_revision }}
+      swift_corelibs_xctest_revision: ${{ steps.context.outputs.swift_corelibs_xctest_revision }}
+      swift_crypto_revision: ${{ steps.context.outputs.swift_crypto_revision }}
+      swift_driver_revision: ${{ steps.context.outputs.swift_driver_revision }}
+      swift_experimental_string_processing_revision: ${{ steps.context.outputs.swift_experimental_string_processing_revision }}
+      swift_installer_scripts_revision: ${{ steps.context.outputs.swift_installer_scripts_revision }}
+      swift_llbuild_revision: ${{ steps.context.outputs.swift_llbuild_revision }}
+      swift_package_manager_revision: ${{ steps.context.outputs.swift_package_manager_revision }}
+      swift_revision: ${{ steps.context.outputs.swift_revision }}
+      swift_syntax_revision: ${{ steps.context.outputs.swift_syntax_revision }}
+      swift_system_revision: ${{ steps.context.outputs.swift_system_revision }}
+      swift_tools_support_core_revision: ${{ steps.context.outputs.swift_tools_support_core_revision }}
+      yams_revision: ${{ steps.context.outputs.yams_revision }}
+      zlib_revision: ${{ steps.context.outputs.zlib_revision }}
+      CMAKE_BUILD_TYPE: ${{ steps.context.outputs.CMAKE_BUILD_TYPE }}
+      LLVM_ENABLE_PDB: ${{ steps.context.outputs.LLVM_ENABLE_PDB }}
+      debug_info: ${{ steps.context.outputs.debug_info }}
+    steps:
+      - id: context
+        name: Generate Build Context
+        run: |
+          # TODO(compnerd) can we make this more silent?
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -o Dpkg::Use-Pty=0 install -yq repo libxml2-utils
+
+          repo init --quiet --groups default --depth 1 -u https://github.com/compnerd/swift-build
+          repo sync --quiet --no-clone-bundle --no-tags --jobs $(nproc --all)
+
+          if [[ "${{ github.event.inputs.snapshot }}" == "true" ]] ; then
+            tee -a "${GITHUB_OUTPUT}" <<-EOF
+          indexstore_db_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          llvm_project_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          sourcekit_lsp_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_argument_parser_revision=refs/tags/1.1.4
+          swift_cmark_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_collections_revision=refs/tags/1.0.4
+          swift_corelibs_foundation_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_corelibs_libdispatch_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_corelibs_xctest_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_crypto_revision=refs/tags/2.2.3
+          swift_driver_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_experimental_string_processing_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_installer_scripts_revision=refs/heads/main
+          swift_llbuild_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_package_manager_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_syntax_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          swift_system_revision=refs/tags/1.1.1
+          swift_tools_support_core_revision=refs/tags/${{ github.event.inputs.swift_tag }}
+          curl_revision=refs/tags/curl-7_77_0
+          libxml2_revision=refs/tags/v2.9.12
+          yams_revision=refs/tags/5.0.4
+          zlib_revision=refs/tags/v1.2.13
+          icu_revision=refs/heads/maint/maint-69
+          EOF
+          else
+            repo manifest -r --suppress-upstream-revision --suppress-dest-branch | \
+                  xmllint --xpath "//project/@name | //project/@revision" - | \
+                  xargs -n2 | \
+                  awk -F'[= ]' '{
+                    split($2, repo, "/");
+                    gsub(/-/, "_", repo[2]);
+                    print tolower(repo[2]) "_revision=" $4
+                  }' | tee -a "${GITHUB_OUTPUT}"
+            # TODO(compnerd) trim trailing whitespace
+            repo manifest -r --suppress-upstream-revision --suppress-dest-branch -o stable.xml
+          fi
+
+          if [[ "${{ github.event_name }}" == "schedule" ]] ; then
+            echo debug_info=true >> ${GITHUB_OUTPUT}
+            echo CMAKE_BUILD_TYPE=Release >> ${GITHUB_OUTPUT}
+            echo LLVM_ENABLE_PDB=YES >> ${GITHUB_OUTPUT}
+          else
+            if [[ "${{ github.event.inputs.debug_info }}" == "true" ]] ; then
+              echo debug_info=true >> ${GITHUB_OUTPUT}
+              echo CMAKE_BUILD_TYPE=Release >> ${GITHUB_OUTPUT}
+              echo LLVM_ENABLE_PDB=YES >> ${GITHUB_OUTPUT}
+            else
+              echo debug_info=false >> ${GITHUB_OUTPUT}
+              echo CMAKE_BUILD_TYPE=Release >> ${GITHUB_OUTPUT}
+              echo LLVM_ENABLE_PDB=NO >> ${GITHUB_OUTPUT}
+            fi
+          fi
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: stable.xml
+          path: stable.xml
+          if-no-files-found: ignore
+
+  sqlite:
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ['amd64']
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}/SourceCache/swift-build
+
+      - name: download sqlite
+        run: |
+          curl.exe -sL "https://sqlite.org/2021/sqlite-amalgamation-3360000.zip" -o $env:TEMP\sqlite-amalgamation-3360000.zip
+          New-Item -ItemType Directory -Path ${{ github.workspace }}\SourceCache\sqlite-3.36.0
+          unzip.exe -j -o $env:TEMP\sqlite-amalgamation-3360000.zip -d ${{ github.workspace }}\SourceCache\sqlite-3.36.0
+
+      - name: Copy CMakeLists.txt
+        run: Copy-Item ${{ github.workspace }}\SourceCache\swift-build\cmake\SQLite\CMakeLists.txt -destination ${{ github.workspace }}\SourceCache\sqlite-3.36.0\CMakeLists.txt
+
+      - uses: compnerd/gha-setup-vsdevenv@main
+        with:
+          host_arch: amd64
+          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
+          arch: ${{ matrix.arch }}
+
+      - name: Configure SQLite
+        run: |
+          cmake -B ${{ github.workspace }}/BinaryCache/sqlite-3.36.0 `
+                -D BUILD_SHARED_LIBS=NO `
+                -D CMAKE_BUILD_TYPE=Release `
+                -D CMAKE_C_COMPILER=cl `
+                -D CMAKE_C_FLAGS="/GS- /Oy /Gw /Gy" `
+                -D CMAKE_CXX_COMPILER=cl `
+                -D CMAKE_CXX_FLAGS="/GS- /Oy /Gw /Gy" `
+                -D CMAKE_MT=mt `
+                -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/sqlite-3.36.0/usr `
+                -G Ninja `
+                -S ${{ github.workspace }}/SourceCache/sqlite-3.36.0
+      - name: Build SQLite
+        run: cmake --build ${{ github.workspace }}/BinaryCache/sqlite-3.36.0
+      - name: Install SQLite
+        run: cmake --build ${{ github.workspace }}/BinaryCache/sqlite-3.36.0 --target install
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sqlite-${{ matrix.arch }}-3.36.0
+          path: ${{ github.workspace }}/BuildRoot/Library/sqlite-3.36.0/usr
+
+  build_tools:
+    runs-on: windows-latest
+    needs: [context]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: apple/llvm-project
+          ref: ${{ needs.context.outputs.llvm_project_revision }}
+          path: ${{ github.workspace }}/SourceCache/llvm-project
+      - uses: actions/checkout@v3
+        with:
+          repository: apple/swift-cmark
+          ref: ${{ needs.context.outputs.swift_cmark_revision }}
+          path: ${{ github.workspace }}/SourceCache/swift-cmark
+      - uses: actions/checkout@v3
+        with:
+          repository: apple/swift
+          ref: ${{ needs.context.outputs.swift_revision }}
+          path: ${{ github.workspace }}/SourceCache/swift
+      - uses: actions/checkout@v3
+        with:
+          repository: apple/swift-syntax
+          ref: ${{ needs.context.outputs.swift_syntax_revision }}
+          path: ${{ github.workspace }}/SourceCache/swift-syntax
+      - uses: actions/checkout@v3
+        with:
+          repository: apple/swift-corelibs-libdispatch
+          ref: ${{ needs.context.outputs.swift_corelibs_libdispatch_revision }}
+          path: ${{ github.workspace }}/SourceCache/swift-corelibs-libdispatch
+
+      - uses: compnerd/gha-setup-vsdevenv@main
+
+      - name: Configure Tools
+        run: |
+          . "${{ github.workspace }}\SourceCache\swift-build\build.ps1" -SourceCache "${{ github.workspace }}/SourceCache" -BinaryCache "${{ github.workspace }}/BinaryCache" -NoOp
+          Build-BuildTools $ArchX64

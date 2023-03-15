@@ -1,10 +1,12 @@
 # Copyright 2020 Saleem Abdulrasool <compnerd@compnerd.org>
 # Copyright 2023 Tristan Labelle <tristan@thebrowser.company>
 
+[CmdletBinding(PositionalBinding = $false)]
 param(
   [string[]] $SDKs = @("X64","X86","Arm64"),
   [string] $SourceCache = "S:\SourceCache",
-  [string] $BinaryCache = "S:\b"
+  [string] $BinaryCache = "S:\b",
+  [switch] $NoOp
 )
 
 $ErrorActionPreference = "Stop"
@@ -979,6 +981,13 @@ function Build-Installer()
   #   OutputPath = "$BinaryCache\";
   #   MSI_LOCATION = "$BinaryCache\msi\";
   # }
+}
+
+#-------------------------------------------------------------------
+
+# Allows this script to be dot-sourced and used as a module by CI
+if ($NoOp) {
+  return
 }
 
 #-------------------------------------------------------------------
