@@ -649,20 +649,13 @@ function Build-XCTest($Arch)
     $InstallDir\bin `
     $InstallDir\$($Arch.BinaryDir)
 
-  # Restructure Import Libraries
-  New-Item -ErrorAction Ignore -Type Directory `
-    -Path $InstallDir\lib\swift\windows\$($Arch.LLVMName)
-  Move-Item -Force `
-    $InstallDir\lib\swift\windows\XCTest.lib `
-    $InstallDir\lib\swift\windows\$($Arch.LLVMName)\XCTest.lib
-
-  # Restructure Module
+  # Restructure module, keeping the original files for the installer build
   New-Item -ErrorAction Ignore -Type Directory `
     -Path $InstallDir\lib\swift\windows\XCTest.swiftmodule
-  Move-Item -Force `
+  Copy-Item -Force `
     $InstallDir\lib\swift\windows\$($Arch.LLVMName)\XCTest.swiftdoc `
     $InstallDir\lib\swift\windows\XCTest.swiftmodule\$($Arch.LLVMTarget).swiftdoc
-  Move-Item -Force `
+  Copy-Item -Force `
     $InstallDir\lib\swift\windows\$($Arch.LLVMName)\XCTest.swiftmodule `
     $InstallDir\lib\swift\windows\XCTest.swiftmodule\$($Arch.LLVMTarget).swiftmodule
 }
