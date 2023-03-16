@@ -538,12 +538,13 @@ function Build-Dispatch($Arch)
       BUILD_TESTING = "NO";
     }
 
-  # Restructure BlocksRuntime, dispatch headers
+  # Restructure BlocksRuntime, dispatch headers to match the installed layout
+  # but keep the original files so the installer build can find them.
   foreach ($module in ("Block", "dispatch", "os"))
   {
     Remove-Item -Recurse -Force -ErrorAction Ignore `
       $SDKInstallRoot\usr\include\$module
-    Move-Item -Force `
+    Copy-Item -Force `
       $SDKInstallRoot\usr\lib\swift\$module `
       $SDKInstallRoot\usr\include\
   }
