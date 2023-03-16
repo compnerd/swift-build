@@ -674,49 +674,59 @@ function Consolidate-RuntimeInstall($Arch)
   Copy-Item $BinariesSrc\* $BinariesDst\
 }
 
+function Copy-Dir($Src, $Dst)
+{
+  New-Item -ItemType Directory -ErrorAction Ignore $Dst | Out-Null
+  Copy-Item -Force -Recurse $Src $Dst
+}
+
 # Copies files installed by CMake from the arch-specific platform root,
 # where they follow the layout expected by the installer,
 # to the final platform root, following the installer layout.
 function Consolidate-PlatformInstall($Arch)
 {
-  Remove-Item -Force -Recurse $PlatformInstallRoot -ErrorAction Ignore
-
   $ArchSpecificPlatformInstallRoot = Get-ArchSpecificPlatformDir $Arch
   $ArchSpecificSDKInstallRoot = "$ArchSpecificPlatformInstallRoot\$PlatformSDKSubDir"
 
+  New-Item -ItemType Directory -ErrorAction Ignore $SDKInstallRoot\usr | Out-Null
+
   # Copy SDK header files
-  $IncludeSrc = "$ArchSpecificSDKInstallRoot\usr\include"
-  $LibIncludeSrc = "$ArchSpecificSDKInstallRoot\usr\lib\swift"
-  $IncludeDst = "$SDKInstallRoot\usr\include"
-  Copy-Item -Force -Recurse -ErrorAction Ignore $IncludeSrc $IncludeDst
-  Get-ChildItem -Recurse -Filter *.h $LibIncludeSrc | ForEach-Object {
-    $DstPath = $_.FullName.Replace($LibIncludeSrc, $IncludeDst)
-    New-Item -Type Directory -ErrorAction Ignore ([IO.Path]::GetDirectoryName($DstPath)) | Out-Null
-    Copy-Item -Force $_.FullName $DstPath # Overwrites the file contents
+  Copy-Dir $ArchSpecificSDKInstallRoot\usr\include\swift\SwiftRemoteMirror $SDKInstallRoot\usr\include\swift
+  foreach ($Module in ("Block", "dispatch", "os"))
+  {
+    Copy-Dir $ArchSpecificSDKInstallRoot\usr\lib\swift\$Module $SDKInstallRoot\usr\include
   }
 
-  # Remove CoreFoundation headers
-  foreach ($Module in ("CoreFoundation", "CFXMLInterface", "CFURLSessionInterface"))
-  {
-    Remove-Item -Recurse -Force -ErrorAction Ignore `
-      $IncludeDst\$Module
-  }
+  # Copy SDK share folder
+  New-Item -ItemType Directory -ErrorAction Ignore $SDKInstallRoot\usr\share | Out-Null
+  Copy-Item -Force $ArchSpecificSDKInstallRoot\usr\share\*.* $SDKInstallRoot\usr\share\
 
   # Copy SDK libs, placing them in an arch-specific directory
   $WindowsLibSrc = "$ArchSpecificSDKInstallRoot\usr\lib\swift\windows"
   $WindowsLibDst = "$SDKInstallRoot\usr\lib\swift\windows"
 
-  New-Item -Type Directory $WindowsLibDst\$($Arch.LLVMName) | Out-Null
+  New-Item -ItemType Directory $WindowsLibDst\$($Arch.LLVMName) | Out-Null
   Copy-Item -Force $WindowsLibSrc\*.lib $WindowsLibDst\$($Arch.LLVMName)
+  Copy-Item -Force $WindowsLibSrc\$($Arch.LLVMName)\*.lib $WindowsLibDst\$($Arch.LLVMName)
 
-  # Copy SDK modules, restructuring to the installed layout
-  Get-ChildItem -Recurse -Filter *.swiftmodule $WindowsLibSrc\$($Arch.LLVMName) | ForEach-Object {
-    $DstDir = "$WindowsLibDst\$($_.Name)"
-    New-Item -ItemType Directory $DstDir | Out-Null
+  # Copy well-structured SDK modules
+  Copy-Item -Force -Recurse $WindowsLibSrc\*.swiftmodule $WindowsLibDst
 
-    # Copy all module files, renaming to the arch-specific variant
-    Get-ChildItem $_.Directory | ForEach-Object {
-      Copy-Item -Force $_.FullName "$DstDir\$($Arch.LLVMTarget)$($_.Extension)"
+  # Copy files from the arch subdirectory, including "*.swiftmodule" which need restructuring
+  Get-ChildItem -Recurse $WindowsLibSrc\$($Arch.LLVMName) | ForEach-Object {
+    if (".swiftmodule", ".swiftdoc" -eq $_.Extension)
+    {
+      $DstDir = "$WindowsLibDst\$($_.BaseName).swiftmodule"
+      New-Item -ItemType Directory $DstDir -ErrorAction Ignore | Out-Null
+
+      # Copy all module files, renaming to the arch-specific variant
+      Get-ChildItem $_.Directory | ForEach-Object {
+        Copy-Item -Force $_.FullName "$DstDir\$($Arch.LLVMTarget)$($_.Extension)"
+      }
+    }
+    else
+    {
+      Copy-Item $_.FullName $WindowsLibDst\$($Arch.LLVMName)\
     }
   }
 
