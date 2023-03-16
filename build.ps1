@@ -1017,12 +1017,12 @@ function Build-Installer()
     }
 
     Build-WiXProject runtime.wixproj -Arch $Arch -Properties @{
-      SDK_ROOT = (Get-ArchSpecificPlatformDir $Arc $PlatformSDKSubDir) + "\";
+      SDK_ROOT = (Get-ArchSpecificPlatformDir $Arch $PlatformSDKSubDir) + "\";
     }
     
-    Build-WiXProject sdk.wixproj -Arch $ArchX64 -Properties @{
-      PLATFORM_ROOT = (Get-ArchSpecificPlatformDir $ArchX64) + "\";
-      SDK_ROOT = (Get-ArchSpecificPlatformDir $ArchX64 $PlatformSDKSubDir) + "\";
+    Build-WiXProject sdk.wixproj -Arch $Arch -Properties @{
+      PLATFORM_ROOT = (Get-ArchSpecificPlatformDir $Arch) + "\";
+      SDK_ROOT = (Get-ArchSpecificPlatformDir $Arch $PlatformSDKSubDir) + "\";
       SWIFT_SOURCE_DIR = "$SourceCache\swift\";
     }
   }
