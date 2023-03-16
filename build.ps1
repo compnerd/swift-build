@@ -966,6 +966,7 @@ function Build-Installer()
     # Build-WiXProject sdk.wixproj -Properties @{
     #   PLATFORM_ROOT = "$PlatformInstallRoot\";
     #   SDK_ROOT = "$SDKInstallRoot\";
+    #   XCTEST_ROOT = "$PlatformInstallRoot\Developer\Library\XCTest-development\";
     #   SWIFT_SOURCE_DIR = "$SourceCache\swift\";
     # }
   }
