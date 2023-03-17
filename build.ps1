@@ -694,7 +694,7 @@ function Consolidate-PlatformInstall($Arch)
   $WindowsLibSrc = "$($Arch.SDKInstallRoot)\usr\lib\swift\windows"
   $WindowsLibDst = "$SDKInstallRoot\usr\lib\swift\windows"
 
-  New-Item -ItemType Directory $WindowsLibDst\$($Arch.LLVMName) | Out-Null
+  New-Item -ItemType Directory "$WindowsLibDst\$($Arch.LLVMName)" | Out-Null
   Copy-Item -Force "$WindowsLibSrc\*.lib" "$WindowsLibDst\$($Arch.LLVMName)"
   Copy-Item -Force "$WindowsLibSrc\$($Arch.LLVMName)\*.lib" "$WindowsLibDst\$($Arch.LLVMName)"
 
