@@ -680,6 +680,7 @@ function Consolidate-PlatformInstall($Arch)
 
   # Copy SDK header files
   Copy-Dir "$($Arch.SDKInstallRoot)\usr\include\swift\SwiftRemoteMirror" $SDKInstallRoot\usr\include\swift
+  Copy-Dir "$($Arch.SDKInstallRoot)\usr\lib\swift\shims" $SDKInstallRoot\usr\lib\swift
   foreach ($Module in ("Block", "dispatch", "os"))
   {
     Copy-Dir "$($Arch.SDKInstallRoot)\usr\lib\swift\$Module" $SDKInstallRoot\usr\include
@@ -702,15 +703,11 @@ function Consolidate-PlatformInstall($Arch)
 
   # Copy files from the arch subdirectory, including "*.swiftmodule" which need restructuring
   Get-ChildItem -Recurse "$WindowsLibSrc\$($Arch.LLVMName)" | ForEach-Object {
-    if (".swiftmodule", ".swiftdoc" -eq $_.Extension)
+    if (".swiftmodule", ".swiftdoc", ".swiftinterface" -contains $_.Extension)
     {
       $DstDir = "$WindowsLibDst\$($_.BaseName).swiftmodule"
       New-Item -ItemType Directory $DstDir -ErrorAction Ignore | Out-Null
-
-      # Copy all module files, renaming to the arch-specific variant
-      Get-ChildItem $_.Directory | ForEach-Object {
-        Copy-Item -Force $_.FullName "$DstDir\$($Arch.LLVMTarget)$($_.Extension)"
-      }
+      Copy-Item -Force $_.FullName "$DstDir\$($Arch.LLVMTarget)$($_.Extension)"
     }
     else
     {
