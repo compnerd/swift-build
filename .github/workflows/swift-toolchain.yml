@@ -1616,7 +1616,7 @@ jobs:
 
       - name: Package
         run: |
-          msbuild -nologo `
+          msbuild -nologo -restore `
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
               -p:OutputPath=${{ github.workspace }}\BinaryCache\toolchain\ `
@@ -1689,7 +1689,7 @@ jobs:
 
       - name: Package Runtime
         run: |
-          msbuild -nologo `
+          msbuild -nologo -restore `
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
               -p:OutputPath=${{ github.workspace }}\BinaryCache\runtime\ `
@@ -1747,7 +1747,7 @@ jobs:
 
       - name: Package
         run: |
-          msbuild -nologo `
+          msbuild -nologo -restore `
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
               -p:OutputPath=${{ github.workspace }}\BinaryCache\devtools\ `
@@ -1811,7 +1811,7 @@ jobs:
 
       - name: Package
         run: |
-          msbuild -nologo `
+          msbuild -nologo -restore `
               -p:Configuration=Release `
               -p:RunWixToolsOutOfProc=true `
               -p:OutputPath=${{ github.workspace }}\BinaryCache\installer\ `
