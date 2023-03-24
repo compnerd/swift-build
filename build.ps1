@@ -1,12 +1,10 @@
 # Copyright 2020 Saleem Abdulrasool <compnerd@compnerd.org>
 # Copyright 2023 Tristan Labelle <tristan@thebrowser.company>
 
-[CmdletBinding(PositionalBinding = $false)]
 param(
+  [string[]] $SDKs = @("X64","X86","Arm64"),
   [string] $SourceCache = "S:\SourceCache",
   [string] $BinaryCache = "S:\b",
-  [string[]] $SDKs = @("X64","X86","Arm64"),
-  [string] $ProductVersion = "0.0.0",
   [switch] $ToBatch
 )
 
