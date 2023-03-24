@@ -372,7 +372,6 @@ function Build-WiXProject()
 
   $Properties = $Properties.Clone()
   TryAdd-KeyValue $Properties ProductArchitecture $ArchName
-  TryAdd-KeyValue $Properties ProductVersion $ProductVersion
   TryAdd-KeyValue $Properties RunWixToolsOutOfProc true
   TryAdd-KeyValue $Properties OutputPath $Arch.MSIRoot
   TryAdd-KeyValue $Properties IntermediateOutputPath BinaryCache\$Name\$ArchName\
