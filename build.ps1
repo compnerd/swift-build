@@ -1069,8 +1069,8 @@ function Consolidate-HostToolchainInstall()
 function Build-Installer()
 {
   Build-WiXProject toolchain.wixproj -Arch $HostArch -Properties @{
-    DEVTOOLS_ROOT = "$ToolchainInstallRoot\";
-    TOOLCHAIN_ROOT = "$ToolchainInstallRoot\";
+    DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
+    TOOLCHAIN_ROOT = "$($HostArch.ToolchainInstallRoot)\";
   }
 
   foreach ($Arch in $SDKArchs)
@@ -1093,7 +1093,7 @@ function Build-Installer()
   }
 
   Build-WiXProject devtools.wixproj -Arch $HostArch -Properties @{
-    DEVTOOLS_ROOT = "$ToolchainInstallRoot\";
+    DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
   }
 
   # TODO: The above wixprojs need to build
