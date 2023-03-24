@@ -1051,7 +1051,7 @@ function Consolidate-HostToolchainInstall()
   if ($ToBatch) { return }
 
   Remove-Item -Force -Recurse $ToolchainInstallRoot -ErrorAction Ignore
-  Copy-Dir "$($HostArch.ToolchainInstallRoot)" "$ToolchainInstallRoot"
+  Copy-Dir "$($HostArch.ToolchainInstallRoot)" $ToolchainInstallRoot
 
   # Restructure _InternalSwiftScan
   Move-Item -Force `
@@ -1062,11 +1062,8 @@ function Consolidate-HostToolchainInstall()
     $ToolchainInstallRoot\usr\lib
 
   # Switch to swift-driver
-  if (-not $ToBatch)
-  {
-    Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\bin\swift.exe
-    Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\bin\swiftc.exe
-  }
+  Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\bin\swift.exe
+  Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\bin\swiftc.exe
 }
 
 function Build-Installer()
