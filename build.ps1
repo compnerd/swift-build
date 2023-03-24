@@ -12,7 +12,6 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version 3.0
 
 $InstallRoot = "S:\Library"
-$RedistInstallRoot = "S:\Program Files\swift\runtime-development"
 $ToolchainInstallRoot = "$InstallRoot\Developer\Toolchains\unknown-Asserts-development.xctoolchain"
 $PlatformInstallRoot = "$InstallRoot\Developer\Platforms\Windows.platform"
 $SDKInstallRoot = "$PlatformInstallRoot\Developer\SDKs\Windows.sdk"
@@ -710,9 +709,31 @@ function Copy-Directory($Src, $Dst)
   Copy-Item -Force -Recurse $Src $Dst
 }
 
-function Consolidate-HostRedistInstall()
+function Consolidate-RedistInstall($Arch)
 {
   if ($ToBatch) { return }
+
+  if ($Arch -eq $HostArch)
+  {
+    $ProgramFilesName = "Program Files"
+  }
+  elseif ($Arch -eq $ArchX86)
+  {
+    $ProgramFilesName = "Program Files (x86)"
+  }
+  elseif (($HostArch -eq $HostArm64) -and ($Arch -eq $ArchX64))
+  {
+    # x64 programs actually install under "Program Files" on arm64,
+    # but this would conflict with the native installation.
+    $ProgramFilesName = "Program Files (x64)"
+  }
+  else
+  {
+    # arm64 cannot be installed on x64
+    return
+  }
+
+  $RedistInstallRoot = "S:\$ProgramFilesName\swift\runtime-development"
 
   Remove-Item -Force -Recurse $RedistInstallRoot -ErrorAction Ignore
   Copy-Directory "$($HostArch.SDKInstallRoot)\usr\bin" "$RedistInstallRoot\usr"
@@ -1112,12 +1133,8 @@ foreach ($Arch in $SDKArchs)
   Build-Dispatch $Arch
   Build-Foundation $Arch
   Build-XCTest $Arch
-  
-  if ($Arch -eq $HostArch)
-  {
-    Consolidate-HostRedistInstall
-  }
 
+  Consolidate-RedistInstall $Arch
   Consolidate-PlatformInstall $Arch
 }
 
