@@ -14,6 +14,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version 3.0
 
 $InstallRoot = "S:\Library"
+$RedistInstallRoot = "S:\Program Files\swift\runtime-development"
 $ToolchainInstallRoot = "$InstallRoot\Developer\Toolchains\unknown-Asserts-development.xctoolchain"
 $PlatformInstallRoot = "$InstallRoot\Developer\Platforms\Windows.platform"
 $SDKInstallRoot = "$PlatformInstallRoot\Developer\SDKs\Windows.sdk"
@@ -41,8 +42,7 @@ $ArchX64 = @{
   CMakeName = "AMD64";
   BinaryDir = "bin64";
   BuildID = 100;
-  RedistInstallRoot = "$InstallRoot\x64\swift-development";
-  PlatformInstallRoot = "$BinaryCache\x64\Windows.platform\";
+  PlatformInstallRoot = "$BinaryCache\x64\Windows.platform";
   SDKInstallRoot = "$BinaryCache\x64\Windows.platform\Developer\SDKs\Windows.sdk";
   XCTestInstallRoot = "$BinaryCache\x64\Windows.platform\Developer\Library\XCTest-development";
   MSIRoot = "$BinaryCache\x64\msi";
@@ -56,8 +56,7 @@ $ArchX86 = @{
   CMakeName = "i686";
   BinaryDir = "bin32";
   BuildID = 200;
-  RedistInstallRoot = "$InstallRoot\x86\swift-development";
-  PlatformInstallRoot = "$BinaryCache\x86\Windows.platform\";
+  PlatformInstallRoot = "$BinaryCache\x86\Windows.platform";
   SDKInstallRoot = "$BinaryCache\x86\Windows.platform\Developer\SDKs\Windows.sdk";
   XCTestInstallRoot = "$BinaryCache\x86\Windows.platform\Developer\Library\XCTest-development";
   MSIRoot = "$BinaryCache\x86\msi";
@@ -71,8 +70,7 @@ $ArchARM64 = @{
   CMakeName = "aarch64";
   BinaryDir = "bin64a";
   BuildID = 300;
-  RedistInstallRoot = "$InstallRoot\arm64\swift-development";
-  PlatformInstallRoot = "$BinaryCache\arm64\Windows.platform\";
+  PlatformInstallRoot = "$BinaryCache\arm64\Windows.platform";
   SDKInstallRoot = "$BinaryCache\arm64\Windows.platform\Developer\SDKs\Windows.sdk";
   XCTestInstallRoot = "$BinaryCache\arm64\Windows.platform\Developer\Library\XCTest-development";
   MSIRoot = "$BinaryCache\arm64\msi";
@@ -715,12 +713,12 @@ function Copy-Directory($Src, $Dst)
   Copy-Item -Force -Recurse $Src $Dst
 }
 
-function Consolidate-RedistInstall($Arch)
+function Consolidate-HostRedistInstall()
 {
   if ($ToBatch) { return }
 
-  Remove-Item -Force -Recurse $($Arch.RedistInstallRoot) -ErrorAction Ignore
-  Copy-Directory "$($Arch.SDKInstallRoot)\usr\bin" "$($Arch.RedistInstallRoot)\usr"
+  Remove-Item -Force -Recurse $RedistInstallRoot -ErrorAction Ignore
+  Copy-Directory "$($HostArch.SDKInstallRoot)\usr\bin" "$RedistInstallRoot\usr"
 }
 
 # Copies files installed by CMake from the arch-specific platform root,
@@ -1118,7 +1116,11 @@ foreach ($Arch in $SDKArchs)
   Build-Foundation $Arch
   Build-XCTest $Arch
   
-  Consolidate-RedistInstall $Arch
+  if ($Arch -eq $HostArch)
+  {
+    Consolidate-HostRedistInstall
+  }
+
   Consolidate-PlatformInstall $Arch
 }
 
