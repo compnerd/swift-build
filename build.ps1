@@ -1051,7 +1051,7 @@ function Consolidate-HostToolchainInstall()
   if ($ToBatch) { return }
 
   Remove-Item -Force -Recurse $ToolchainInstallRoot -ErrorAction Ignore
-  Copy-Dir "$($HostArch.ToolchainInstallRoot)\usr" "$ToolchainInstallRoot\"
+  Copy-Directory "$($HostArch.ToolchainInstallRoot)\usr" "$ToolchainInstallRoot\"
 
   # Restructure _InternalSwiftScan
   Move-Item -Force `
