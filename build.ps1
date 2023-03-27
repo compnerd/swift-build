@@ -721,7 +721,7 @@ function Consolidate-RedistInstall($Arch)
   {
     $ProgramFilesName = "Program Files (x86)"
   }
-  elseif (($HostArch -eq $HostArm64) -and ($Arch -eq $ArchX64))
+  elseif (($HostArch -eq $ArchArm64) -and ($Arch -eq $ArchX64))
   {
     # x64 programs actually install under "Program Files" on arm64,
     # but this would conflict with the native installation.
@@ -736,7 +736,7 @@ function Consolidate-RedistInstall($Arch)
   $RedistInstallRoot = "S:\$ProgramFilesName\swift\runtime-development"
 
   Remove-Item -Force -Recurse $RedistInstallRoot -ErrorAction Ignore
-  Copy-Directory "$($HostArch.SDKInstallRoot)\usr\bin" "$RedistInstallRoot\usr"
+  Copy-Directory "$($Arch.SDKInstallRoot)\usr\bin" "$RedistInstallRoot\usr"
 }
 
 # Copies files installed by CMake from the arch-specific platform root,
