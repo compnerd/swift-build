@@ -1084,14 +1084,17 @@ function Consolidate-HostToolchainInstall()
 
 function Build-Installer()
 {
-  Build-WiXProject toolchain.wixproj -Arch $HostArch -Properties @{
-    DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
-    TOOLCHAIN_ROOT = "$($HostArch.ToolchainInstallRoot)\";
+  # WiX v3 does not support ARM64
+  if ($HostArch -ne $ArchARM64)
+  {
+    Build-WiXProject toolchain.wixproj -Arch $HostArch -Properties @{
+      DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
+      TOOLCHAIN_ROOT = "$($HostArch.ToolchainInstallRoot)\";
+    }
   }
 
   foreach ($Arch in $SDKArchs)
   {
-    # WiX v3 does not support ARM64
     if ($Arch -eq $ArchARM64)
     {
       continue
@@ -1108,15 +1111,17 @@ function Build-Installer()
     }
   }
 
-  Build-WiXProject devtools.wixproj -Arch $HostArch -Properties @{
-    DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
-  }
+  if ($HostArch -ne $ArchARM64)
+  {
+    Build-WiXProject devtools.wixproj -Arch $HostArch -Properties @{
+      DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
+    }
 
-  # TODO: The above wixprojs need to build
-  # Build-WiXProject installer.wixproj -Arch $HostArch -Properties @{
-  #   OutputPath = "$BinaryCache\";
-  #   MSI_LOCATION = "$($Arch.MSIRoot)\";
-  # }
+    Build-WiXProject installer.wixproj -Arch $HostArch -Properties @{
+      OutputPath = "$BinaryCache\";
+      MSI_LOCATION = "$($HostArch.MSIRoot)\";
+    }
+  }
 }
 
 #-------------------------------------------------------------------
@@ -1162,5 +1167,7 @@ Build-PackageManager $HostArch
 Build-IndexStoreDB $HostArch
 Build-Syntax $HostArch
 Build-SourceKitLSP $HostArch
+
+Build-Installer
 
 Consolidate-HostToolchainInstall
