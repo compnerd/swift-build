@@ -725,7 +725,7 @@ function Consolidate-RedistInstall($Arch)
   {
     # x64 programs actually install under "Program Files" on arm64,
     # but this would conflict with the native installation.
-    $ProgramFilesName = "Program Files (x64)"
+    $ProgramFilesName = "Program Files (Amd64)"
   }
   else
   {
