@@ -1167,7 +1167,7 @@ function Build-Installer()
       DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
     }
 
-    Build-WiXProject installer.wixproj -Arch $HostArch -Properties @{
+    Build-WiXProject installer.wixproj -Arch $HostArch -Bundle -Properties @{
       OutputPath = "$BinaryCache\";
       MSI_LOCATION = "$($HostArch.MSIRoot)\";
     }
@@ -1175,9 +1175,6 @@ function Build-Installer()
 }
 
 #-------------------------------------------------------------------
-
-Build-Foundation $HostArch -Test
-exit
 
 Build-BuildTools $HostArch
 Build-Compilers $HostArch
