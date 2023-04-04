@@ -8,7 +8,7 @@ param(
   [string[]] $SDKs = @("X64","X86","Arm64"),
   [string] $ProductVersion = "0.0.0",
   [string[]] $Test = @(),
-  [string] $StageArtifactsTo = "",
+  [string] $Stage = "",
   [switch] $ToBatch
 )
 
@@ -1260,10 +1260,10 @@ if ($Test -contains "dispatch") { Build-Dispatch $HostArch -Test }
 if ($Test -contains "foundation") { Build-Foundation $HostArch -Test }
 if ($Test -contains "xctest") { Build-XCTest $HostArch -Test }
 
-if ($StageArtifactsTo -ne "")
+if ($Stage -ne "")
 {
-  $StageArtifactsTo += "\" # Interpret as target directory
+  $Stage += "\" # Interpret as target directory
 
-  Copy-File "$($HostArch.BinaryRoot)\msi\*.msi" $StageArtifactsTo
-  Copy-File "$($HostArch.BinaryRoot)\installer.exe" $StageArtifactsTo
+  Copy-File "$($HostArch.BinaryRoot)\msi\*.msi" $Stage
+  Copy-File "$($HostArch.BinaryRoot)\installer.exe" $Stage
 }
