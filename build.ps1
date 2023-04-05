@@ -110,6 +110,7 @@ if ($Test.Length -eq 1) { $Test = $Test[0].Split(",") }
 
 if ($Test -contains "*")
 {
+  # Explicitly don't include llbuild yet since tests are known to fail on Windows
   $Test = @("swift", "dispatch", "foundation", "xctest")
 }
 
@@ -506,7 +507,7 @@ function Build-BuildTools($Arch)
     -Src $SourceCache\llvm-project\llvm `
     -Bin $BinaryCache\0 `
     -Arch $Arch `
-    -BuildTargets llvm-tblgen,clang-tblgen,clang-pseudo-gen,clang-tidy-confusable-chars-gen,lldb-tblgen,llvm-config,swift-def-to-strings-converter,swift-serialize-diagnostics,swift-compatibility-symbols `
+    -BuildTargets llvm-tblgen,clang-tblgen,clang-pseudo-gen,clang-tidy-confusable-chars-gen,lldb-tblgen,llvm-config,swift-def-to-strings-converter,swift-serialize-diagnostics,swift-compatibility-symbols,FileCheck `
     -Defines @{
       LLDB_ENABLE_PYTHON = "NO";
       LLDB_INCLUDE_TESTS = "NO";
@@ -1033,23 +1034,42 @@ function Build-ToolsSupportCore($Arch)
     }
 }
 
-function Build-LLBuild($Arch)
+function Build-LLBuild($Arch, [switch]$Test = $false)
 {
-  Build-CMakeProject `
-    -Src $SourceCache\llbuild `
-    -Bin $BinaryCache\4 `
-    -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
-    -Arch $Arch `
-    -UseMSVCCompilers CXX `
-    -UseBuiltCompilers Swift `
-    -SwiftSDK $SDKInstallRoot `
-    -BuildTargets default `
-    -Defines @{
-      BUILD_SHARED_LIBS = "YES";
-      LLBUILD_SUPPORT_BINDINGS = "Swift";
-      SQLite3_INCLUDE_DIR = "$LibraryRoot\sqlite-3.36.0\usr\include";
-      SQLite3_LIBRARY = "$LibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
+  Isolate-EnvVars {
+    if ($Test)
+    {
+      $Targets = @("default", "test-llbuild")
+      $TestingDefines = @{
+        FILECHECK_EXECUTABLE = "$BinaryCache\0\bin\FileCheck.exe";
+        LIT_EXECUTABLE = "$SourceCache\llvm-project\llvm\utils\lit\lit.py";
+      }
+      $env:Path = "$env:Path;$UnixToolsBinDir"
+      $env:AR = "$BinaryCache\1\llvm-ar.exe"
+      $env:CLANG = "$BinaryCache\1\clang.exe"
     }
+    else
+    {
+      $Targets = @("default", "install")
+      $TestingDefines = @{}
+    }
+
+    Build-CMakeProject `
+      -Src $SourceCache\llbuild `
+      -Bin $BinaryCache\4 `
+      -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
+      -Arch $Arch `
+      -UseMSVCCompilers CXX `
+      -UseBuiltCompilers Swift `
+      -SwiftSDK $SDKInstallRoot `
+      -BuildTargets $Targets `
+      -Defines ($TestingDefines + @{
+        BUILD_SHARED_LIBS = "YES";
+        LLBUILD_SUPPORT_BINDINGS = "Swift";
+        SQLite3_INCLUDE_DIR = "$LibraryRoot\sqlite-3.36.0\usr\include";
+        SQLite3_LIBRARY = "$LibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
+      })
+  }
 }
 
 function Build-Yams($Arch)
@@ -1355,6 +1375,7 @@ if ($Test -contains "swift") { Build-Compilers $HostArch -Test }
 if ($Test -contains "dispatch") { Build-Dispatch $HostArch -Test }
 if ($Test -contains "foundation") { Build-Foundation $HostArch -Test }
 if ($Test -contains "xctest") { Build-XCTest $HostArch -Test }
+if ($Test -contains "llbuild") { Build-LLBuild $HostArch -Test }
 
 if (-not $SkipPackaging -and $Stage -ne "")
 {
