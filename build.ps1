@@ -14,6 +14,9 @@ This script performs various steps associated with building the Swift toolchain:
 - Optionally runs tests for supported projects
 - Optionally stages build artifacts for CI
 
+If invoked within a VS developer command prompt, it will limit building to
+the architecture dictated by the VS environment variables.
+
 .PARAMETER SourceCache
 The path to a directory where projects contributing to the Swift.
 toolchain have been cloned.
@@ -26,6 +29,8 @@ The CMake build type to use, one of: Release, RelWithDebInfo, Debug.
 
 .PARAMETER SDKs
 An array of architectures for which the Swift SDK should be built.
+If invoked within a VS developer command prompt, architectures
+other than that of the command prompt's target arch will be skipped.
 
 .PARAMETER ProductVersion
 The product version to be used when building the installer.
@@ -136,9 +141,18 @@ $ArchARM64 = @{
   ToolchainInstallRoot = "$BinaryCache\arm64\unknown-Asserts-development.xctoolchain";
 }
 
-$HostArch = switch (${Env:PROCESSOR_ARCHITECTURE}) {
-  'ARM64' { $ArchARM64 }
-  default { $ArchX64 }
+# Support being invoked in a dev command prompt, where we can only build specific architectures
+$HostArchStr = if (Test-Path env:VSCMD_ARG_HOST_ARCH) { $env:VSCMD_ARG_HOST_ARCH } else { $env:PROCESSOR_ARCHITECTURE }
+if (Test-Path env:VSCMD_ARG_TGT_ARCH)
+{
+  $SDKs = if ($SDKs -contains $env:VSCMD_ARG_TGT_ARCH) { @($env:VSCMD_ARG_TGT_ARCH) } else { @() }
+}
+
+$HostArch = switch ($HostArchStr) {
+  "X64" { $ArchX64 }
+  "Amd64" { $ArchX64 }
+  "Arm64" { $ArchARM64 }
+  default { throw "Unsupported host architecture $_" }
 }
 
 # Resolve the architectures received as argument
@@ -147,7 +161,7 @@ $SDKArchs = $SDKs | ForEach-Object {
     "X64" { $ArchX64 }
     "X86" { $ArchX86 }
     "Arm64" { $ArchArm64 }
-    default { throw "Unknown architecture $_" }
+    default { throw "Unknown SDK architecture $_" }
   }
 }
 
@@ -260,6 +274,12 @@ function Isolate-EnvVars([scriptblock]$Block)
 
 function Invoke-VsDevShell($Arch)
 {
+  if (Test-Path env:VSCMD_ARG_HOST_ARCH)
+  {
+    # Script was invoked already in a developer command prompt
+    return
+  }
+
   if ($ToBatch)
   {
     Write-Output "call `"$VSInstallRoot\Common7\Tools\VsDevCmd.bat`" -no_logo -host_arch=amd64 -arch=$($Arch.VSName)"
