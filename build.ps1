@@ -507,7 +507,7 @@ function Build-BuildTools($Arch)
     -Src $SourceCache\llvm-project\llvm `
     -Bin $BinaryCache\0 `
     -Arch $Arch `
-    -BuildTargets llvm-tblgen,clang-tblgen,clang-pseudo-gen,clang-tidy-confusable-chars-gen,lldb-tblgen,llvm-config,swift-def-to-strings-converter,swift-serialize-diagnostics,swift-compatibility-symbols,FileCheck `
+    -BuildTargets llvm-tblgen,clang-tblgen,clang-pseudo-gen,clang-tidy-confusable-chars-gen,lldb-tblgen,llvm-config,swift-def-to-strings-converter,swift-serialize-diagnostics,swift-compatibility-symbols `
     -Defines @{
       LLDB_ENABLE_PYTHON = "NO";
       LLDB_INCLUDE_TESTS = "NO";
@@ -1039,6 +1039,12 @@ function Build-LLBuild($Arch, [switch]$Test = $false)
   Isolate-EnvVars {
     if ($Test)
     {
+      # Build additional llvm executables needed by tests
+      Isolate-EnvVars {
+        Invoke-VsDevShell $HostArch
+        Invoke-Program ninja.exe -C "$BinaryCache\0" FileCheck not
+      }
+
       $Targets = @("default", "test-llbuild")
       $TestingDefines = @{
         FILECHECK_EXECUTABLE = "$BinaryCache\0\bin\FileCheck.exe";
