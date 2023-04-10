@@ -35,10 +35,8 @@ An array of architectures for which the Swift SDK should be built.
 The product version to be used when building the installer.
 Supports semantic version strings.
 
-.PARAMETER SkipInstall
-If set, does not create S:\Program Files and S:\Library mimicking an
-installed redistributable, SDK and toolchain.
-("install" is used in the sense of the installer, not the CMake install step)
+.PARAMETER SkipRedistInstall
+If set, does not create S:\Program Files to mimic an installed redistributable.
 
 .PARAMETER SkipPackaging
 If set, skips building the msi's and installer
@@ -68,7 +66,7 @@ param(
   [string] $BuildType = "Release",
   [string[]] $SDKs = @("X64","X86","Arm64"),
   [string] $ProductVersion = "0.0.0",
-  [switch] $SkipInstall = $false,
+  [switch] $SkipRedistInstall = $false,
   [switch] $SkipPackaging = $false,
   [string[]] $Test = @(),
   [string] $Stage = "",
@@ -77,6 +75,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version 3.0
+
+$PlatformInstallRoot = "$LibraryRoot\Developer\Platforms\Windows.platform"
+$SDKInstallRoot = "$PlatformInstallRoot\Developer\SDKs\Windows.sdk"
+$ToolchainInstallRoot = "$LibraryRoot\Developer\Toolchains\unknown-Asserts-development.xctoolchain"
 
 $vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSInstallRoot = & $vswhere -nologo -latest -products "*" -all -prerelease -property installationPath
@@ -890,17 +892,9 @@ function Install-Redist($Arch)
 # Copies files installed by CMake from the arch-specific platform root,
 # where they follow the layout expected by the installer,
 # to the final platform root, following the installer layout.
-function Install-Platform($Arch, [switch] $Clean = $false)
+function Install-Platform($Arch)
 {
   if ($ToBatch) { return }
-
-  $PlatformInstallRoot = "$LibraryRoot\Developer\Platforms\Windows.platform"
-  $SDKInstallRoot = "$PlatformInstallRoot\Developer\SDKs\Windows.sdk"
-
-  if ($Clean)
-  {
-    Remove-Item -Force -Recurse $PlatformInstallRoot -ErrorAction Ignore
-  }
 
   New-Item -ItemType Directory -ErrorAction Ignore $SDKInstallRoot\usr | Out-Null
 
@@ -1232,8 +1226,6 @@ function Install-HostToolchain()
 {
   if ($ToBatch) { return }
   
-  $ToolchainInstallRoot = "$LibraryRoot\Developer\Toolchains\unknown-Asserts-development.xctoolchain"
-
   Remove-Item -Force -Recurse $ToolchainInstallRoot -ErrorAction Ignore
   Copy-Directory "$($HostArch.ToolchainInstallRoot)\usr" $ToolchainInstallRoot\
 
@@ -1299,19 +1291,18 @@ foreach ($Arch in $SDKArchs)
   Build-Foundation $Arch
   Build-XCTest $Arch
 
-  if (-not $SkipInstall)
+  if (-not $SkipRedistInstall)
   {
     Install-Redist $Arch
   }
 }
 
-if (-not $SkipInstall -and -not $ToBatch)
+if (-not $ToBatch)
 {
-  $InstallArgs = @("-Clean")
+  Remove-Item -Force -Recurse $PlatformInstallRoot -ErrorAction Ignore
   foreach ($Arch in $SDKArchs)
   {
-    Install-Platform $Arch @InstallArgs
-    $InstallArgs = @()
+    Install-Platform $Arch
   }
 }
 
@@ -1331,10 +1322,7 @@ Build-IndexStoreDB $HostArch
 Build-Syntax $HostArch
 Build-SourceKitLSP $HostArch
 
-if (-not $SkipInstall)
-{
-  Install-HostToolchain
-}
+Install-HostToolchain
 
 if (-not $SkipPackaging)
 {
