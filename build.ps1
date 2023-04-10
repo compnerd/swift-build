@@ -1225,7 +1225,7 @@ function Build-SourceKitLSP($Arch)
 function Install-HostToolchain()
 {
   if ($ToBatch) { return }
-  
+
   Remove-Item -Force -Recurse $ToolchainInstallRoot -ErrorAction Ignore
   Copy-Directory "$($HostArch.ToolchainInstallRoot)\usr" $ToolchainInstallRoot\
 
