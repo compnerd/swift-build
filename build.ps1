@@ -64,7 +64,7 @@ PS> .\Build.ps1 -SDKs x64 -ProductVersion 1.2.3 -Test foundation,xctest
 param(
   [string] $SourceCache = "S:\SourceCache",
   [string] $BinaryCache = "S:\b",
-  [switch] $LibraryRoot = "S:\Library",
+  [string] $LibraryRoot = "S:\Library",
   [string] $BuildType = "Release",
   [string[]] $SDKs = @("X64","X86","Arm64"),
   [string] $ProductVersion = "0.0.0",
