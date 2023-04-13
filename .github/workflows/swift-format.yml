@@ -11,7 +11,7 @@ jobs:
       matrix:
         include:
           - tag: 5.8-RELEASE
-            branch: swift-5.8-RELEASE
+            branch: swift-5.8-release
 
     steps:
       # Build
