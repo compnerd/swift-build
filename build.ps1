@@ -1232,7 +1232,7 @@ function Install-HostToolchain()
   # We've already special-cased $HostArch.ToolchainInstallRoot to point to $ToolchainInstallRoot.
   # There are only a few extra restructuring steps we need to take care of.
 
-  # Restructure _InternalSwiftScan
+  # Restructure _InternalSwiftScan (keep the original one for the installer)
   Copy-Item -Force `
     $ToolchainInstallRoot\usr\lib\swift\_InternalSwiftScan `
     $ToolchainInstallRoot\usr\include
