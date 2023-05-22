@@ -1063,13 +1063,13 @@ function Build-LLBuild($Arch, [switch]$Test = $false)
     Build-CMakeProject `
       -Src $SourceCache\llbuild `
       -Bin $BinaryCache\4 `
-      -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
       -Arch $Arch `
       -UseMSVCCompilers CXX `
       -UseBuiltCompilers Swift `
       -SwiftSDK $SDKInstallRoot `
       -BuildTargets $Targets `
       -Defines ($TestingDefines + @{
+        CMAKE_INSTALL_PREFIX = "$($Arch.ToolchainInstallRoot)\usr";
         BUILD_SHARED_LIBS = "YES";
         LLBUILD_SUPPORT_BINDINGS = "Swift";
         SQLite3_INCLUDE_DIR = "$LibraryRoot\sqlite-3.36.0\usr\include";
