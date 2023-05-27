@@ -32,7 +32,7 @@ jobs:
 
       - name: build
         run: |
-          swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib
+          swift build -c release -Xcc -IC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\include -Xlinker -LC:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\lib -Xswiftc -gnone
 
       # Package
       - uses: actions/checkout@v3
