@@ -58,6 +58,6 @@ jobs:
           prerelease: true
           name: swift-format-${{ matrix.tag }}
           tag_name: swift-format-${{ matrix.tag }}
-          files:
+          files: |
             .build/x86_64-unknown-windows-msvc/release/swift-format.exe
             ${{ env.MSI_PATH }}
