@@ -823,6 +823,15 @@ function Build-Foundation($Arch, [switch]$Test = $false)
       $Targets = @("default", "install")
     }
 
+    $SwiftFlags = ""
+    if ($Arch -eq $ArchX86)
+    {
+      # Turn off safeseh for lld as it has safeseh enabled by default
+      # and fails with an ICU data object file icudt69l_dat.obj. This
+      # matters to X86 only.
+      $SwiftFlags = "-Xlinker /SAFESEH:NO"
+    }
+
     $env:CTEST_OUTPUT_ON_FAILURE = 1
     Build-CMakeProject `
       -Src $SourceCache\swift-corelibs-foundation `
@@ -834,6 +843,7 @@ function Build-Foundation($Arch, [switch]$Test = $false)
         CMAKE_INSTALL_PREFIX = "$($Arch.SDKInstallRoot)\usr";
         CMAKE_SYSTEM_NAME = "Windows";
         CMAKE_SYSTEM_PROCESSOR = $Arch.CMakeName;
+        CMAKE_Swift_FLAGS = $SwiftFlags;
         CURL_DIR = "$LibraryRoot\curl-7.77.0\usr\lib\$ShortArch\cmake\CURL";
         ICU_DATA_LIBRARY_RELEASE = "$LibraryRoot\icu-69.1\usr\lib\$ShortArch\sicudt69.lib";
         ICU_I18N_LIBRARY_RELEASE = "$LibraryRoot\icu-69.1\usr\lib\$ShortArch\sicuin69.lib";
