@@ -824,8 +824,7 @@ function Build-Foundation($Arch, [switch]$Test = $false)
     }
 
     $SwiftFlags = ""
-    if ($Arch -eq $ArchX86)
-    {
+    if ($Arch -eq $ArchX86) {
       # Turn off safeseh for lld as it has safeseh enabled by default
       # and fails with an ICU data object file icudt69l_dat.obj. This
       # matters to X86 only.
