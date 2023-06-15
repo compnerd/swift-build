@@ -823,13 +823,10 @@ function Build-Foundation($Arch, [switch]$Test = $false)
       $Targets = @("default", "install")
     }
 
-    $SwiftFlags = ""
-    if ($Arch -eq $ArchX86) {
-      # Turn off safeseh for lld as it has safeseh enabled by default
-      # and fails with an ICU data object file icudt69l_dat.obj. This
-      # matters to X86 only.
-      $SwiftFlags = "-Xlinker /SAFESEH:NO"
-    }
+    # Turn off safeseh for lld as it has safeseh enabled by default
+    # and fails with an ICU data object file icudt69l_dat.obj. This
+    # matters to X86 only.
+    $SwiftFlags = if ($Arch -eq $ArchX86) { "-Xlinker /SAFESEH:NO" } else { "" }
 
     $env:CTEST_OUTPUT_ON_FAILURE = 1
     Build-CMakeProject `
