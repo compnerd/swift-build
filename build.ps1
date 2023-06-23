@@ -382,6 +382,7 @@ function Build-CMakeProject {
     TryAdd-KeyValue $Defines CMAKE_C_COMPILER "$BinaryCache\1\bin\clang-cl.exe"
     TryAdd-KeyValue $Defines CMAKE_C_COMPILER_TARGET $Arch.LLVMTarget
 
+    # Workaround for https://github.com/ninja-build/ninja/issues/2280 (fixed in CMake 3.26.3)
     TryAdd-KeyValue $Defines CMAKE_CL_SHOWINCLUDES_PREFIX "Note: including file: "
 
     if ($GenerateDebugInfo -and $CDebugFormat -eq "dwarf") {
