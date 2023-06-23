@@ -381,6 +381,9 @@ function Build-CMakeProject {
   if ($UseBuiltCompilers.Contains("C")) {
     TryAdd-KeyValue $Defines CMAKE_C_COMPILER "$BinaryCache\1\bin\clang-cl.exe"
     TryAdd-KeyValue $Defines CMAKE_C_COMPILER_TARGET $Arch.LLVMTarget
+
+    TryAdd-KeyValue $Defines CMAKE_CL_SHOWINCLUDES_PREFIX "Note: including file: "
+
     if ($GenerateDebugInfo -and $CDebugFormat -eq "dwarf") {
       Append-FlagsDefine $Defines CMAKE_C_FLAGS -gdwarf
     }
@@ -389,6 +392,9 @@ function Build-CMakeProject {
   if ($UseBuiltCompilers.Contains("CXX")) {
     TryAdd-KeyValue $Defines CMAKE_CXX_COMPILER "$BinaryCache\1\bin\clang-cl.exe"
     TryAdd-KeyValue $Defines CMAKE_CXX_COMPILER_TARGET $Arch.LLVMTarget
+
+    TryAdd-KeyValue $Defines CMAKE_CL_SHOWINCLUDES_PREFIX "Note: including file: "
+
     if ($GenerateDebugInfo -and $CDebugFormat -eq "dwarf") {
       Append-FlagsDefine $Defines CMAKE_CXX_FLAGS -gdwarf
     }
