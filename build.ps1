@@ -330,7 +330,7 @@ function Append-FlagsDefine([hashtable]$Defines, [string]$Name, [string]$Value) 
   }
 }
 
-function Test-CMakeMinVersion([int]$Major, [int]$Minor, [int]$Patch = 0) {
+function Test-CMakeAtLeast([int]$Major, [int]$Minor, [int]$Patch = 0) {
   $CMakeVersionString = @(cmake --version)[0]
   if (-not ($CMakeVersionString -match "^cmake version (\d+)\.(\d+)(?:\.(\d+))?")) {
     throw "Unexpected CMake version string format"
@@ -394,7 +394,7 @@ function Build-CMakeProject {
     TryAdd-KeyValue $Defines CMAKE_C_COMPILER "$BinaryCache\1\bin\clang-cl.exe"
     TryAdd-KeyValue $Defines CMAKE_C_COMPILER_TARGET $Arch.LLVMTarget
 
-    if (-not (Test-CMakeMinVersion -Major 3 -Minor 26 -Patch 3)) {
+    if (-not (Test-CMakeAtLeast -Major 3 -Minor 26 -Patch 3)) {
       # Workaround for https://github.com/ninja-build/ninja/issues/2280
       TryAdd-KeyValue $Defines CMAKE_CL_SHOWINCLUDES_PREFIX "Note: including file: "
     }
@@ -408,7 +408,7 @@ function Build-CMakeProject {
     TryAdd-KeyValue $Defines CMAKE_CXX_COMPILER "$BinaryCache\1\bin\clang-cl.exe"
     TryAdd-KeyValue $Defines CMAKE_CXX_COMPILER_TARGET $Arch.LLVMTarget
 
-    if (-not (Test-CMakeMinVersion -Major 3 -Minor 26 -Patch 3)) {
+    if (-not (Test-CMakeAtLeast -Major 3 -Minor 26 -Patch 3)) {
       # Workaround for https://github.com/ninja-build/ninja/issues/2280
       TryAdd-KeyValue $Defines CMAKE_CL_SHOWINCLUDES_PREFIX "Note: including file: "
     }
