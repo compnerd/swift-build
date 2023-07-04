@@ -14,7 +14,7 @@
   <project remote="github" name="apple/swift-asn1" path="swift-asn1" revision="refs/tags/0.8.0" />
   <project remote="github" name="apple/swift-certificates" path="swift-certificates" revision="refs/tags/0.6.0" />
   <project remote="github" name="apple/swift-cmark" path="cmark" revision="gfm" />
-  <project remote="github" name="apple/swift-collections" path="swift-collections" revision="refs/tags/1.0.4" />
+  <project remote="github" name="apple/swift-collections" path="swift-collections" revision="6b63044bb9178fa43a602ffdf6c19d7ef56468a6" />
   <project remote="github" name="apple/swift-corelibs-libdispatch" path="swift-corelibs-libdispatch" />
   <project remote="github" name="apple/swift-corelibs-foundation" path="swift-corelibs-foundation" />
   <project remote="github" name="apple/swift-corelibs-xctest" path="swift-corelibs-xctest" />
@@ -35,7 +35,7 @@
   <project remote="github" name="apple/swift-package-manager" path="swift-package-manager" />
   <project remote="github" name="apple/swift-protobuf" path="swift-protobuf" groups="notdefault" />
   <project remote="github" name="apple/swift-syntax" path="swift-syntax" />
-  <project remote="github" name="apple/swift-system" path="swift-system" revision="refs/tags/1.1.1" />
+  <project remote="github" name="apple/swift-system" path="swift-system" />
   <project remote="github" name="apple/swift-tools-support-core" path="swift-tools-support-core" />
   <project remote="github" name="apple/swift-xcode-playground-support" path="swift-xcode-playground-support" groups="notdefault" />
 
@@ -50,7 +50,7 @@
   <project remote="github" name="google/swift-benchmark" path="swift-benchmark" groups="notdefault,tensorflow" />
   <project remote="github" name="google/swift-jupyter" path="swift-jupyter" groups="notdefault,tensorflow" />
 
-  <project remote="github" name="jpsim/Yams" path="Yams" revision="refs/tags/5.0.4" />
+  <project remote="github" name="jpsim/Yams" path="Yams" revision="refs/tags/5.0.6" />
 
   <project remote="github" name="Kitware/CMake" path="CMake" groups="notdefault,dependencies" revision="master" />
 
