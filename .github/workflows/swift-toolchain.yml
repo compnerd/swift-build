@@ -481,6 +481,12 @@ jobs:
           echo "PYTHON_LOCATION_amd64=$env:pythonLocation" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "PYTHON_LOCATION_arm64=${{ github.workspace }}\pythonarm64.${{ env.PYTHON_VERSION }}\tools" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      # Workaround for MSVC large switch jump table computation taking ~1h30
+      - name: Update Visual Studio to 17.7
+        if: matrix.arch == 'arm64'
+        run: |
+          & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update --productId Microsoft.VisualStudio.Product.Community --channelId VisualStudio.17.Release --updateVersion 17.7 --quiet --noRestart
+
       - name: Install llvm
         if: matrix.arch == 'arm64'
         run: |
