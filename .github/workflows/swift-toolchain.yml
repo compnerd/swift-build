@@ -485,7 +485,7 @@ jobs:
       - name: Update Visual Studio to 17.7
         if: matrix.arch == 'arm64'
         run: |
-          & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update --productId Microsoft.VisualStudio.Product.Enterprise --channelId VisualStudio.17.Release --updateVersion 17.7 --quiet --noRestart
+          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe" update --productId Microsoft.VisualStudio.Product.Enterprise --channelId VisualStudio.17.Release --updateVersion 17.7 --quiet --noRestart
 
       - name: Install llvm
         if: matrix.arch == 'arm64'
