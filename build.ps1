@@ -528,16 +528,16 @@ function Build-SPMProject {
 
   Isolate-EnvVars {
     $env:Path = "$ImageRuntimeRoot\usr\bin;$ImageToolchainRoot\usr\bin;${env:Path}"
-    $env:SDKROOT = $Arch.SDKInstallRoot
+    $env:SDKROOT = $ImageSDKRoot
 
     $Arguments = @(
         "--scratch-path", $Bin,
         "--package-path", $Src,
         "-c", "release",
-        "-Xbuild-tools-swiftc", "-I$($HostArch.SDKInstallRoot)\usr\lib\swift",
-        "-Xbuild-tools-swiftc", "-L$($HostArch.SDKInstallRoot)\usr\lib\swift\windows",
-        "-Xcc", "-I$($HostArch.SDKInstallRoot)\usr\lib\swift",
-        "-Xlinker", "-L$($HostArch.SDKInstallRoot)\usr\lib\swift\windows"
+        "-Xbuild-tools-swiftc", "-I$ImageSDKRoot\usr\lib\swift",
+        "-Xbuild-tools-swiftc", "-L$ImageSDKRoot\usr\lib\swift\windows",
+        "-Xcc", "-I$ImageSDKRoot\usr\lib\swift",
+        "-Xlinker", "-L$ImageSDKRoot\usr\lib\swift\windows"
     )
     if ($BuildType -eq "Release") {
       $Arguments += @("-debug-info-format", "none")
@@ -549,7 +549,7 @@ function Build-SPMProject {
       }
     }
 
-    Invoke-Program "$($Arch.ToolchainInstallRoot)\usr\bin\swift.exe" "build" @Arguments @AdditionalArguments
+    Invoke-Program "$ImageToolchainRoot\usr\bin\swift.exe" "build" @Arguments @AdditionalArguments
   }
 
   if (-not $ToBatch) {
@@ -1359,7 +1359,7 @@ function Build-Inspect() {
     -Src $SourceCache\swift\tools\swift-inspect `
     -Bin $OutDir `
     -Arch $HostArch `
-    -Xcc "-I$($HostArch.SDKInstallRoot)\usr\include\swift\SwiftRemoteMirror" -Xlinker "$($HostArch.SDKInstallRoot)\usr\lib\swift\windows\$($HostArch.LLVMName)\swiftRemoteMirror.lib" `
+    -Xcc "-I$ImageSDKRoot\usr\include\swift\SwiftRemoteMirror" -Xlinker "$ImageSDKRoot\usr\lib\swift\windows\$($HostArch.LLVMName)\swiftRemoteMirror.lib" `
     -Xcc -Xclang -Xcc -fno-split-cold-code # Workaround https://github.com/llvm/llvm-project/issues/40056
 }
 
