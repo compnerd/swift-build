@@ -535,8 +535,8 @@ function Build-SPMProject {
         "-c", "release",
         "-Xbuild-tools-swiftc", "-I$SDKInstallRoot\usr\lib\swift",
         "-Xbuild-tools-swiftc", "-L$SDKInstallRoot\usr\lib\swift\windows",
-        "-Xcc", "-I$($HostArch.SDKInstallRoot)\usr\lib\swift",
-        "-Xlinker", "-L$($HostArch.SDKInstallRoot)\usr\lib\swift\windows"
+        "-Xcc", "-I$SDKInstallRoot\usr\lib\swift",
+        "-Xlinker", "-L$SDKInstallRoot\usr\lib\swift\windows"
     )
     if ($BuildType -eq "Release") {
       $Arguments += @("-debug-info-format", "none")
