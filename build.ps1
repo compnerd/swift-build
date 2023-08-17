@@ -951,10 +951,10 @@ function Build-XCTest($Arch, [switch]$Test = $false) {
       } + $TestingDefines)
 
     if ($DefaultsLLD) {
-      Invoke-Program $python -c "import plistlib; print(str(plistlib.dumps({ 'DefaultProperties': { 'XCTEST_VERSION': '$ProductVersion', 'SWIFTC_FLAGS': ['-use-ld=lld'] } }), encoding='utf-8'))" `
+      Invoke-Program $python -c "import plistlib; print(str(plistlib.dumps({ 'DefaultProperties': { 'XCTEST_VERSION': 'development', 'SWIFTC_FLAGS': ['-use-ld=lld'] } }), encoding='utf-8'))" `
         -OutFile "$($Arch.PlatformInstallRoot)\Info.plist"
     } else {
-      Invoke-Program $python -c "import plistlib; print(str(plistlib.dumps({ 'DefaultProperties': { 'XCTEST_VERSION': '$ProductVersion' } }), encoding='utf-8'))" `
+      Invoke-Program $python -c "import plistlib; print(str(plistlib.dumps({ 'DefaultProperties': { 'XCTEST_VERSION': 'development' } }), encoding='utf-8'))" `
         -OutFile "$($Arch.PlatformInstallRoot)\Info.plist"
     }
   }
