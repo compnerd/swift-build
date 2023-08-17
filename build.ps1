@@ -176,7 +176,7 @@ $HostArch = switch ($NativeProcessorArchName) {
   default { throw "Unsupported processor architecture" }
 }
 
-function Get-InstallDir($Arch) {
+function Get-ImageSwiftRoot($Arch) {
   if ($Arch -eq $HostArch) {
     $ProgramFilesName = "Program Files"
   } elseif ($Arch -eq $ArchX86) {
@@ -192,15 +192,16 @@ function Get-InstallDir($Arch) {
   return "$ImageRoot\$ProgramFilesName\Swift"
 }
 
-$LibraryRoot = "$ImageRoot\Library"
-$ToolchainInstallRoot = "$(Get-InstallDir $HostArch)\Toolchains\$ProductVersion+Asserts"
-$PlatformInstallRoot = "$(Get-InstallDir $HostArch)\Platforms\Windows.platform"
-$RuntimeInstallRoot = "$(Get-InstallDir $HostArch)\Runtimes\$ProductVersion"
-$SDKInstallRoot = "$PlatformInstallRoot\Developer\SDKs\Windows.sdk"
+$ImageLibraryRoot = "$ImageRoot\Library"
+$ImageSwiftRoot = Get-ImageSwiftRoot $HostArch
+$ImageToolchainRoot = "$ImageSwiftRoot\Toolchains\$ProductVersion+Asserts"
+$ImagePlatformRoot = "$ImageSwiftRoot\Platforms\Windows.platform"
+$ImageRuntimeRoot = "$ImageSwiftRoot\Runtimes\$ProductVersion"
+$ImageSDKRoot = "$ImagePlatformRoot\Developer\SDKs\Windows.sdk"
 
 # For dev productivity, install the host toolchain directly using CMake.
 # This allows iterating on the toolchain using ninja builds.
-$HostArch.ToolchainInstallRoot = $ToolchainInstallRoot
+$HostArch.ToolchainInstallRoot = $ImageToolchainRoot
 
 # Resolve the architectures received as argument
 $SDKArchs = $SDKs | ForEach-Object {
@@ -526,7 +527,7 @@ function Build-SPMProject {
   $Stopwatch = [Diagnostics.Stopwatch]::StartNew()
 
   Isolate-EnvVars {
-    $env:Path = "${RuntimeInstallRoot}\usr\bin;${ToolchainInstallRoot}\usr\bin;${env:Path}"
+    $env:Path = "$ImageRuntimeRoot\usr\bin;$ImageToolchainRoot\usr\bin;${env:Path}"
     $env:SDKROOT = $Arch.SDKInstallRoot
 
     $Arguments = @(
@@ -710,13 +711,13 @@ function Build-ZLib($Arch) {
   Build-CMakeProject `
     -Src $SourceCache\zlib `
     -Bin "$($Arch.BinaryCache)\zlib-1.2.11" `
-    -InstallTo $LibraryRoot\zlib-1.2.11\usr `
+    -InstallTo $ImageLibraryRoot\zlib-1.2.11\usr `
     -Arch $Arch `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "NO";
-      INSTALL_BIN_DIR = "$LibraryRoot\zlib-1.2.11\usr\bin\$ArchName";
-      INSTALL_LIB_DIR = "$LibraryRoot\zlib-1.2.11\usr\lib\$ArchName";
+      INSTALL_BIN_DIR = "$ImageLibraryRoot\zlib-1.2.11\usr\bin\$ArchName";
+      INSTALL_LIB_DIR = "$ImageLibraryRoot\zlib-1.2.11\usr\lib\$ArchName";
     }
 }
 
@@ -726,7 +727,7 @@ function Build-XML2($Arch) {
   Build-CMakeProject `
     -Src $SourceCache\libxml2 `
     -Bin "$($Arch.BinaryCache)\libxml2-2.9.12" `
-    -InstallTo "$LibraryRoot\libxml2-2.9.12\usr" `
+    -InstallTo "$ImageLibraryRoot\libxml2-2.9.12\usr" `
     -Arch $Arch `
     -BuildTargets default `
     -Defines @{
@@ -749,7 +750,7 @@ function Build-CURL($Arch) {
   Build-CMakeProject `
     -Src $SourceCache\curl `
     -Bin "$($Arch.BinaryCache)\curl-7.77.0" `
-    -InstallTo "$LibraryRoot\curl-7.77.0\usr" `
+    -InstallTo "$ImageLibraryRoot\curl-7.77.0\usr" `
     -Arch $Arch `
     -BuildTargets default `
     -Defines @{
@@ -777,8 +778,8 @@ function Build-CURL($Arch) {
       CURL_ZLIB = "YES";
       ENABLE_UNIX_SOCKETS = "NO";
       ENABLE_THREADED_RESOLVER = "NO";
-      ZLIB_ROOT = "$LibraryRoot\zlib-1.2.11\usr";
-      ZLIB_LIBRARY = "$LibraryRoot\zlib-1.2.11\usr\lib\$ArchName\zlibstatic.lib";
+      ZLIB_ROOT = "$ImageLibraryRoot\zlib-1.2.11\usr";
+      ZLIB_LIBRARY = "$ImageLibraryRoot\zlib-1.2.11\usr\lib\$ArchName\zlibstatic.lib";
     }
 }
 
@@ -805,7 +806,7 @@ function Build-ICU($Arch) {
   Build-CMakeProject `
     -Src $SourceCache\icu\icu4c `
     -Bin "$($Arch.BinaryCache)\icu-69.1" `
-    -InstallTo "$LibraryRoot\icu-69.1\usr" `
+    -InstallTo "$ImageLibraryRoot\icu-69.1\usr" `
     -Arch $Arch `
     -BuildTargets default `
     -Defines ($BuildToolsDefines + @{
@@ -898,16 +899,16 @@ function Build-Foundation($Arch, [switch]$Test = $false) {
         # and fails with an ICU data object file icudt69l_dat.obj. This
         # matters to X86 only.
         CMAKE_Swift_FLAGS = if ($Arch -eq $ArchX86) { "-Xlinker /SAFESEH:NO" } else { "" };
-        CURL_DIR = "$LibraryRoot\curl-7.77.0\usr\lib\$ShortArch\cmake\CURL";
-        ICU_DATA_LIBRARY_RELEASE = "$LibraryRoot\icu-69.1\usr\lib\$ShortArch\sicudt69.lib";
-        ICU_I18N_LIBRARY_RELEASE = "$LibraryRoot\icu-69.1\usr\lib\$ShortArch\sicuin69.lib";
-        ICU_ROOT = "$LibraryRoot\icu-69.1\usr";
-        ICU_UC_LIBRARY_RELEASE = "$LibraryRoot\icu-69.1\usr\lib\$ShortArch\sicuuc69.lib";
-        LIBXML2_LIBRARY = "$LibraryRoot\libxml2-2.9.12\usr\lib\$ShortArch\libxml2s.lib";
-        LIBXML2_INCLUDE_DIR = "$LibraryRoot\libxml2-2.9.12\usr\include\libxml2";
+        CURL_DIR = "$ImageLibraryRoot\curl-7.77.0\usr\lib\$ShortArch\cmake\CURL";
+        ICU_DATA_LIBRARY_RELEASE = "$ImageLibraryRoot\icu-69.1\usr\lib\$ShortArch\sicudt69.lib";
+        ICU_I18N_LIBRARY_RELEASE = "$ImageLibraryRoot\icu-69.1\usr\lib\$ShortArch\sicuin69.lib";
+        ICU_ROOT = "$ImageLibraryRoot\icu-69.1\usr";
+        ICU_UC_LIBRARY_RELEASE = "$ImageLibraryRoot\icu-69.1\usr\lib\$ShortArch\sicuuc69.lib";
+        LIBXML2_LIBRARY = "$ImageLibraryRoot\libxml2-2.9.12\usr\lib\$ShortArch\libxml2s.lib";
+        LIBXML2_INCLUDE_DIR = "$ImageLibraryRoot\libxml2-2.9.12\usr\include\libxml2";
         LIBXML2_DEFINITIONS = "/DLIBXML_STATIC";
-        ZLIB_LIBRARY = "$LibraryRoot\zlib-1.2.11\usr\lib\$ShortArch\zlibstatic.lib";
-        ZLIB_INCLUDE_DIR = "$LibraryRoot\zlib-1.2.11\usr\include";
+        ZLIB_LIBRARY = "$ImageLibraryRoot\zlib-1.2.11\usr\lib\$ShortArch\zlibstatic.lib";
+        ZLIB_INCLUDE_DIR = "$ImageLibraryRoot\zlib-1.2.11\usr\include";
         dispatch_DIR = "$DispatchBinaryCache\cmake\modules";
       } + $TestingDefines)
   }
@@ -973,35 +974,27 @@ function Copy-Directory($Src, $Dst) {
   Copy-Item -Force -Recurse $Src $Dst
 }
 
-function Install-Redist($Arch) {
-  if ($ToBatch) { return }
-
-  $RedistInstallRoot = "$(Get-InstallDir $Arch)\Runtimes\$ProductVersion"
-  Remove-Item -Force -Recurse $RedistInstallRoot -ErrorAction Ignore
-  Copy-Directory "$($Arch.SDKInstallRoot)\usr\bin" "$RedistInstallRoot\usr"
-}
-
 # Copies files installed by CMake from the arch-specific platform root,
 # where they follow the layout expected by the installer,
 # to the final platform root, following the installer layout.
-function Install-Platform($Arch) {
+function Create-ImagePlatform($Arch) {
   if ($ToBatch) { return }
 
-  New-Item -ItemType Directory -ErrorAction Ignore $SDKInstallRoot\usr | Out-Null
+  New-Item -ItemType Directory -ErrorAction Ignore $ImageSDKRoot\usr | Out-Null
 
   # Copy SDK header files
-  Copy-Directory "$($Arch.SDKInstallRoot)\usr\include\swift\SwiftRemoteMirror" $SDKInstallRoot\usr\include\swift
-  Copy-Directory "$($Arch.SDKInstallRoot)\usr\lib\swift\shims" $SDKInstallRoot\usr\lib\swift
+  Copy-Directory "$($Arch.SDKInstallRoot)\usr\include\swift\SwiftRemoteMirror" $ImageSDKRoot\usr\include\swift
+  Copy-Directory "$($Arch.SDKInstallRoot)\usr\lib\swift\shims" $ImageSDKRoot\usr\lib\swift
   foreach ($Module in ("Block", "dispatch", "os")) {
-    Copy-Directory "$($Arch.SDKInstallRoot)\usr\lib\swift\$Module" $SDKInstallRoot\usr\include
+    Copy-Directory "$($Arch.SDKInstallRoot)\usr\lib\swift\$Module" $ImageSDKRoot\usr\include
   }
 
   # Copy SDK share folder
-  Copy-File "$($Arch.SDKInstallRoot)\usr\share\*.*" $SDKInstallRoot\usr\share\
+  Copy-File "$($Arch.SDKInstallRoot)\usr\share\*.*" $ImageSDKRoot\usr\share\
 
   # Copy SDK libs, placing them in an arch-specific directory
   $WindowsLibSrc = "$($Arch.SDKInstallRoot)\usr\lib\swift\windows"
-  $WindowsLibDst = "$SDKInstallRoot\usr\lib\swift\windows"
+  $WindowsLibDst = "$ImageSDKRoot\usr\lib\swift\windows"
 
   Copy-File "$WindowsLibSrc\*.lib" "$WindowsLibDst\$($Arch.LLVMName)\"
   Copy-File "$WindowsLibSrc\$($Arch.LLVMName)\*.lib" "$WindowsLibDst\$($Arch.LLVMName)\"
@@ -1025,8 +1018,8 @@ function Install-Platform($Arch) {
   }
 
   # Copy plist files (same across architectures)
-  Copy-File "$($Arch.PlatformInstallRoot)\Info.plist" $PlatformInstallRoot\
-  Copy-File "$($Arch.SDKInstallRoot)\SDKSettings.plist" $SDKInstallRoot\
+  Copy-File "$($Arch.PlatformInstallRoot)\Info.plist" $ImagePlatformRoot\
+  Copy-File "$($Arch.SDKInstallRoot)\SDKSettings.plist" $ImageSDKRoot\
 
   # Copy XCTest
   $XCTestInstallRoot = "$PlatformInstallRoot\Developer\Library\XCTest-development"
@@ -1074,7 +1067,7 @@ install(FILES sqlite3.h sqlite3ext.h DESTINATION include)
   Build-CMakeProject `
     -Src $SrcPath `
     -Bin "$($Arch.BinaryCache)\sqlite-3.36.0" `
-    -InstallTo $LibraryRoot\sqlite-3.36.0\usr `
+    -InstallTo $ImageLibraryRoot\sqlite-3.36.0\usr `
     -Arch $Arch `
     -BuildTargets default `
     -Defines @{
@@ -1089,7 +1082,7 @@ function Build-System($Arch) {
     -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
     -Arch $Arch `
     -UseBuiltCompilers C,Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "YES";
@@ -1103,13 +1096,13 @@ function Build-ToolsSupportCore($Arch) {
     -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
     -Arch $Arch `
     -UseBuiltCompilers C,Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "YES";
       SwiftSystem_DIR = "$BinaryCache\2\cmake\modules";
-      SQLite3_INCLUDE_DIR = "$LibraryRoot\sqlite-3.36.0\usr\include";
-      SQLite3_LIBRARY = "$LibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
+      SQLite3_INCLUDE_DIR = "$ImageLibraryRoot\sqlite-3.36.0\usr\include";
+      SQLite3_LIBRARY = "$ImageLibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
     }
 }
 
@@ -1141,14 +1134,14 @@ function Build-LLBuild($Arch, [switch]$Test = $false) {
       -Arch $Arch `
       -UseMSVCCompilers CXX `
       -UseBuiltCompilers Swift `
-      -SwiftSDK $SDKInstallRoot `
+      -SwiftSDK $ImageSDKRoot `
       -BuildTargets $Targets `
       -Defines ($TestingDefines + @{
         CMAKE_INSTALL_PREFIX = "$($Arch.ToolchainInstallRoot)\usr";
         BUILD_SHARED_LIBS = "YES";
         LLBUILD_SUPPORT_BINDINGS = "Swift";
-        SQLite3_INCLUDE_DIR = "$LibraryRoot\sqlite-3.36.0\usr\include";
-        SQLite3_LIBRARY = "$LibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
+        SQLite3_INCLUDE_DIR = "$ImageLibraryRoot\sqlite-3.36.0\usr\include";
+        SQLite3_LIBRARY = "$ImageLibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
       })
   }
 }
@@ -1159,7 +1152,7 @@ function Build-Yams($Arch) {
     -Bin $BinaryCache\5 `
     -Arch $Arch `
     -UseBuiltCompilers Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "NO";
@@ -1174,7 +1167,7 @@ function Build-ArgumentParser($Arch) {
     -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
     -Arch $Arch `
     -UseBuiltCompilers Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "YES";
@@ -1189,7 +1182,7 @@ function Build-Driver($Arch) {
     -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
     -Arch $Arch `
     -UseBuiltCompilers Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "YES";
@@ -1198,8 +1191,8 @@ function Build-Driver($Arch) {
       LLBuild_DIR = "$BinaryCache\4\cmake\modules";
       Yams_DIR = "$BinaryCache\5\cmake\modules";
       ArgumentParser_DIR = "$BinaryCache\6\cmake\modules";
-      SQLite3_INCLUDE_DIR = "$LibraryRoot\sqlite-3.36.0\usr\include";
-      SQLite3_LIBRARY = "$LibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
+      SQLite3_INCLUDE_DIR = "$ImageLibraryRoot\sqlite-3.36.0\usr\include";
+      SQLite3_LIBRARY = "$ImageLibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
     }
 }
 
@@ -1209,7 +1202,7 @@ function Build-Crypto($Arch) {
     -Bin $BinaryCache\8 `
     -Arch $Arch `
     -UseBuiltCompilers Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "NO";
@@ -1223,7 +1216,7 @@ function Build-Collections($Arch) {
     -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
     -Arch $Arch `
     -UseBuiltCompilers Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "YES";
@@ -1236,7 +1229,7 @@ function Build-ASN1($Arch) {
     -Bin $BinaryCache\10 `
     -Arch $Arch `
     -UseBuiltCompilers Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "NO";
@@ -1249,7 +1242,7 @@ function Build-Certificates($Arch) {
     -Bin $BinaryCache\11 `
     -Arch $Arch `
     -UseBuiltCompilers Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "NO";
@@ -1271,7 +1264,7 @@ function Build-PackageManager($Arch) {
     -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
     -Arch $Arch `
     -UseBuiltCompilers C,Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "YES";
@@ -1285,8 +1278,8 @@ function Build-PackageManager($Arch) {
       SwiftCollections_DIR = "$BinaryCache\9\cmake\modules";
       SwiftASN1_DIR = "$BinaryCache\10\cmake\modules";
       SwiftCertificates_DIR = "$BinaryCache\11\cmake\modules";
-      SQLite3_INCLUDE_DIR = "$LibraryRoot\sqlite-3.36.0\usr\include";
-      SQLite3_LIBRARY = "$LibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
+      SQLite3_INCLUDE_DIR = "$ImageLibraryRoot\sqlite-3.36.0\usr\include";
+      SQLite3_LIBRARY = "$ImageLibraryRoot\sqlite-3.36.0\usr\lib\SQLite3.lib";
     }
 }
 
@@ -1296,12 +1289,12 @@ function Build-IndexStoreDB($Arch) {
     -Bin $BinaryCache\13 `
     -Arch $Arch `
     -UseBuiltCompilers C,CXX,Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "NO";
-      CMAKE_C_FLAGS = "-Xclang -fno-split-cold-code -I$SDKInstallRoot\usr\include -I$SDKInstallRoot\usr\include\Block";
-      CMAKE_CXX_FLAGS = "-Xclang -fno-split-cold-code -I$SDKInstallRoot\usr\include -I$SDKInstallRoot\usr\include\Block";
+      CMAKE_C_FLAGS = "-Xclang -fno-split-cold-code -I$ImageSDKRoot\usr\include -I$ImageSDKRoot\usr\include\Block";
+      CMAKE_CXX_FLAGS = "-Xclang -fno-split-cold-code -I$ImageSDKRoot\usr\include -I$ImageSDKRoot\usr\include\Block";
     }
 }
 
@@ -1312,7 +1305,7 @@ function Build-Syntax($Arch) {
     -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
     -Arch $Arch `
     -UseBuiltCompilers Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       BUILD_SHARED_LIBS = "YES";
@@ -1326,7 +1319,7 @@ function Build-SourceKitLSP($Arch) {
     -InstallTo "$($Arch.ToolchainInstallRoot)\usr" `
     -Arch $Arch `
     -UseBuiltCompilers C,Swift `
-    -SwiftSDK $SDKInstallRoot `
+    -SwiftSDK $ImageSDKRoot `
     -BuildTargets default `
     -Defines @{
       SwiftSystem_DIR = "$BinaryCache\2\cmake\modules";
@@ -1340,23 +1333,23 @@ function Build-SourceKitLSP($Arch) {
     }
 }
 
-function Install-HostToolchain() {
+function Create-ImageToolchain() {
   if ($ToBatch) { return }
 
-  # We've already special-cased $HostArch.ToolchainInstallRoot to point to $ToolchainInstallRoot.
+  # We've already special-cased $HostArch.ToolchainInstallRoot to point to $ImageToolchainRoot.
   # There are only a few extra restructuring steps we need to take care of.
 
   # Restructure _InternalSwiftScan (keep the original one for the installer)
   Copy-Item -Force `
-    $ToolchainInstallRoot\usr\lib\swift\_InternalSwiftScan `
-    $ToolchainInstallRoot\usr\include
+    $ImageToolchainRoot\usr\lib\swift\_InternalSwiftScan `
+    $ImageToolchainRoot\usr\include
   Copy-Item -Force `
-    $ToolchainInstallRoot\usr\lib\swift\windows\_InternalSwiftScan.lib `
-    $ToolchainInstallRoot\usr\lib
+    $ImageToolchainRoot\usr\lib\swift\windows\_InternalSwiftScan.lib `
+    $ImageToolchainRoot\usr\lib
 
   # Switch to swift-driver
-  Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\bin\swift.exe
-  Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ToolchainInstallRoot\usr\bin\swiftc.exe
+  Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ImageToolchainRoot\usr\bin\swift.exe
+  Copy-Item -Force $BinaryCache\7\bin\swift-driver.exe $ImageToolchainRoot\usr\bin\swiftc.exe
 }
 
 function Build-Inspect() {
@@ -1453,7 +1446,6 @@ if (-not $SkipBuild) {
   Build-Compilers $HostArch
 }
 
-
 foreach ($Arch in $SDKArchs) {
   if (-not $SkipBuild) {
     Build-ZLib $Arch
@@ -1471,9 +1463,9 @@ foreach ($Arch in $SDKArchs) {
 }
 
 if (-not $ToBatch) {
-  Remove-Item -Force -Recurse $PlatformInstallRoot -ErrorAction Ignore
+  Remove-Item -Force -Recurse $ImagePlatformRoot -ErrorAction Ignore
   foreach ($Arch in $SDKArchs) {
-    Install-Platform $Arch
+    Create-ImagePlatform $Arch
   }
 }
 
@@ -1495,7 +1487,7 @@ if (-not $SkipBuild) {
   Build-SourceKitLSP $HostArch
 }
 
-Install-HostToolchain
+Create-ImageToolchain
 
 if (-not $SkipBuild) {
   Build-Inspect $HostArch
