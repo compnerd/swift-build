@@ -123,7 +123,7 @@ path S:\Program Files\Swift\Runtimes\0.0.0\usr\bin;S:\Program Files\Swift\Toolch
 
 ### PowerShell Helper
 
-The following content in `$Profile` would help quickly switch a shell to the proper configuration for using the just built toolchain.
+The following content in your Powershell profile file (whose path is stored in the built-in `$Profile` variable) would help quickly switch a shell to the proper configuration for using the just built toolchain.
 
 ```pwsh
 function Set-SwiftEnv {
