@@ -480,8 +480,7 @@ function Build-CMakeProject {
       if ($Define.Value -is [string]) {
         # Single token value, no need to quote spaces, the splat operator does the right thing.
         $Value = $Define.Value.Replace("\", "/")
-      }
-      else {
+      } else {
         # Flags array, multiple tokens, quoting needed for tokens containing spaces
         $Value = ""
         foreach ($Arg in $Define.Value) {
@@ -493,8 +492,7 @@ function Build-CMakeProject {
           if ($ArgWithForwardSlashes.Contains(" ")) {
             # Quote and escape the quote so it makes it through
             $Value += "\""$ArgWithForwardSlashes\"""
-          }
-          else {
+          } else {
             $Value += $ArgWithForwardSlashes
           }
         }
