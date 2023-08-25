@@ -433,11 +433,11 @@ function Build-CMakeProject {
       $SwiftArgs = [System.Collections.ArrayList]@()
 
       if ($SwiftSDK -ne "") {
-        $SwiftArgs.Add("-sdk $SwiftSDK") | Out-Null
+        $SwiftArgs.Add("-sdk ""$SwiftSDK""") | Out-Null
       } else {
-        $SwiftArgs.Add("-resource-dir $SwiftResourceDir") | Out-Null
-        $SwiftArgs.Add("-L $SwiftResourceDir\windows") | Out-Null
-        $SwiftArgs.Add("-vfsoverlay $RuntimeBinaryCache\stdlib\windows-vfs-overlay.yaml") | Out-Null
+        $SwiftArgs.Add("-resource-dir ""$SwiftResourceDir""") | Out-Null
+        $SwiftArgs.Add("-L ""$SwiftResourceDir\windows""") | Out-Null
+        $SwiftArgs.Add("-vfsoverlay ""$RuntimeBinaryCache\stdlib\windows-vfs-overlay.yaml""") | Out-Null
       }
 
       # Debug Information
@@ -476,11 +476,7 @@ function Build-CMakeProject {
       # Avoid backslashes in defines since they are going into CMakeCache.txt,
       # where they are interpreted as escapes. Assume all backslashes
       # are path separators and can be turned into forward slashes.
-      $ValueWithPlaceholder = if ($SwiftSDK -ne "") { $Define.Value.Replace("$SwiftSDK", "<SDK>") } else { $Define.Value }
-      $ValueWithForwardSlashes = $ValueWithPlaceholder.Replace("\", "/")
-      if ($SwiftSDK -ne "") {
-        $ValueWithForwardSlashes = $ValueWithForwardSlashes.Replace("<SDK>", "\`"$SwiftSDK\`"")
-      }
+      $ValueWithForwardSlashes = $Define.Value.Replace("\", "/")
       $cmakeGenerateArgs += @("-D", "$($Define.Key)=$ValueWithForwardSlashes")
     }
 
@@ -587,7 +583,7 @@ function Build-WiXProject() {
   $MSBuildArgs = @("$SourceCache\swift-installer-scripts\platforms\Windows\$FileName")
   $MSBuildArgs += "-noLogo"
   $MSBuildArgs += "-restore"
-  foreach ($Property in $Properties.GetEnumerator()) {
+    foreach ($Property in $Properties.GetEnumerator()) {
     if ($Property.Value.Contains(" ")) {
       $MSBuildArgs += "-p:$($Property.Key)=$($Property.Value.Replace('\', '\\'))"
     } else {
@@ -1389,9 +1385,9 @@ function Build-DocC() {
 
 function Build-Installer() {
   Build-WiXProject bld\bld.wixproj -Arch $HostArch -Properties @{
-    DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
+        DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
     TOOLCHAIN_ROOT = "$($HostArch.ToolchainInstallRoot)\";
-  }
+      }
 
   Build-WiXProject cli\cli.wixproj -Arch $HostArch -Properties @{
     DEVTOOLS_ROOT = "$($HostArch.ToolchainInstallRoot)\";
@@ -1439,6 +1435,9 @@ function Build-Installer() {
 }
 
 #-------------------------------------------------------------------
+
+Build-Compilers $HostArch -Test
+exit
 
 if (-not $SkipBuild) {
   Build-BuildTools $HostArch
@@ -1498,7 +1497,7 @@ if (-not $SkipBuild) {
   Build-Inspect $HostArch
   Build-Format $HostArch
   Build-DocC $HostArch
-}
+  }
 
 if (-not $SkipPackaging) {
   Build-Installer
