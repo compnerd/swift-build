@@ -1428,9 +1428,6 @@ function Build-Installer() {
 
 #-------------------------------------------------------------------
 
-Build-Installer
-exit
-
 if (-not $SkipBuild) {
   Build-BuildTools $HostArch
   Build-Compilers $HostArch
