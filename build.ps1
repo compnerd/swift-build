@@ -597,7 +597,7 @@ function Build-WiXProject() {
 
   $Properties = $Properties.Clone()
   TryAdd-KeyValue $Properties Configuration Release
-  TryAdd-KeyValue $Properties BaseOutputPath "$($Arch.BinaryCache)\installer-scripts\"
+  TryAdd-KeyValue $Properties BaseOutputPath "$($Arch.BinaryCache)\installer\"
   TryAdd-KeyValue $Properties ProductArchitecture $ArchName
   TryAdd-KeyValue $Properties ProductVersion $ProductVersionArg
 
@@ -1421,8 +1421,8 @@ function Build-Installer() {
   if ($Stage -ne "") {
     $Stage += "\" # Interpret as target directory
 
-    Copy-File "$($HostArch.BinaryCache)\installer-scripts\Release\$($HostArch.VSName)\*.msi" $Stage
-    Copy-File "$($HostArch.BinaryCache)\installer-scripts\Release\$($HostArch.VSName)\installer.exe" $Stage
+    Copy-File "$($HostArch.BinaryCache)\installer\Release\$($HostArch.VSName)\*.msi" $Stage
+    Copy-File "$($HostArch.BinaryCache)\installer\Release\$($HostArch.VSName)\installer.exe" $Stage
   }
 }
 
