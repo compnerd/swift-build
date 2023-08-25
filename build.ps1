@@ -1464,6 +1464,7 @@ if (-not $SkipBuild) {
   Build-Compilers $HostArch
 }
 
+
 foreach ($Arch in $SDKArchs) {
   if (-not $SkipBuild) {
     Build-ZLib $Arch
@@ -1516,7 +1517,7 @@ if (-not $SkipBuild) {
   Build-Inspect $HostArch
   Build-Format $HostArch
   Build-DocC $HostArch
-  }
+}
 
 if (-not $SkipPackaging) {
   Build-Installer
