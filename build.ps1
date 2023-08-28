@@ -374,7 +374,7 @@ function Build-CMakeProject {
 
     # Add additional defines (unless already present)
     $Defines = $Defines.Clone()
-  
+
     TryAdd-KeyValue $Defines CMAKE_BUILD_TYPE $BuildType
     TryAdd-KeyValue $Defines CMAKE_MT "mt"
 
@@ -488,12 +488,14 @@ function Build-CMakeProject {
             $Value += " "
           }
 
-          $ArgWithForwardSlashes = $Arg.Replace("\", "/")
-          if ($ArgWithForwardSlashes.Contains(" ")) {
-            # Quote and escape the quote so it makes it through
-            $Value += "\""$ArgWithForwardSlashes\"""
-          } else {
-            $Value += $ArgWithForwardSlashes
+          if ($Arg -ne $null) {
+            $ArgWithForwardSlashes = $Arg.Replace("\", "/")
+            if ($ArgWithForwardSlashes.Contains(" ")) {
+              # Quote and escape the quote so it makes it through
+              $Value += "\""$ArgWithForwardSlashes\"""
+            } else {
+              $Value += $ArgWithForwardSlashes
+            }
           }
         }
       }
@@ -834,8 +836,6 @@ function Build-ICU($Arch) {
 }
 
 function Build-Runtime($Arch) {
-  $LLVMBinaryCache = Get-ProjectBinaryCache $Arch 0
-
   Build-CMakeProject `
     -Src $SourceCache\swift `
     -Bin (Get-ProjectBinaryCache $Arch 1) `
@@ -846,7 +846,7 @@ function Build-Runtime($Arch) {
     -BuildTargets default `
     -Defines @{
       CMAKE_Swift_COMPILER_TARGET = $Arch.LLVMTarget;
-      LLVM_DIR = "$LLVMBinaryCache\lib\cmake\llvm";
+      LLVM_DIR = "$(Get-ProjectBinaryCache $Arch 0)\lib\cmake\llvm";
       SWIFT_ENABLE_EXPERIMENTAL_CONCURRENCY = "YES";
       SWIFT_ENABLE_EXPERIMENTAL_CXX_INTEROP = "YES";
       SWIFT_ENABLE_EXPERIMENTAL_DIFFERENTIABLE_PROGRAMMING = "YES";
