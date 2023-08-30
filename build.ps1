@@ -42,14 +42,10 @@ An array of architectures for which the Swift SDK should be built.
 The product version to be used when building the installer.
 Supports semantic version strings.
 
-.PARAMETER WinSDKRoot
-A path to the folder where Windows SDKs are installed.
-Overrides the default path resolved by the Visual Studio command prompt.
-If specified, WinSDKVersion must also be specified.
-
 .PARAMETER WinSDKVersion
 The version number of the Windows SDK to be used.
 Overrides the value resolved by the Visual Studio command prompt.
+If no such Windows SDK is installed, it will be downloaded from nuget.
 
 .PARAMETER SkipBuild
 If set, does not run the build phase.
@@ -87,7 +83,6 @@ param(
   [string] $SwiftDebugFormat = "dwarf",
   [string[]] $SDKs = @("X64","X86","Arm64"),
   [string] $ProductVersion = "0.0.0",
-  [string] $WinSDKRoot = "",
   [string] $WinSDKVersion = "",
   [switch] $SkipBuild = $false,
   [switch] $SkipRedistInstall = $false,
@@ -111,6 +106,10 @@ if ($env:VSCMD_ARG_HOST_ARCH -ne $null -or $env:VSCMD_ARG_TGT_ARCH -ne $null) {
 $Env:SDKROOT = ""
 $NativeProcessorArchName = $env:PROCESSOR_ARCHITEW6432
 if ($null -eq $NativeProcessorArchName) { $NativeProcessorArchName = $env:PROCESSOR_ARCHITECTURE }
+
+# Store the revision zero variant of the Windows SDK version (no-op if unspecified)
+$WindowsSDKMajorMinorBuildMatch = [Regex]::Match($WinSDKVersion, "^\d+\.\d+\.\d+")
+$WinSDKVersionRevisionZero = if ($WindowsSDKMajorMinorBuildMatch.Success) { $WindowsSDKMajorMinorBuildMatch.Value + ".0" } else { "" }
 
 $vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSInstallRoot = & $vswhere -nologo -latest -products "*" -all -prerelease -property installationPath
@@ -203,6 +202,8 @@ function Get-InstallDir($Arch) {
   return "$ImageRoot\$ProgramFilesName\Swift"
 }
 
+$NugetRoot = "$BinaryCache\nuget"
+
 $LibraryRoot = "$ImageRoot\Library"
 $ToolchainInstallRoot = "$(Get-InstallDir $HostArch)\Toolchains\$ProductVersion+Asserts"
 $PlatformInstallRoot = "$(Get-InstallDir $HostArch)\Platforms\Windows.platform"
@@ -214,18 +215,31 @@ $SDKInstallRoot = "$PlatformInstallRoot\Developer\SDKs\Windows.sdk"
 $HostArch.ToolchainInstallRoot = $ToolchainInstallRoot
 
 # Resolve the architectures received as argument
-$SDKArchs = $SDKs | ForEach-Object {
+$SDKArchs = @($SDKs | ForEach-Object {
   switch ($_) {
     "X64" { $ArchX64 }
     "X86" { $ArchX86 }
     "Arm64" { $ArchArm64 }
     default { throw "Unknown architecture $_" }
   }
-}
+})
 
 # Build functions
 function Get-ProjectBinaryCache($Arch, $ID) {
   return "$BinaryCache\" + ($Arch.BuildID + $ID)
+}
+
+function Copy-File($Src, $Dst) {
+  # Create the directory tree first so Copy-Item succeeds
+  # If $Dst is the target directory, make sure it ends with "\"
+  $DstDir = [IO.Path]::GetDirectoryName($Dst)
+  New-Item -ItemType Directory -ErrorAction Ignore $DstDir | Out-Null
+  Copy-Item -Force $Src $Dst
+}
+
+function Copy-Directory($Src, $Dst) {
+  New-Item -ItemType Directory -ErrorAction Ignore $Dst | Out-Null
+  Copy-Item -Force -Recurse $Src $Dst
 }
 
 function Invoke-Program() {
@@ -317,10 +331,10 @@ function Isolate-EnvVars([scriptblock]$Block) {
 
 function Invoke-VsDevShell($Arch) {
   $DevCmdArguments = "-no_logo -host_arch=$($HostArch.VSName) -arch=$($Arch.VSName)"
-  if ($WinSDKRoot) {
+  if (Test-Path script:WinSDKRoot) {
     $DevCmdArguments += " -winsdk=none"
   } elseif ($WinSDKVersion) {
-    $DevCmdArguments += " -winsdk=$WinSDKVersion"
+    $DevCmdArguments += " -winsdk=$WinSDKVersionRevisionZero"
   }
 
   if ($ToBatch) {
@@ -330,26 +344,60 @@ function Invoke-VsDevShell($Arch) {
     Import-Module "$VSInstallRoot\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
     Enter-VsDevShell -VsInstallPath $VSInstallRoot -SkipAutomaticLocation -DevCmdArguments $DevCmdArguments
 
-    if ($WinSDKRoot) {
+    if (Test-Path script:WinSDKRoot) {
       # Using a non-installed Windows SDK. Setup environment variables manually.
-      $WinSDKVerIncludeRoot = "$WinSDKRoot\include\$WinSDKVersion"
+      $WinSDKVerIncludeRoot = "$WinSDKRoot\include\$WinSDKVersionRevisionZero"
       $WinSDKIncludePath = "$WinSDKVerIncludeRoot\ucrt;$WinSDKVerIncludeRoot\um;$WinSDKVerIncludeRoot\shared;$WinSDKVerIncludeRoot\winrt;$WinSDKVerIncludeRoot\cppwinrt"
-      $WinSDKVerLibRoot = "$WinSDKRoot\lib\$WinSDKVersion"
+      $WinSDKVerLibRoot = "$WinSDKRoot\lib\$WinSDKVersionRevisionZero"
 
-      $env:WindowsLibPath = "$WinSDKRoot\UnionMetadata\$WinSDKVersion;$WinSDKRoot\References\$WinSDKVersion"
+      $env:WindowsLibPath = "$WinSDKRoot\UnionMetadata\$WinSDKVersionRevisionZero;$WinSDKRoot\References\$WinSDKVersionRevisionZero"
       $env:WindowsSdkBinPath = "$WinSDKRoot\bin"
-      $env:WindowsSDKLibVersion = "$WinSDKVersion\"
-      $env:WindowsSdkVerBinPath = "$WinSDKRoot\bin\$WinSDKVersion"
-      $env:WindowsSDKVersion = "$WinSDKVersion\"
+      $env:WindowsSDKLibVersion = "$WinSDKVersionRevisionZero\"
+      $env:WindowsSdkVerBinPath = "$WinSDKRoot\bin\$WinSDKVersionRevisionZero"
+      $env:WindowsSDKVersion = "$WinSDKVersionRevisionZero\"
 
       $env:EXTERNAL_INCLUDE += ";$WinSDKIncludePath"
       $env:INCLUDE += ";$WinSDKIncludePath"
       $env:LIB += ";$WinSDKVerLibRoot\ucrt\$($Arch.ShortName);$WinSDKVerLibRoot\um\$($Arch.ShortName)"
       $env:LIBPATH += ";$env:WindowsLibPath"
       $env:PATH += ";$env:WindowsSdkVerBinPath\$($Arch.ShortName);$env:WindowsSdkBinPath\$($Arch.ShortName)"
-      $env:UCRTVersion = $WinSDKVersion
+      $env:UCRTVersion = $WinSDKVersionRevisionZero
       $env:UniversalCRTSdkDir = $WinSDKRoot
     }
+  }
+}
+
+function Ensure-WindowsSDK {
+  # Assume we always have a default Windows SDK version available
+  if (-not $WinSDKVersion) { return }
+
+  # Check whether VsDevShell can already resolve the requested Windows SDK version
+  try {
+    Isolate-EnvVars { Invoke-VsDevShell $HostArch }
+    return
+  }
+  catch {}
+
+  Write-Output "Windows SDK $WinSDKVersion not found. Downloading from nuget..."
+
+  # Assume the requested Windows SDK is not available and we need to download it
+  # Install the base nuget package that contains header files
+  $WinSDKBasePackageName = "Microsoft.Windows.SDK.CPP"
+  Invoke-Program nuget install $WinSDKBasePackageName -Version $WinSDKVersion -OutputDirectory $NugetRoot
+
+  # Export to script scope so Invoke-VsDevShell can read it
+  $script:WinSDKRoot = "$NugetRoot\$WinSDKBasePackageName.$WinSDKVersion\c"
+
+  # Install each required arch-specific package and move the files under the base /lib directory
+  $WinSDKArchs = $SDKArchs.Clone()
+  if (-not ($HostArch -in $WinSDKArchs)) {
+    $WinSDKArchs += $HostArch
+  }
+
+  foreach ($Arch in $WinSDKArchs) {
+    $WinSDKArchPackageName = "$WinSDKBasePackageName.$($Arch.ShortName)"
+    Invoke-Program nuget install $WinSDKArchPackageName -Version $WinSDKVersion -OutputDirectory $NugetRoot
+    Copy-Directory "$NugetRoot\$WinSDKArchPackageName.$WinSDKVersion\c\*" "$WinSDKRoot\lib\$WinSDKVersionRevisionZero"
   }
 }
 
@@ -1017,19 +1065,6 @@ function Build-XCTest($Arch, [switch]$Test = $false) {
   }
 }
 
-function Copy-File($Src, $Dst) {
-  # Create the directory tree first so Copy-Item succeeds
-  # If $Dst is the target directory, make sure it ends with "\"
-  $DstDir = [IO.Path]::GetDirectoryName($Dst)
-  New-Item -ItemType Directory -ErrorAction Ignore $DstDir | Out-Null
-  Copy-Item -Force $Src $Dst
-}
-
-function Copy-Directory($Src, $Dst) {
-  New-Item -ItemType Directory -ErrorAction Ignore $Dst | Out-Null
-  Copy-Item -Force -Recurse $Src $Dst
-}
-
 # Copies files installed by CMake from the arch-specific platform root,
 # where they follow the layout expected by the installer,
 # to the final platform root, following the installer layout.
@@ -1466,6 +1501,10 @@ function Build-Installer() {
 }
 
 #-------------------------------------------------------------------
+
+if (-not $SkipBuild) {
+  Ensure-WindowsSDK
+}
 
 if (-not $SkipBuild) {
   Build-BuildTools $HostArch
