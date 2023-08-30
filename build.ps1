@@ -110,6 +110,7 @@ if ($null -eq $NativeProcessorArchName) { $NativeProcessorArchName = $env:PROCES
 # Store the revision zero variant of the Windows SDK version (no-op if unspecified)
 $WindowsSDKMajorMinorBuildMatch = [Regex]::Match($WinSDKVersion, "^\d+\.\d+\.\d+")
 $WinSDKVersionRevisionZero = if ($WindowsSDKMajorMinorBuildMatch.Success) { $WindowsSDKMajorMinorBuildMatch.Value + ".0" } else { "" }
+$CustomWinSDKRoot = $null # Overwritten if we download a Windows SDK from nuget
 
 $vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSInstallRoot = & $vswhere -nologo -latest -products "*" -all -prerelease -property installationPath
@@ -331,7 +332,7 @@ function Isolate-EnvVars([scriptblock]$Block) {
 
 function Invoke-VsDevShell($Arch) {
   $DevCmdArguments = "-no_logo -host_arch=$($HostArch.VSName) -arch=$($Arch.VSName)"
-  if (Test-Path script:WinSDKRoot) {
+  if ($CustomWinSDKRoot) {
     $DevCmdArguments += " -winsdk=none"
   } elseif ($WinSDKVersion) {
     $DevCmdArguments += " -winsdk=$WinSDKVersionRevisionZero"
@@ -344,16 +345,16 @@ function Invoke-VsDevShell($Arch) {
     Import-Module "$VSInstallRoot\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
     Enter-VsDevShell -VsInstallPath $VSInstallRoot -SkipAutomaticLocation -DevCmdArguments $DevCmdArguments
 
-    if (Test-Path script:WinSDKRoot) {
+    if ($CustomWinSDKRoot) {
       # Using a non-installed Windows SDK. Setup environment variables manually.
-      $WinSDKVerIncludeRoot = "$WinSDKRoot\include\$WinSDKVersionRevisionZero"
+      $WinSDKVerIncludeRoot = "$CustomWinSDKRoot\include\$WinSDKVersionRevisionZero"
       $WinSDKIncludePath = "$WinSDKVerIncludeRoot\ucrt;$WinSDKVerIncludeRoot\um;$WinSDKVerIncludeRoot\shared;$WinSDKVerIncludeRoot\winrt;$WinSDKVerIncludeRoot\cppwinrt"
-      $WinSDKVerLibRoot = "$WinSDKRoot\lib\$WinSDKVersionRevisionZero"
+      $WinSDKVerLibRoot = "$CustomWinSDKRoot\lib\$WinSDKVersionRevisionZero"
 
-      $env:WindowsLibPath = "$WinSDKRoot\UnionMetadata\$WinSDKVersionRevisionZero;$WinSDKRoot\References\$WinSDKVersionRevisionZero"
-      $env:WindowsSdkBinPath = "$WinSDKRoot\bin"
+      $env:WindowsLibPath = "$CustomWinSDKRoot\UnionMetadata\$WinSDKVersionRevisionZero;$CustomWinSDKRoot\References\$WinSDKVersionRevisionZero"
+      $env:WindowsSdkBinPath = "$CustomWinSDKRoot\bin"
       $env:WindowsSDKLibVersion = "$WinSDKVersionRevisionZero\"
-      $env:WindowsSdkVerBinPath = "$WinSDKRoot\bin\$WinSDKVersionRevisionZero"
+      $env:WindowsSdkVerBinPath = "$CustomWinSDKRoot\bin\$WinSDKVersionRevisionZero"
       $env:WindowsSDKVersion = "$WinSDKVersionRevisionZero\"
 
       $env:EXTERNAL_INCLUDE += ";$WinSDKIncludePath"
@@ -362,7 +363,7 @@ function Invoke-VsDevShell($Arch) {
       $env:LIBPATH += ";$env:WindowsLibPath"
       $env:PATH += ";$env:WindowsSdkVerBinPath\$($Arch.ShortName);$env:WindowsSdkBinPath\$($Arch.ShortName)"
       $env:UCRTVersion = $WinSDKVersionRevisionZero
-      $env:UniversalCRTSdkDir = $WinSDKRoot
+      $env:UniversalCRTSdkDir = $CustomWinSDKRoot
     }
   }
 }
@@ -386,7 +387,7 @@ function Ensure-WindowsSDK {
   Invoke-Program nuget install $WinSDKBasePackageName -Version $WinSDKVersion -OutputDirectory $NugetRoot
 
   # Export to script scope so Invoke-VsDevShell can read it
-  $script:WinSDKRoot = "$NugetRoot\$WinSDKBasePackageName.$WinSDKVersion\c"
+  $script:CustomWinSDKRoot = "$NugetRoot\$WinSDKBasePackageName.$WinSDKVersion\c"
 
   # Install each required arch-specific package and move the files under the base /lib directory
   $WinSDKArchs = $SDKArchs.Clone()
@@ -397,7 +398,7 @@ function Ensure-WindowsSDK {
   foreach ($Arch in $WinSDKArchs) {
     $WinSDKArchPackageName = "$WinSDKBasePackageName.$($Arch.ShortName)"
     Invoke-Program nuget install $WinSDKArchPackageName -Version $WinSDKVersion -OutputDirectory $NugetRoot
-    Copy-Directory "$NugetRoot\$WinSDKArchPackageName.$WinSDKVersion\c\*" "$WinSDKRoot\lib\$WinSDKVersionRevisionZero"
+    Copy-Directory "$NugetRoot\$WinSDKArchPackageName.$WinSDKVersion\c\*" "$CustomWinSDKRoot\lib\$WinSDKVersionRevisionZero"
   }
 }
 
