@@ -42,6 +42,15 @@ An array of architectures for which the Swift SDK should be built.
 The product version to be used when building the installer.
 Supports semantic version strings.
 
+.PARAMETER WinSDKRoot
+A path to the folder where Windows SDKs are installed.
+Overrides the default path resolved by the Visual Studio command prompt.
+If specified, WinSDKVersion must also be specified.
+
+.PARAMETER WinSDKVersion
+The version number of the Windows SDK to be used.
+Overrides the value resolved by the Visual Studio command prompt.
+
 .PARAMETER SkipBuild
 If set, does not run the build phase.
 
@@ -78,6 +87,8 @@ param(
   [string] $SwiftDebugFormat = "dwarf",
   [string[]] $SDKs = @("X64","X86","Arm64"),
   [string] $ProductVersion = "0.0.0",
+  [string] $WinSDKRoot = "",
+  [string] $WinSDKVersion = "",
   [switch] $SkipBuild = $false,
   [switch] $SkipRedistInstall = $false,
   [switch] $SkipPackaging = $false,
@@ -305,12 +316,40 @@ function Isolate-EnvVars([scriptblock]$Block) {
 }
 
 function Invoke-VsDevShell($Arch) {
+  $DevCmdArguments = "-no_logo -host_arch=$($HostArch.VSName) -arch=$($Arch.VSName)"
+  if ($WinSDKRoot) {
+    $DevCmdArguments += " -winsdk=none"
+  } elseif ($WinSDKVersion) {
+    $DevCmdArguments += " -winsdk=$WinSDKVersion"
+  }
+
   if ($ToBatch) {
-    Write-Output "call `"$VSInstallRoot\Common7\Tools\VsDevCmd.bat`" -no_logo -host_arch=$($HostArch.VSName) -arch=$($Arch.VSName)"
+    Write-Output "call `"$VSInstallRoot\Common7\Tools\VsDevCmd.bat`" $DevCmdArguments"
   } else {
     # This dll path is valid for VS2019 and VS2022, but it was under a vsdevcmd subfolder in VS2017 
     Import-Module "$VSInstallRoot\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-    Enter-VsDevShell -VsInstallPath $VSInstallRoot -SkipAutomaticLocation -DevCmdArguments "-no_logo -host_arch=$($HostArch.VSName) -arch=$($Arch.VSName)"
+    Enter-VsDevShell -VsInstallPath $VSInstallRoot -SkipAutomaticLocation -DevCmdArguments $DevCmdArguments
+
+    if ($WinSDKRoot) {
+      # Using a non-installed Windows SDK. Setup environment variables manually.
+      $WinSDKVerIncludeRoot = "$WinSDKRoot\include\$WinSDKVersion"
+      $WinSDKIncludePath = "$WinSDKVerIncludeRoot\ucrt;$WinSDKVerIncludeRoot\um;$WinSDKVerIncludeRoot\shared;$WinSDKVerIncludeRoot\winrt;$WinSDKVerIncludeRoot\cppwinrt"
+      $WinSDKVerLibRoot = "$WinSDKRoot\lib\$WinSDKVersion"
+
+      $env:WindowsLibPath = "$WinSDKRoot\UnionMetadata\$WinSDKVersion;$WinSDKRoot\References\$WinSDKVersion"
+      $env:WindowsSdkBinPath = "$WinSDKRoot\bin"
+      $env:WindowsSDKLibVersion = "$WinSDKVersion\"
+      $env:WindowsSdkVerBinPath = "$WinSDKRoot\bin\$WinSDKVersion"
+      $env:WindowsSDKVersion = "$WinSDKVersion\"
+
+      $env:EXTERNAL_INCLUDE += ";$WinSDKIncludePath"
+      $env:INCLUDE += ";$WinSDKIncludePath"
+      $env:LIB += ";$WinSDKVerLibRoot\ucrt\$($Arch.ShortName);$WinSDKVerLibRoot\um\$($Arch.ShortName)"
+      $env:LIBPATH += ";$env:WindowsLibPath"
+      $env:PATH += ";$env:WindowsSdkVerBinPath\$($Arch.ShortName);$env:WindowsSdkBinPath\$($Arch.ShortName)"
+      $env:UCRTVersion = $WinSDKVersion
+      $env:UniversalCRTSdkDir = $WinSDKRoot
+    }
   }
 }
 
