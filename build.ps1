@@ -376,8 +376,7 @@ function Ensure-WindowsSDK {
   try {
     Isolate-EnvVars { Invoke-VsDevShell $HostArch }
     return
-  }
-  catch {}
+  } catch {}
 
   Write-Output "Windows SDK $WinSDKVersion not found. Downloading from nuget..."
 
