@@ -2,7 +2,7 @@
 <manifest project="swift">
   <remote name="github" fetch="https://github.com" />
 
-  <default revision="release/5.9" sync-c="true" sync-tags="false" />
+  <default revision="release/5.9.0" sync-c="true" sync-tags="false" />
 
   <manifest-server url="http://stable.swift.dt.compnerd.org"/>
 
