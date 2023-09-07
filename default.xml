@@ -2,17 +2,17 @@
 <manifest project="swift">
   <remote name="github" fetch="https://github.com" />
 
-  <default revision="main" sync-c="true" sync-tags="false" />
+  <default revision="release/5.9" sync-c="true" sync-tags="false" />
 
   <manifest-server url="http://stable.swift.dt.compnerd.org"/>
 
-  <project remote="github" name="apple/llvm-project" path="llvm-project" revision="stable/20221013" />
+  <project remote="github" name="apple/llvm-project" path="llvm-project" revision="swift/release/5.9" />
   <project remote="github" name="apple/indexstore-db" path="indexstore-db" />
   <project remote="github" name="apple/sourcekit-lsp" path="sourcekit-lsp" />
   <project remote="github" name="apple/swift" path="swift" />
   <project remote="github" name="apple/swift-argument-parser" path="swift-argument-parser" revision="refs/tags/1.2.2" />
   <project remote="github" name="apple/swift-asn1" path="swift-asn1" revision="refs/tags/0.8.0" />
-  <project remote="github" name="apple/swift-certificates" path="swift-certificates" revision="refs/tags/0.6.0" />
+  <project remote="github" name="apple/swift-certificates" path="swift-certificates" revision="refs/tags/0.4.1" />
   <project remote="github" name="apple/swift-cmark" path="cmark" revision="gfm" />
   <project remote="github" name="apple/swift-collections" path="swift-collections" revision="refs/tags/1.0.4" />
   <project remote="github" name="apple/swift-corelibs-libdispatch" path="swift-corelibs-libdispatch" />
@@ -25,7 +25,7 @@
   <project remote="github" name="apple/swift-docc-render-artifact" path="swift-docc-render-artifact" />
   <project remote="github" name="apple/swift-docc-symbolkit" path="swift-docc-symbolkit" />
   <project remote="github" name="apple/swift-driver" path="swift-driver" />
-  <project remote="github" name="apple/swift-experimental-string-processing" path="swift-experimental-string-processing" revision="swift/main" />
+  <project remote="github" name="apple/swift-experimental-string-processing" path="swift-experimental-string-processing" revision="swift/release/5.9" />
   <project remote="github" name="apple/swift-format" path="swift-format" />
   <project remote="github" name="apple/swift-foundation" path="swift-foundation" />
   <project remote="github" name="apple/swift-installer-scripts" path="swift-installer-scripts" />
