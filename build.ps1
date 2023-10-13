@@ -1558,7 +1558,6 @@ function Build-Installer() {
     INCLUDE_SWIFT_DOCC = "true";
     SWIFT_DOCC_BUILD = "$($HostArch.BinaryCache)\swift-docc\release";
     SWIFT_DOCC_RENDER_ARTIFACT_ROOT = "${SourceCache}\swift-docc-render-artifact";
-    VCREDIST_INSTALLER = "$($env:VCToolsRedistDir)"
   }
 
   Isolate-EnvVars {
