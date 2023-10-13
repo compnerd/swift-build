@@ -1564,8 +1564,8 @@ function Build-Installer() {
     Invoke-VsDevShell $HostArch
     $VCRedistInstallerPath = "${env:VCToolsRedistDir}\vc_redist.$($HostArch.ShortName).exe"
     if (Test-Path $VCRedistInstallerPath) {
-      $Properties["VCREDIST_INSTALLER"] = $VCRedistInstallerPath
-      $Properties["VCREDIST_VERSION"] = $env:VCToolsVersion
+      $Properties["VCRedistInstaller"] = $VCRedistInstallerPath
+      $Properties["VSVersion"] = $env:VSCMD_VER
     }
   }
 
