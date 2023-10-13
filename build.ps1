@@ -1558,6 +1558,16 @@ function Build-Installer() {
     INCLUDE_SWIFT_DOCC = "true";
     SWIFT_DOCC_BUILD = "$($HostArch.BinaryCache)\swift-docc\release";
     SWIFT_DOCC_RENDER_ARTIFACT_ROOT = "${SourceCache}\swift-docc-render-artifact";
+    VCREDIST_INSTALLER = "$($env:VCToolsRedistDir)"
+  }
+
+  Isolate-EnvVars {
+    Invoke-VsDevShell $HostArch
+    $VCRedistInstallerPath = "${env:VCToolsRedistDir}\vc_redist.$($HostArch.ShortName).exe"
+    if (Test-Path $VCRedistInstallerPath) {
+      $Properties["VCREDIST_INSTALLER"] = $VCRedistInstallerPath
+      $Properties["VCREDIST_VERSION"] = $env:VCToolsVersion
+    }
   }
 
   foreach ($Arch in $SDKArchs) {
