@@ -1976,6 +1976,8 @@ jobs:
               -p:INCLUDE_ARM64_SDK=true `
               -p:ProductArchitecture=${{ matrix.arch }} `
               -p:ProductVersion=${{ needs.context.outputs.swift_version }}-${{ needs.context.outputs.swift_tag }} `
+              -p:VCRedistInstaller="${env:VCToolsRedistDir}\vc_redist.${env:VSCMD_ARG_TGT_ARCH}.exe" `
+              -p:VSVersion=${env:VSCMD_VER} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bundle/installer.wixproj
 
       - uses: actions/upload-artifact@v3
