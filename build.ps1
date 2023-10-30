@@ -69,9 +69,9 @@ An array of names of projects to run tests for.
 .PARAMETER Stage
 The path to a directory where built msi's and the installer executable should be staged (for CI).
 
-.PARAMETER RunUpTo
+.PARAMETER BuildTo
 The name of a build step after which the script should terminate.
-For example: -RunUpTo ToolsSupportCore
+For example: -BuildTo ToolsSupportCore
 
 .PARAMETER ToBatch
 When set, runs the script in a special mode which outputs a listing of command invocations
@@ -102,7 +102,7 @@ param(
   [bool] $DefaultsLLD = $true,
   [string[]] $Test = @(),
   [string] $Stage = "",
-  [string] $RunUpTo = "",
+  [string] $BuildTo = "",
   [switch] $ToBatch
 )
 
@@ -241,7 +241,7 @@ $SDKArchs = @($SDKs | ForEach-Object {
 # Build functions
 function Invoke-BuildStep([string]$Name) {
   & $Name @Args
-  if ($Name.Replace("Build-", "") -eq $RunUpTo) {
+  if ($Name.Replace("Build-", "") -eq $BuildTo) {
     exit 0
   }
 }
