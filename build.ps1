@@ -1655,7 +1655,7 @@ if (-not $SkipBuild) {
   Invoke-BuildStep Build-SourceKitLSP $HostArch
 }
 
-Invoke-BuildStep Install-HostToolchain
+Install-HostToolchain
 
 if (-not $SkipBuild) {
   Invoke-BuildStep Build-Inspect $HostArch
