@@ -269,6 +269,7 @@ function Invoke-Program() {
     [Parameter(Position = 0, Mandatory = $true)]
     [string] $Executable,
     [switch] $OutNull = $false,
+    [switch] $Wait = $false,
     [string] $OutFile = "",
     [Parameter(Position = 1, ValueFromRemainingArguments)]
     [string[]] $Args
@@ -276,7 +277,11 @@ function Invoke-Program() {
 
   if ($ToBatch) {
     # Print the invocation in batch file-compatible format
-    $OutputLine = "`"$Executable`""
+    if ($Wait) {
+      $OutputLine = "start `"`" /wait `"$Executable`""
+    } else {
+      $OutputLine = "`"$Executable`""
+    }
     $ShouldBreakLine = $false
     for ($i = 0; $i -lt $Args.Length; $i++) {
       if ($ShouldBreakLine -or $OutputLine.Length -ge 40) {
@@ -304,12 +309,32 @@ function Invoke-Program() {
 
     Write-Output $OutputLine
   } else {
-    if ($OutNull) {
-      & $Executable @Args | Out-Null
-    } elseif ("" -ne $OutFile) {
-      & $Executable @Args | Out-File -Encoding UTF8 $OutFile
+    if ($Wait) {
+      $QuotedArgsList = New-Object System.Collections.Generic.List[string]
+      foreach ($Arg in $Args) {
+        if ($Arg.Contains(" ")) {
+          $QuotedArgsList.Add("`"$Arg`"")
+        } else {
+          $QuotedArgsList.Add($Arg)
+        }
+      } 
+      $QuotedArgs = $QuotedArgsList.ToArray()
+      if ($OutNull) {
+        $Process = Start-Process -Wait -PassThru -NoNewWindow -RedirectStandardOutput ".\NUL" -FilePath $Executable -ArgumentList $QuotedArgs
+      } elseif ("" -ne $OutFile) {
+        $Process = Start-Process -Wait -PassThru -NoNewWindow -RedirectStandardOutput $OutFile -FilePath $Executable -ArgumentList $QuotedArgs
+      } else {
+        $Process = Start-Process -Wait -PassThru -NoNewWindow -FilePath $Executable -ArgumentList $QuotedArgs
+      }
+      $LastExitCode = $Process.ExitCode
     } else {
-      & $Executable @Args
+      if ($OutNull) {
+        & $Executable @Args | Out-Null
+      } elseif ("" -ne $OutFile) {
+        & $Executable @Args | Out-File -Encoding UTF8 $OutFile
+      } else {
+        & $Executable @Args
+      }
     }
 
     if ($LastExitCode -ne 0) {
@@ -441,10 +466,10 @@ function Ensure-SwiftToolchain($Arch) {
 
   Write-Output "Installing Swift toolchain..."
   Invoke-Program "$BinaryCache\wix-4.0.1\tools\net6.0\any\wix.exe" -- burn extract "$BinaryCache\toolchains\${PinnedToolchain}.exe" -out "$BinaryCache\toolchains\"
-  Invoke-Program -OutNull msiexec.exe /qn /a "$BinaryCache\toolchains\a0" TARGETDIR="$BinaryCache\toolchains\${PinnedToolchain}"
-  Invoke-Program -OutNull msiexec.exe /qn /a "$BinaryCache\toolchains\a1" TARGETDIR="$BinaryCache\toolchains\${PinnedToolchain}"
-  Invoke-Program -OutNull msiexec.exe /qn /a "$BinaryCache\toolchains\a2" TARGETDIR="$BinaryCache\toolchains\${PinnedToolchain}"
-  Invoke-Program -OutNull msiexec.exe /qn /a "$BinaryCache\toolchains\a3" TARGETDIR="$BinaryCache\toolchains\${PinnedToolchain}"
+  Invoke-Program -OutNull -Wait msiexec.exe /qn /a "$BinaryCache\toolchains\a0" TARGETDIR="$BinaryCache\toolchains\${PinnedToolchain}"
+  Invoke-Program -OutNull -Wait msiexec.exe /qn /a "$BinaryCache\toolchains\a1" TARGETDIR="$BinaryCache\toolchains\${PinnedToolchain}"
+  Invoke-Program -OutNull -Wait msiexec.exe /qn /a "$BinaryCache\toolchains\a2" TARGETDIR="$BinaryCache\toolchains\${PinnedToolchain}"
+  Invoke-Program -OutNull -Wait msiexec.exe /qn /a "$BinaryCache\toolchains\a3" TARGETDIR="$BinaryCache\toolchains\${PinnedToolchain}"
 }
 
 function TryAdd-KeyValue([hashtable]$Hashtable, [string]$Key, [string]$Value) {
