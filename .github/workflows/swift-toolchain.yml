@@ -25,6 +25,33 @@ on:
         description: 'Code Sign'
         default: false
         type: boolean
+  workflow_call:
+    inputs:
+      snapshot:
+        description: 'Build Swift at a tagged snapshot'
+        default: false
+        type: boolean
+      swift_version:
+        description: 'Swift Version'
+        default: '0.0.0'
+        required: false
+        type: string
+
+      debug_info:
+        description: 'Emit PDBs (Debug Info)'
+        default: true
+        type: boolean
+      signed:
+        description: 'Code Sign'
+        default: false
+        type: boolean
+    secrets:
+      SYMBOL_SERVER_PAT:
+        required: true
+      CERTIFICATE:
+        required: true
+      PASSPHRASE:
+        required: true
 
 env:
   SCCACHE_DIRECT: yes

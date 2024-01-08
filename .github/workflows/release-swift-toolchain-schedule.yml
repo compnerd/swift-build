@@ -1,0 +1,16 @@
+name: Build release Swift toolchains
+
+on:
+  workflow_dispatch:
+  # Schedule to build a new release toolchain nightly.
+  schedule:
+    - cron: "10 0 * * */1"
+
+jobs:
+  # Each job builds a release toolchain for a specific Swift version.
+  build-release-5_10:
+    uses: compnerd/swift-build/.github/workflows/swift-toolchain.yml@release/5.10
+    secrets:
+      SYMBOL_SERVER_PAT: ${{ secrets.SYMBOL_SERVER_PAT }}
+      CERTIFICATE: ${{ secrets.CERTIFICATE }}
+      PASSPHRASE: ${{ secrets.PASSPHRASE }}
