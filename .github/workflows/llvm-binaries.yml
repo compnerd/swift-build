@@ -84,16 +84,6 @@ jobs:
           repo init --quiet --groups default --depth 1 -u https://github.com/hylo-lang/llvm-build -b $branch_name
           repo sync --quiet --no-clone-bundle --no-tags --jobs $(nproc --all)
 
-            repo manifest -r --suppress-upstream-revision --suppress-dest-branch | \
-                  xmllint --xpath "//project/@name | //project/@revision" - | \
-                  xargs -n2 | \
-                  awk -F'[= ]' '{
-                    split($2, repo, "/");
-                    gsub(/-/, "_", repo[2]);
-                    print tolower(repo[2]) "_revision=" $4
-                  }' | tee -a "${GITHUB_OUTPUT}"
-            repo manifest -r --suppress-upstream-revision --suppress-dest-branch -o - | sed -E 's,[[:space:]]+$,,' > stable.xml
-
           if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.debug_info }}" == "true" ]]; then
             echo debug_info=true >> ${GITHUB_OUTPUT}
             echo CMAKE_C_FLAGS="/GS- /Gw /Gy /Oi /Oy /Z7 /Zc:inline /Zc:preprocessor" >> ${GITHUB_OUTPUT}
