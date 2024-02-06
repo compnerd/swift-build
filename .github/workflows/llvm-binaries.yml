@@ -69,7 +69,6 @@ jobs:
         run: |
           # TODO(compnerd) can we make this more silent?
           sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update -yq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -o Dpkg::Use-Pty=0 install -yq repo
 
           # Which branch is this workflow based on
           branch_version_string=${{ inputs.llvm_version || '0.0.0' }}
@@ -78,9 +77,6 @@ jobs:
           else
             branch_name="release/$branch_version_string"
           fi
-
-          repo init --quiet --groups default --depth 1 -u https://github.com/hylo-lang/llvm-build -b $branch_name
-          repo sync --quiet --no-clone-bundle --no-tags --jobs $(nproc --all)
 
           if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.debug_info }}" == "true" ]]; then
             echo debug_info=true >> ${GITHUB_OUTPUT}
