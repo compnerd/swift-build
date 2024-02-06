@@ -3,10 +3,6 @@ name: swift-toolchain
 on:
   workflow_dispatch:
     inputs:
-      snapshot:
-        description: 'Build Swift at a tagged snapshot'
-        default: false
-        type: boolean
       swift_tag:
         description: 'Swift Build Tag'
         required: false
@@ -27,10 +23,6 @@ on:
         type: boolean
   workflow_call:
     inputs:
-      snapshot:
-        description: 'Build Swift at a tagged snapshot'
-        default: false
-        type: boolean
       swift_version:
         description: 'Swift Version'
         default: '0.0.0'
@@ -117,37 +109,6 @@ jobs:
           repo init --quiet --groups default --depth 1 -u https://github.com/compnerd/swift-build -b $branch_name
           repo sync --quiet --no-clone-bundle --no-tags --jobs $(nproc --all)
 
-          if [[ "${{ inputs.snapshot }}" == "true" ]] ; then
-            tee -a "${GITHUB_OUTPUT}" <<-EOF
-          indexstore_db_revision=refs/tags/${{ inputs.swift_tag }}
-          llvm_project_revision=refs/tags/${{ inputs.swift_tag }}
-          sourcekit_lsp_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_argument_parser_revision=refs/tags/1.2.2
-          swift_asn1_revision=refs/tags/0.7.0
-          swift_certificates_revision=refs/tags/0.1.0
-          swift_cmark_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_collections_revision=refs/tags/1.0.4
-          swift_corelibs_foundation_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_corelibs_libdispatch_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_corelibs_xctest_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_crypto_revision=refs/tags/2.4.0
-          swift_driver_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_experimental_string_processing_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_format_revision=refs/heads/main
-          swift_installer_scripts_revision=refs/heads/main
-          swift_llbuild_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_markdown_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_package_manager_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_syntax_revision=refs/tags/${{ inputs.swift_tag }}
-          swift_system_revision=refs/tags/1.1.1
-          swift_tools_support_core_revision=refs/tags/${{ inputs.swift_tag }}
-          curl_revision=refs/tags/curl-8_4_0
-          libxml2_revision=refs/tags/v2.11.5
-          yams_revision=refs/tags/5.0.4
-          zlib_revision=refs/tags/v1.2.13
-          EOF
-          else
             repo manifest -r --suppress-upstream-revision --suppress-dest-branch | \
                   xmllint --xpath "//project/@name | //project/@revision" - | \
                   xargs -n2 | \
@@ -157,7 +118,6 @@ jobs:
                     print tolower(repo[2]) "_revision=" $4
                   }' | tee -a "${GITHUB_OUTPUT}"
             repo manifest -r --suppress-upstream-revision --suppress-dest-branch -o - | sed -E 's,[[:space:]]+$,,' > stable.xml
-          fi
 
           if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.debug_info }}" == "true" ]]; then
             echo debug_info=true >> ${GITHUB_OUTPUT}
