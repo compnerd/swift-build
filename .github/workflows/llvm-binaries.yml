@@ -3,8 +3,8 @@ name: swift-toolchain
 on:
   workflow_dispatch:
     inputs:
-      swift_tag:
-        description: 'Swift Build Tag'
+      llvm_build_tag:
+        description: 'LLVM Build Tag'
         required: false
 
       swift_version:
@@ -87,7 +87,7 @@ jobs:
       debug_info: ${{ steps.context.outputs.debug_info }}
       signed: ${{ steps.context.outputs.signed }}
       swift_version: ${{ steps.context.outputs.swift_version }}
-      swift_tag: ${{ steps.context.outputs.swift_tag }}
+      llvm_build_tag: ${{ steps.context.outputs.llvm_build_tag }}
       windows_build_runner: ${{ steps.context.outputs.windows_build_runner }}
       compilers_build_runner: ${{ steps.context.outputs.compilers_build_runner }}
     steps:
@@ -143,13 +143,13 @@ jobs:
           fi
 
           echo swift_version=${{ inputs.swift_version || '0.0.0' }} | tee -a ${GITHUB_OUTPUT}
-          if [[ -n "${{ inputs.swift_tag }}" ]] ; then
-            echo swift_tag=${{ inputs.swift_tag }} | tee -a ${GITHUB_OUTPUT}
+          if [[ -n "${{ inputs.llvm_build_tag }}" ]] ; then
+            echo llvm_build_tag=${{ inputs.llvm_build_tag }} | tee -a ${GITHUB_OUTPUT}
           else
             if [[ "$branch_name" == "main" ]] ; then
-              echo swift_tag=$(date +%Y%m%d.$(date +%-H/6 | bc)) | tee -a ${GITHUB_OUTPUT}
+              echo llvm_build_tag=$(date +%Y%m%d.$(date +%-H/6 | bc)) | tee -a ${GITHUB_OUTPUT}
             else
-              echo swift_tag=swift-"$branch_version_string"-$(date +%Y%m%d.$(date +%-H/6 | bc)) | tee -a ${GITHUB_OUTPUT}
+              echo llvm_build_tag=swift-"$branch_version_string"-$(date +%Y%m%d.$(date +%-H/6 | bc)) | tee -a ${GITHUB_OUTPUT}
             fi
           fi
 
@@ -2191,7 +2191,7 @@ jobs:
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ProductArchitecture=${{ matrix.arch }} `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }}-${{ needs.context.outputs.swift_tag }} `
+              -p:ProductVersion=${{ needs.context.outputs.swift_version }}-${{ needs.context.outputs.llvm_build_tag }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/shared/shared.wixproj
 
       - name: Build installer bundle
@@ -2208,7 +2208,7 @@ jobs:
               -p:INCLUDE_X86_SDK=true `
               -p:INCLUDE_ARM64_SDK=true `
               -p:ProductArchitecture=${{ matrix.arch }} `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }}-${{ needs.context.outputs.swift_tag }} `
+              -p:ProductVersion=${{ needs.context.outputs.swift_version }}-${{ needs.context.outputs.llvm_build_tag }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bundle/installer.wixproj
 
       - uses: actions/upload-artifact@v4
@@ -2292,7 +2292,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           if ! git diff --exit-code ; then
             git add stable.xml
-            git commit -m "repo: update stable revision snapshot ${{ needs.context.outputs.swift_tag }}"
+            git commit -m "repo: update stable revision snapshot ${{ needs.context.outputs.llvm_build_tag }}"
             git push origin HEAD:main
           fi
 
@@ -2318,8 +2318,8 @@ jobs:
         with:
           draft: false
           prerelease: false
-          release_name: ${{ needs.context.outputs.swift_tag }}
-          tag_name: ${{ needs.context.outputs.swift_tag }}
+          release_name: ${{ needs.context.outputs.llvm_build_tag }}
+          tag_name: ${{ needs.context.outputs.llvm_build_tag }}
 
       - uses: actions/upload-release-asset@v1.0.2
         env:
