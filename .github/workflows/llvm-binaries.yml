@@ -189,7 +189,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: apple/llvm-project
+          repository: llvm/llvm-project
           ref: ${{ needs.context.outputs.llvm_project_revision }}
           path: ${{ github.workspace }}/SourceCache/llvm-project
           show-progress: false
@@ -273,7 +273,7 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          repository: apple/llvm-project
+          repository: llvm/llvm-project
           ref: ${{ needs.context.outputs.llvm_project_revision }}
           path: ${{ github.workspace }}/SourceCache/llvm-project
           show-progress: false
