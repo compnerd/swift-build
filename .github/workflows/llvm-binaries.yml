@@ -112,6 +112,7 @@ jobs:
 
           echo windows_build_runner=${{ vars.WINDOWS_BUILD_RUNNER || 'windows-latest' }} >> ${GITHUB_OUTPUT}
           echo compilers_build_runner=${{ vars.COMPILERS_BUILD_RUNNER || vars.WINDOWS_BUILD_RUNNER || 'windows-latest' }} >> ${GITHUB_OUTPUT}
+          echo llvm_project_revision=llvmorg-${{ inputs.llvm_version }}
 
       - uses: actions/upload-artifact@v4
         with:
