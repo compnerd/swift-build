@@ -575,7 +575,7 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          repository: apple/llvm-project
+          repository: llvm/llvm-project
           ref: ${{ needs.context.outputs.llvm_project_revision }}
           path: ${{ github.workspace }}/SourceCache/llvm-project
           show-progress: false
@@ -600,7 +600,6 @@ jobs:
                 -G Ninja `
                 -S ${{ github.workspace }}/SourceCache/llvm-project/llvm `
                 -D LLVM_ENABLE_ASSERTIONS=YES
-
 
 
       - uses: actions/upload-artifact@v4
