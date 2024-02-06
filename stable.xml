@@ -32,5 +32,4 @@
   <project name="gnome/libxml2" path="libxml2" remote="github" revision="b48e77cf4f6fa0792c5f4b639707a2b0675e461b" sync-tags="false"/>
   <project name="jpsim/Yams" path="Yams" remote="github" revision="39698493e08190d867da98ff49210952b8059e78" sync-tags="false"/>
   <project name="madler/zlib" path="zlib" remote="github" revision="cacf7f1d4e3d44d871b605da3b647f07d718623f" sync-tags="false"/>
-  <project name="unicode-org/icu" path="icu" remote="github" revision="0e7b4428866f3133b4abba2d932ee3faa708db1d" sync-tags="false"/>
 </manifest>

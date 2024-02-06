@@ -62,5 +62,4 @@
 
   <project remote="github" name="ninja-build/ninja" path="ninja" groups="notdefault,dependencies" revision="master" />
 
-  <project remote="github" name="unicode-org/icu" path="icu" revision="maint/maint-69" />
 </manifest>

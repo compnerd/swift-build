@@ -61,7 +61,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       curl_revision: ${{ steps.context.outputs.curl_revision }}
-      icu_revision: ${{ steps.context.outputs.icu_revision }}
       indexstore_db_revision: ${{ steps.context.outputs.indexstore_db_revision }}
       libxml2_revision: ${{ steps.context.outputs.libxml2_revision }}
       llvm_project_revision: ${{ steps.context.outputs.llvm_project_revision }}
@@ -147,7 +146,6 @@ jobs:
           libxml2_revision=refs/tags/v2.11.5
           yams_revision=refs/tags/5.0.4
           zlib_revision=refs/tags/v1.2.13
-          icu_revision=refs/heads/maint/maint-69
           EOF
           else
             repo manifest -r --suppress-upstream-revision --suppress-dest-branch | \
@@ -265,154 +263,6 @@ jobs:
         with:
           name: sqlite-${{ matrix.arch }}-3.43.2
           path: ${{ github.workspace }}/BuildRoot/Library/sqlite-3.43.2/usr
-
-  icu_tools:
-    needs: [context]
-    runs-on: ${{ needs.context.outputs.windows_build_runner }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: apple/swift-installer-scripts
-          ref: ${{ needs.context.outputs.swift_installer_scripts_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-installer-scripts
-          show-progress: false
-
-      - uses: actions/checkout@v4
-        with:
-          repository: unicode-org/icu
-          ref: ${{ needs.context.outputs.icu_revision }}
-          path: ${{ github.workspace }}/SourceCache/icu
-          show-progress: false
-
-      - name: Copy CMakeLists.txt
-        run: Copy-Item ${{ github.workspace }}\SourceCache\swift-installer-scripts\shared\ICU\CMakeLists.txt -destination ${{ github.workspace }}\SourceCache\icu\icu4c\CMakeLists.txt
-
-      - uses: compnerd/gha-setup-vsdevenv@main
-        with:
-          host_arch: amd64
-          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
-          arch: amd64
-
-      - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
-        with:
-          max-size: 100M
-          key: sccache-windows-amd64-icu_tools
-          variant: sccache
-
-      - name: Configure ICU Build Tools
-        run:
-          cmake -B ${{ github.workspace }}/BinaryCache/icu-tools-69.1 `
-                -D BUILD_SHARED_LIBS=NO `
-                -D BUILD_TOOLS=YES `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_C_COMPILER=cl `
-                -D CMAKE_C_COMPILER_LAUNCHER=sccache `
-                -D CMAKE_C_FLAGS="${{ needs.context.outputs.CMAKE_C_FLAGS }}" `
-                -D CMAKE_CXX_COMPILER=cl `
-                -D CMAKE_CXX_COMPILER_LAUNCHER=sccache `
-                -D CMAKE_CXX_FLAGS="${{ needs.context.outputs.CMAKE_CXX_FLAGS }}" `
-                -D CMAKE_MT=mt `
-                -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/icu-69.1/usr `
-                -G Ninja `
-                -S ${{ github.workspace }}/SourceCache/icu/icu4c
-
-      - name: Build ICU Tools
-        run: cmake --build ${{ github.workspace }}/BinaryCache/icu-tools-69.1
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: icu-tools-69.1
-          path: |
-            ${{ github.workspace }}/BinaryCache/icu-tools-69.1/genbrk.exe
-            ${{ github.workspace }}/BinaryCache/icu-tools-69.1/gencfu.exe
-            ${{ github.workspace }}/BinaryCache/icu-tools-69.1/gencnval.exe
-            ${{ github.workspace }}/BinaryCache/icu-tools-69.1/gendict.exe
-            ${{ github.workspace }}/BinaryCache/icu-tools-69.1/genrb.exe
-            ${{ github.workspace }}/BinaryCache/icu-tools-69.1/gensprep.exe
-            ${{ github.workspace }}/BinaryCache/icu-tools-69.1/icupkg.exe
-            ${{ github.workspace }}/BinaryCache/icu-tools-69.1/makeconv.exe
-            ${{ github.workspace }}/BinaryCache/icu-tools-69.1/pkgdata.exe
-
-  icu:
-    needs: [context, icu_tools]
-    runs-on: ${{ needs.context.outputs.windows_build_runner }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: 'amd64'
-            BUILD_TOOLS: NO
-          - arch: 'arm64'
-            BUILD_TOOLS: NO
-          - arch: 'x86'
-            BUILD_TOOLS: YES
-
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: icu-tools-69.1
-          path: ${{ github.workspace }}/BinaryCache/icu-tools-69.1/usr/bin
-
-      - uses: actions/checkout@v4
-        with:
-          repository: apple/swift-installer-scripts
-          ref: ${{ needs.context.outputs.swift_installer_scripts_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-installer-scripts
-          show-progress: false
-
-      - uses: actions/checkout@v4
-        with:
-          repository: unicode-org/icu
-          ref: ${{ needs.context.outputs.icu_revision }}
-          path: ${{ github.workspace }}/SourceCache/icu
-          show-progress: false
-
-      - name: Copy CMakeLists.txt
-        run: Copy-Item ${{ github.workspace }}\SourceCache\swift-installer-scripts\shared\ICU\CMakeLists.txt -destination ${{ github.workspace }}\SourceCache\icu\icu4c\CMakeLists.txt
-
-      - uses: compnerd/gha-setup-vsdevenv@main
-        with:
-          host_arch: amd64
-          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
-          arch: ${{ matrix.arch }}
-
-      - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
-        with:
-          max-size: 100M
-          key: sccache-windows-${{ matrix.arch }}-icu
-          variant: sccache
-
-      - name: Configure ICU
-        run: |
-          cmake -B ${{ github.workspace }}/BinaryCache/icu-69.1 `
-                -D BUILD_SHARED_LIBS=NO `
-                -D BUILD_TOOLS=${{ matrix.BUILD_TOOLS }} `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_C_COMPILER=cl `
-                -D CMAKE_C_COMPILER_LAUNCHER=sccache `
-                -D CMAKE_C_FLAGS="${{ needs.context.outputs.CMAKE_C_FLAGS }}" `
-                -D CMAKE_CXX_COMPILER=cl `
-                -D CMAKE_CXX_COMPILER_LAUNCHER=sccache `
-                -D CMAKE_CXX_FLAGS="${{ needs.context.outputs.CMAKE_CXX_FLAGS }}" `
-                -D CMAKE_MT=mt `
-                -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/icu-69.1/usr `
-                -D MSVC_C_ARCHITECTURE_ID=${{ matrix.arch }} `
-                -D ICU_TOOLS_DIR=${{ github.workspace }}/BinaryCache/icu-tools-69.1/usr/bin `
-                -G Ninja `
-                -S ${{ github.workspace }}/SourceCache/icu/icu4c
-      - name: Build ICU
-        run: cmake --build ${{ github.workspace }}/BinaryCache/icu-69.1
-      - name: Install ICU
-        run: cmake --build ${{ github.workspace }}/BinaryCache/icu-69.1 --target install
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: icu-${{ matrix.arch }}-69.1
-          path: ${{ github.workspace }}/BuildRoot/Library/icu-69.1/usr
 
   cmark_gfm:
     needs: [context]
@@ -1052,7 +902,6 @@ jobs:
                 -G Ninja `
                 -S ${{ github.workspace }}/SourceCache/libxml2 `
                 -D LIBXML2_WITH_ICONV=NO `
-                -D LIBXML2_WITH_ICU=NO `
                 -D LIBXML2_WITH_LZMA=NO `
                 -D LIBXML2_WITH_PYTHON=NO `
                 -D LIBXML2_WITH_TESTS=NO `
@@ -1070,7 +919,7 @@ jobs:
 
   sdk:
     continue-on-error: ${{ matrix.arch != 'amd64' }}
-    needs: [context, icu, libxml2, curl, zlib, compilers, cmark_gfm]
+    needs: [context, libxml2, curl, zlib, compilers, cmark_gfm]
     runs-on: ${{ needs.context.outputs.windows_build_runner }}
 
     strategy:
@@ -1090,10 +939,6 @@ jobs:
             triple: 'i686-unknown-windows-msvc'
 
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: icu-${{ matrix.arch }}-69.1
-          path: ${{ github.workspace }}/BuildRoot/Library/icu-69.1/usr
       - uses: actions/download-artifact@v4
         with:
           name: libxml2-${{ matrix.arch }}-2.11.5
@@ -1311,10 +1156,6 @@ jobs:
                 -D dispatch_DIR=${{ github.workspace }}/BinaryCache/libdispatch/cmake/modules `
                 -D CURL_DIR=${{ github.workspace }}/BuildRoot/Library/curl-7.77.0/usr/lib/cmake/CURL `
                 -D ENABLE_TESTING=NO `
-                -D ICU_DATA_LIBRARY_RELEASE=${{ github.workspace }}/BuildRoot/Library/icu-69.1/usr/lib/sicudt69.lib `
-                -D ICU_I18N_LIBRARY_RELEASE=${{ github.workspace }}/BuildRoot/Library/icu-69.1/usr/lib/sicuin69.lib `
-                -D ICU_ROOT=${{ github.workspace }}/BuildRoot/Library/icu-69.1/usr `
-                -D ICU_UC_LIBRARY_RELEASE=${{ github.workspace }}/BuildRoot/Library/icu-69.1/usr/lib/sicuuc69.lib `
                 -D LIBXML2_DEFINITIONS="/DLIBXML_STATIC" `
                 -D LIBXML2_INCLUDE_DIR=${{ github.workspace }}/BuildRoot/Library/libxml2-2.11.5/usr/include/libxml2 `
                 -D LIBXML2_LIBRARY=${{ github.workspace }}/BuildRoot/Library/libxml2-2.11.5/usr/lib/libxml2s.lib `
