@@ -53,7 +53,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       llvm_project_revision: ${{ steps.context.outputs.llvm_project_revision }}
-      zlib_revision: ${{ steps.context.outputs.zlib_revision }}
       CMAKE_C_FLAGS: ${{ steps.context.outputs.CMAKE_C_FLAGS }}
       CMAKE_CXX_FLAGS: ${{ steps.context.outputs.CMAKE_CXX_FLAGS }}
       CMAKE_EXE_LINKER_FLAGS: ${{ steps.context.outputs.CMAKE_EXE_LINKER_FLAGS }}
@@ -408,62 +407,6 @@ jobs:
           personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
           symbolsFolder: ${{ github.workspace }}/BinaryCache/1
 
-  zlib:
-    needs: [context]
-    runs-on: ${{ needs.context.outputs.windows_build_runner }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: ['amd64', 'arm64', 'x86']
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: madler/zlib
-          ref: ${{ needs.context.outputs.zlib_revision }}
-          path: ${{ github.workspace }}/SourceCache/zlib
-          show-progress: false
-
-      - uses: compnerd/gha-setup-vsdevenv@main
-        with:
-          host_arch: amd64
-          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
-          arch: ${{ matrix.arch }}
-
-      - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
-        with:
-          max-size: 100M
-          key: sccache-windows-${{ matrix.arch }}-zlib
-          variant: sccache
-
-      - name: Configure zlib
-        run: |
-          cmake -B ${{ github.workspace }}/BinaryCache/zlib-1.3 `
-                -D BUILD_SHARED_LIBS=NO `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_C_COMPILER=cl `
-                -D CMAKE_C_COMPILER_LAUNCHER=sccache `
-                -D CMAKE_C_FLAGS="${{ needs.context.outputs.CMAKE_C_FLAGS }}" `
-                -D CMAKE_CXX_COMPILER=cl `
-                -D CMAKE_CXX_COMPILER_LAUNCHER=sccache `
-                -D CMAKE_CXX_FLAGS="${{ needs.context.outputs.CMAKE_CXX_FLAGS }}" `
-                -D CMAKE_MT=mt `
-                -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/zlib-1.3/usr `
-                -G Ninja `
-                -S ${{ github.workspace }}/SourceCache/zlib `
-                -D SKIP_INSTALL_FILES=YES
-      - name: Build zlib
-        run: cmake --build ${{ github.workspace }}/BinaryCache/zlib-1.3
-      - name: Install zlib
-        run: cmake --build ${{ github.workspace }}/BinaryCache/zlib-1.3 --target install
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: zlib-${{ matrix.arch }}-1.3
-          path: ${{ github.workspace }}/BuildRoot/Library/zlib-1.3/usr
-
 
   sdk:
     continue-on-error: ${{ matrix.arch != 'amd64' }}
@@ -487,10 +430,6 @@ jobs:
             triple: 'i686-unknown-windows-msvc'
 
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: zlib-${{ matrix.arch }}-1.3
-          path: ${{ github.workspace }}/BuildRoot/Library/zlib-1.3/usr
       - name: Download Compilers
         uses: actions/download-artifact@v4
         with:
