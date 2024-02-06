@@ -7,8 +7,8 @@ on:
         description: 'LLVM Build Tag'
         required: false
 
-      swift_version:
-        description: 'Swift Version'
+      llvm_version:
+        description: 'LLVM Version'
         default: '0.0.0'
         required: false
         type: string
@@ -23,8 +23,8 @@ on:
         type: boolean
   workflow_call:
     inputs:
-      swift_version:
-        description: 'Swift Version'
+      llvm_version:
+        description: 'LLVM Version'
         default: '0.0.0'
         required: false
         type: string
@@ -86,7 +86,7 @@ jobs:
       CMAKE_Swift_FLAGS: ${{ steps.context.outputs.CMAKE_Swift_FLAGS }}
       debug_info: ${{ steps.context.outputs.debug_info }}
       signed: ${{ steps.context.outputs.signed }}
-      swift_version: ${{ steps.context.outputs.swift_version }}
+      llvm_version: ${{ steps.context.outputs.llvm_version }}
       llvm_build_tag: ${{ steps.context.outputs.llvm_build_tag }}
       windows_build_runner: ${{ steps.context.outputs.windows_build_runner }}
       compilers_build_runner: ${{ steps.context.outputs.compilers_build_runner }}
@@ -99,7 +99,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get -qq -o Dpkg::Use-Pty=0 install -yq repo libxml2-utils
 
           # Which branch is this workflow based on
-          branch_version_string=${{ inputs.swift_version || '0.0.0' }}
+          branch_version_string=${{ inputs.llvm_version || '0.0.0' }}
           if [[ $branch_version_string == *.* ]]; then
             branch_name=$(echo ${branch_version_string} | awk -F. '{ ver=$1"."$2; print (ver == "0.0") ? "main" : "release/"ver }')
           else
@@ -142,7 +142,7 @@ jobs:
             echo signed=false >> ${GITHUB_OUTPUT}
           fi
 
-          echo swift_version=${{ inputs.swift_version || '0.0.0' }} | tee -a ${GITHUB_OUTPUT}
+          echo llvm_version=${{ inputs.llvm_version || '0.0.0' }} | tee -a ${GITHUB_OUTPUT}
           if [[ -n "${{ inputs.llvm_build_tag }}" ]] ; then
             echo llvm_build_tag=${{ inputs.llvm_build_tag }} | tee -a ${GITHUB_OUTPUT}
           else
@@ -1937,7 +1937,7 @@ jobs:
               -p:DEVTOOLS_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain `
               -p:TOOLCHAIN_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain `
               -p:ProductArchitecture=${{ matrix.arch }} `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }} `
+              -p:ProductVersion=${{ needs.context.outputs.llvm_version }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bld/bld.wixproj
 
       - name: Package CLI Tools
@@ -1951,7 +1951,7 @@ jobs:
               -p:DEVTOOLS_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain `
               -p:TOOLCHAIN_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain `
               -p:ProductArchitecture=${{ matrix.arch }} `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }} `
+              -p:ProductVersion=${{ needs.context.outputs.llvm_version }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/cli/cli.wixproj
 
       - name: Package Debugging Tools
@@ -1966,7 +1966,7 @@ jobs:
               -p:TOOLCHAIN_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain `
               -p:SWIFT_INSPECT_BUILD=false `
               -p:ProductArchitecture=${{ matrix.arch }} `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }} `
+              -p:ProductVersion=${{ needs.context.outputs.llvm_version }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/dbg/dbg.wixproj
 
       - name: Package IDE Tools
@@ -1980,7 +1980,7 @@ jobs:
               -p:DEVTOOLS_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain `
               -p:TOOLCHAIN_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain `
               -p:ProductArchitecture=${{ matrix.arch }} `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }} `
+              -p:ProductVersion=${{ needs.context.outputs.llvm_version }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/ide/ide.wixproj
 
       - uses: actions/upload-artifact@v4
@@ -2064,7 +2064,7 @@ jobs:
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:PLATFORM_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform `
               -p:SDK_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }} `
+              -p:ProductVersion=${{ needs.context.outputs.llvm_version }} `
               -p:ProductArchitecture=${{ matrix.arch }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk/sdk.wixproj
 
@@ -2078,7 +2078,7 @@ jobs:
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:PLATFORM_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform `
               -p:SDK_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }} `
+              -p:ProductVersion=${{ needs.context.outputs.llvm_version }} `
               -p:ProductArchitecture=${{ matrix.arch }} `
               -p:VCRedistDir="${env:VCToolsRedistDir}\${env:VSCMD_ARG_TGT_ARCH}\Microsoft.VC143.CRT\" `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/rtl/msi/rtlmsi.wixproj
@@ -2191,7 +2191,7 @@ jobs:
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ProductArchitecture=${{ matrix.arch }} `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }}-${{ needs.context.outputs.llvm_build_tag }} `
+              -p:ProductVersion=${{ needs.context.outputs.llvm_version }}-${{ needs.context.outputs.llvm_build_tag }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/shared/shared.wixproj
 
       - name: Build installer bundle
@@ -2208,7 +2208,7 @@ jobs:
               -p:INCLUDE_X86_SDK=true `
               -p:INCLUDE_ARM64_SDK=true `
               -p:ProductArchitecture=${{ matrix.arch }} `
-              -p:ProductVersion=${{ needs.context.outputs.swift_version }}-${{ needs.context.outputs.llvm_build_tag }} `
+              -p:ProductVersion=${{ needs.context.outputs.llvm_version }}-${{ needs.context.outputs.llvm_build_tag }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bundle/installer.wixproj
 
       - uses: actions/upload-artifact@v4
