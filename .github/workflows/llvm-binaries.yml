@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: llvm/llvm-project
-          ref: llvmrg-${{ inputs.llvm_version }}
+          ref: llvmorg-${{ inputs.llvm_version }}
           path: ${{ github.workspace }}/SourceCache/llvm-project
           show-progress: false
 
