@@ -172,6 +172,7 @@ jobs:
 
           $CLANG_LOCATION = cygpath -m (Split-Path (Get-Command clang-cl).Source)
           cmake -B ${{ github.workspace }}/BinaryCache/1 `
+                -C ${{ github.workspace }}/SourceCache/llvm-build/cmake/caches/$CACHE `
                 -D CMAKE_BUILD_TYPE=Release `
                 -D CMAKE_C_COMPILER=cl `
                 -D CMAKE_C_COMPILER_LAUNCHER=sccache `
