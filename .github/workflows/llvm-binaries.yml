@@ -110,6 +110,9 @@ jobs:
           ref: llvmorg-${{ inputs.llvm_version }}
           path: ${{ github.workspace }}/SourceCache/llvm-project
           show-progress: false
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ github.workspace }}/SourceCache/llvm-build
 
       - name: Install Python ${{ env.PYTHON_VERSION }} (Host)
         uses: actions/setup-python@v5
