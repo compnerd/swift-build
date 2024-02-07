@@ -337,9 +337,7 @@ jobs:
             $CACHE="Windows-x86_64.cmake"
           }
 
-          $SDKROOT = cygpath -m ${env:SDKROOT}
           $CLANG_LOCATION = cygpath -m (Split-Path (Get-Command clang-cl).Source)
-          Remove-Item env:\SDKROOT
           cmake -B ${{ github.workspace }}/BinaryCache/1 `
                 -D CMAKE_BUILD_TYPE=Release `
                 -D CMAKE_C_COMPILER=cl `
@@ -448,7 +446,6 @@ jobs:
 
       - name: Configure LLVM
         run: |
-          Remove-Item env:\SDKROOT
           cmake -B ${{ github.workspace }}/BinaryCache/llvm `
                 -D CMAKE_BUILD_TYPE=Release `
                 -D CMAKE_C_COMPILER=cl `
