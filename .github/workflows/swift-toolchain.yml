@@ -1244,6 +1244,8 @@ jobs:
           # Workaround CMake 3.20 issue
           $CLANG_CL = cygpath -m ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/bin/clang-cl.exe
           $SWIFTC = cygpath -m ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/bin/swiftc.exe
+          # Workaround the ARM64 Clang miscompile in dispatch
+          $DISPATCH_C_FLAGS_RELEASE = $(if ( "${{ matrix.arch }}" -eq "arm64" ) { "-O0" } else { "" })
 
           Remove-Item env:\SDKROOT
           cmake -B ${{ github.workspace }}/BinaryCache/libdispatch `
@@ -1252,6 +1254,7 @@ jobs:
                 -D CMAKE_C_COMPILER=${CLANG_CL} `
                 -D CMAKE_C_COMPILER_TARGET=${{ matrix.triple }} `
                 -D CMAKE_C_FLAGS="${{ needs.context.outputs.CMAKE_C_FLAGS }}" `
+                -D CMAKE_C_FLAGS_RELEASE=${DISPATCH_C_FLAGS_RELEASE} `
                 -D CMAKE_CXX_COMPILER=${CLANG_CL} `
                 -D CMAKE_CXX_COMPILER_TARGET=${{ matrix.triple }} `
                 -D CMAKE_CXX_FLAGS="${{ needs.context.outputs.CMAKE_CXX_FLAGS }}" `
