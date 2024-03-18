@@ -798,6 +798,7 @@ jobs:
         with:
           accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
           personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
+          searchPattern: '**/*.@(dll|exe|pdb)'
           symbolsFolder: ${{ github.workspace }}/BinaryCache/1
 
   zlib:
@@ -1394,6 +1395,7 @@ jobs:
         with:
           accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
           personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
+          searchPattern: '**/*.@(dll|exe|pdb)'
           symbolsFolder: ${{ github.workspace }}/BinaryCache
 
   devtools:
@@ -2065,6 +2067,7 @@ jobs:
         with:
           accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
           personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
+          searchPattern: '**/*.@(dll|exe|pdb)'
           symbolsFolder: ${{ github.workspace }}/BinaryCache
 
   package_tools:
