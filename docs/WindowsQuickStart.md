@@ -44,7 +44,7 @@ Grant your user the `SeCreateSymbolicLinkPrivilege` rights.  This can be done by
 applying a Group Policy Object to the system.  Run `gpedit.msc` and navigate to
 
 ~~~
-Computer > Configuration\Windows > Settings\Security > Settings\Local > Policies\User Rights Assignment
+Computer Configuration > Windows Settings > Security Settings > Local Policies > User Rights Assignment
 ~~~
 
 In the `Create symbolic links` entry, add your user.  You will need to restart
