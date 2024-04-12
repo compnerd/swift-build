@@ -1,0 +1,72 @@
+# Uploads a toolchain release's binary size metrics to DataDog.
+name: Release - Binary Sizes
+
+on:
+  pull_request:
+
+  # TODO(kendal): Uncomment
+  # release: [created, edited]
+
+jobs:
+  env:
+    CACHE_PATH: cache/bin
+    BLOATY_CACHE_KEY: bloaty
+
+  build_bloaty:
+    name: Build Bloaty
+    # TODO(kendal): Use windows
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    env:
+      SOURCE_PATH: ${{ github.workspace }}/SourceCache/bloaty
+      BUILD_PATH: ${{ github.workspace }}/BuildCache/bloaty
+
+    steps:
+      - name: Cache Bloaty
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: ${{ env.BLOATY_CACHE_KEY }}
+
+      - name: Checkout Bloaty
+        if: steps.cache-bloaty.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: google/bloaty
+          ref: refs/heads/main
+          path: ${{ env.SOURCE_PATH }}
+          show-progress: false
+
+      - name: Configure Bloaty
+        run: cmake -B ${{ env.BUILD_PATH }} build -G Ninja -S ${{ env.SOURCE_PATH }}
+
+      - name: Build Bloaty
+        run: |
+          cmake --build ${{ env.BUILD_PATH }}
+          cmake --build ${{ env.BUILD_PATH }} --target install
+
+      - name: Add Bloaty to Cache
+        run: |
+          New-Item -Path ${{ env.CACHE_PATH }} -ItemType Directory -Force | Out-Null
+          Copy-Item ${{ env.BUILD_PATH }}/bloaty.exe -Destination ${{ env.CACHE_PATH }}
+
+  binary_sizes:
+    needs: [build_bloaty]
+    # TODO(kendal): Use windows
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache Bloaty
+        uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: ${{ env.BLOATY_CACHE_KEY }}
+
+      - name: Add Bloaty to PATH
+        run: echo ${{ env.CACHE_PATH }} | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Run Bloaty
+        run: bloaty --help
