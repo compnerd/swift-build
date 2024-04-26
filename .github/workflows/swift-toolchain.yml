@@ -2186,7 +2186,7 @@ jobs:
           mv ${{ env.SDKROOT }}/usr/lib/swift/windows/FoundationXML.lib ${{ env.SDKROOT }}/usr/lib/swift/windows/x86_64/
           mv ${{ env.SDKROOT }}/usr/lib/swift/windows/FoundationNetworking.lib ${{ env.SDKROOT }}/usr/lib/swift/windows/x86_64/
 
-      - name: Download target ${{ matrix.arch }} Windows SDK
+      - name: Download ${{ matrix.arch }} Windows SDK
         # Only necessary when cross-compiling
         if: ${{ matrix.arch != 'amd64' }}
         uses: actions/download-artifact@v4
