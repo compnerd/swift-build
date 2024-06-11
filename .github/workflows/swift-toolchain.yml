@@ -237,7 +237,10 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
+        # TODO: Revert to hendrikmuhs/ccache-action when https://github.com/hendrikmuhs/ccache-action/pull/204 is merged.
+        # This version adds $USERPROFILE/.cargo/bin to the PATH after installation since our Azure VMs don't have it.
+        # It's being merged upstream in https://github.com/hendrikmuhs/ccache-action/pull/204.
+        uses: compnerd/ccache-action@e24b3b9c93daf1904cd31113bb2f334b71439088
         with:
           max-size: 100M
           key: windows-${{ matrix.arch }}-sqlite
@@ -298,7 +301,7 @@ jobs:
           arch: amd64
 
       - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
+        uses: compnerd/ccache-action@e24b3b9c93daf1904cd31113bb2f334b71439088
         with:
           max-size: 100M
           key: windows-amd64-icu_tools
@@ -384,7 +387,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
+        uses: compnerd/ccache-action@e24b3b9c93daf1904cd31113bb2f334b71439088
         with:
           max-size: 100M
           key: windows-${{ matrix.arch }}-icu
@@ -443,7 +446,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
+        uses: compnerd/ccache-action@e24b3b9c93daf1904cd31113bb2f334b71439088
         with:
           max-size: 1M
           key: windows-${{ matrix.arch }}-cmark-gfm
@@ -502,7 +505,7 @@ jobs:
       - uses: compnerd/gha-setup-vsdevenv@main
 
       - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
+        uses: compnerd/ccache-action@e24b3b9c93daf1904cd31113bb2f334b71439088
         with:
           max-size: 100M
           key: windows-amd64-build_tools
@@ -675,7 +678,7 @@ jobs:
           release-tag-name: '20231016.0'
 
       - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
+        uses: compnerd/ccache-action@e24b3b9c93daf1904cd31113bb2f334b71439088
         with:
           max-size: 500M
           key: windows-${{ matrix.arch }}-compilers
@@ -849,7 +852,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
+        uses: compnerd/ccache-action@e24b3b9c93daf1904cd31113bb2f334b71439088
         with:
           max-size: 100M
           key: windows-${{ matrix.arch }}-zlib
@@ -911,7 +914,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
+        uses: compnerd/ccache-action@e24b3b9c93daf1904cd31113bb2f334b71439088
         with:
           max-size: 100M
           key: windows-${{ matrix.arch }}-curl
@@ -1045,7 +1048,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - name: Setup sccache
-        uses: compnerd/ccache-action@sccache-0.7.4
+        uses: compnerd/ccache-action@e24b3b9c93daf1904cd31113bb2f334b71439088
         with:
           max-size: 100M
           key: windows-${{ matrix.arch }}-libxml2
