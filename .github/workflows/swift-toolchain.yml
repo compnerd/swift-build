@@ -3336,6 +3336,16 @@ jobs:
       - run: swift test -Xswiftc -DENABLE_TESTING
         working-directory: ${{ github.workspace }}/SourceCache/swift-win32
 
+      - name: Test that sourcekit-lsp initializes
+        working-directory: ${{ github.workspace }}/SourceCache/swift-win32
+        run: |
+          $diagnosticOutput = $( $output = & ${{ github.workspace }}/tests/sourcekit-lsp-initialization-message | sourcekit-lsp.exe ) 2>&1
+          if (-not ($diagnosticOutput -Match "Succeeded") -or -not ($diagnosticOutput -Match "InitializeResult")) {
+            Write-Host "sourcekit-lsp failed to initialize"
+            Write-Host $diagnosticOutput
+            exit 1
+          }
+
   snapshot:
     runs-on: ubuntu-latest
     needs: [context, smoke_test]
