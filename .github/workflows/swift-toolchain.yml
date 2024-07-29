@@ -87,6 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       curl_revision: ${{ steps.context.outputs.curl_revision }}
+      ds2_revision: ${{ steps.context.outputs.ds2_revision }}
       icu_revision: ${{ steps.context.outputs.icu_revision }}
       indexstore_db_revision: ${{ steps.context.outputs.indexstore_db_revision }}
       libxml2_revision: ${{ steps.context.outputs.libxml2_revision }}
@@ -181,6 +182,7 @@ jobs:
           swift_system_revision=refs/tags/1.3.0
           swift_tools_support_core_revision=refs/tags/${{ inputs.swift_tag }}
           curl_revision=refs/tags/curl-8_5_0
+          ds2_revision=refs/heads/main
           libxml2_revision=refs/tags/v2.11.5
           yams_revision=refs/tags/5.0.6
           zlib_revision=refs/tags/v1.3.1
@@ -451,6 +453,113 @@ jobs:
             ${{ github.workspace }}/BinaryCache/icu-tools-69.1/makeconv.exe
             ${{ github.workspace }}/BinaryCache/icu-tools-69.1/pkgdata.exe
             ${{ github.workspace }}/BinaryCache/icu-tools-69.1/genccode.exe
+
+  ds2:
+    needs: [context]
+    runs-on: ${{ needs.context.outputs.windows_build_runner }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            BUILD_TOOLS: NO
+            BUILD_DATA: NO
+            cc: clang
+            cflags: ${{ needs.context.outputs.ANDROID_CMAKE_C_FLAGS }}
+            cxx: clang++
+            cxxflags: ${{ needs.context.outputs.ANDROID_CMAKE_CXX_FLAGS }}
+            os: Android
+            extra_flags: -DCMAKE_ANDROID_API=${{ needs.context.outputs.ANDROID_API_LEVEL }} -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a
+
+          - arch: armv7
+            BUILD_TOOLS: NO
+            BUILD_DATA: NO
+            cc: clang
+            cflags: ${{ needs.context.outputs.ANDROID_CMAKE_C_FLAGS }}
+            cxx: clang++
+            cxxflags: ${{ needs.context.outputs.ANDROID_CMAKE_CXX_FLAGS }}
+            os: Android
+            extra_flags: -DCMAKE_ANDROID_API=${{ needs.context.outputs.ANDROID_API_LEVEL }} -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a
+
+          - arch: i686
+            BUILD_TOOLS: NO
+            BUILD_DATA: NO
+            cc: clang
+            cflags: ${{ needs.context.outputs.ANDROID_CMAKE_C_FLAGS }}
+            cxx: clang++
+            cxxflags: ${{ needs.context.outputs.ANDROID_CMAKE_CXX_FLAGS }}
+            os: Android
+            extra_flags: -DCMAKE_ANDROID_API=${{ needs.context.outputs.ANDROID_API_LEVEL }} -DCMAKE_ANDROID_ARCH_ABI=x86
+
+          - arch: x86_64
+            BUILD_TOOLS: NO
+            BUILD_DATA: NO
+            cc: clang
+            cflags: ${{ needs.context.outputs.ANDROID_CMAKE_C_FLAGS }}
+            cxx: clang++
+            cxxflags: ${{ needs.context.outputs.ANDROID_CMAKE_CXX_FLAGS }}
+            os: Android
+            extra_flags: -DCMAKE_ANDROID_API=${{ needs.context.outputs.ANDROID_API_LEVEL }} -DCMAKE_ANDROID_ARCH_ABI=x86_64
+
+    name: ${{ matrix.os }} ${{ matrix.arch }} ds2
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ github.workspace }}/SourceCache/swift-build
+          show-progress: false
+
+      - uses: actions/checkout@v4
+        with:
+          repository: compnerd/ds2
+          ref: ${{ needs.context.outputs.ds2_revision }}
+          path: ${{ github.workspace }}/SourceCache/ds2
+          show-progress: false
+
+      - uses: compnerd/gha-setup-vsdevenv@main
+        with:
+          host_arch: amd64
+          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
+          arch: ${{ matrix.arch }}
+
+      - name: Setup sccache
+        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+        with:
+          max-size: 50M
+          key: ${{ matrix.os }}-${{ matrix.arch }}-ds2
+          variant: sccache
+          append-timestamp: false
+
+      - uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r26b
+
+      - name: Configure DS2
+        run: |
+          $NDKPATH = cygpath -m ${{ steps.setup-ndk.outputs.ndk-path }}
+          cmake -B ${{ github.workspace }}/BinaryCache/ds2 `
+                -D CMAKE_BUILD_TYPE=Release `
+                -D CMAKE_C_COMPILER=${{ matrix.cc }} `
+                -D CMAKE_C_COMPILER_LAUNCHER=sccache `
+                -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
+                -D CMAKE_CXX_COMPILER=${{ matrix.cxx }} `
+                -D CMAKE_CXX_COMPILER_LAUNCHER=sccache `
+                -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" `
+                -D MSVC_C_ARCHITECTURE_ID=${{ matrix.arch }} `
+                -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
+                -D CMAKE_ANDROID_NDK=$NDKPATH `
+                ${{ matrix.extra_flags }} `
+                -G Ninja `
+                -S ${{ github.workspace }}/SourceCache/ds2
+      - name: Build DS2
+        run: cmake --build ${{ github.workspace }}/BinaryCache/ds2
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ds2-${{ matrix.os }}-${{ matrix.arch }}
+          path: ${{ github.workspace }}/BinaryCache/ds2/ds2
 
   # TODO(compnerd): remove this once android migrates to swift-foundation
   icu:
