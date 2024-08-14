@@ -3,6 +3,18 @@ name: Swift Toolchain Build
 on:
   workflow_call:
     inputs:
+      builder_os:
+        required: true
+        type: string
+
+      builder_arch:
+        required: true
+        type: string
+
+      host_matrix:
+        required: true
+        type: string
+
       curl_revision:
         required: true
         type: string
@@ -139,6 +151,14 @@ on:
         required: true
         type: string
 
+      HOST_CMAKE_C_FLAGS:
+        required: true
+        type: string
+
+      HOST_CMAKE_CXX_FLAGS:
+        required: true
+        type: string
+
       WINDOWS_CMAKE_C_FLAGS:
         required: true
         type: string
@@ -199,7 +219,6 @@ on:
         required: true
         type: string
 
-
     secrets:
       SYMBOL_SERVER_PAT:
         required: true
@@ -209,7 +228,7 @@ on:
         required: true
 
 env:
-  SCCACHE_DIRECT: yes
+  SCCACHE_DIRECT: on
 
 jobs:
   sqlite:
@@ -217,23 +236,9 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - arch: amd64
-            cc: cl
-            cflags: ${{ inputs.WINDOWS_CMAKE_C_FLAGS }}
-            cxx: cl
-            cxxflags: ${{ inputs.WINDOWS_CMAKE_CXX_FLAGS }}
-            os: Windows
+      matrix: ${{ fromJSON(inputs.host_matrix) }}
 
-          - arch: arm64
-            cc: cl
-            cflags: ${{ inputs.WINDOWS_CMAKE_C_FLAGS }}
-            cxx: cl
-            cxxflags: ${{ inputs.WINDOWS_CMAKE_CXX_FLAGS }}
-            os: Windows
-
-    name: ${{ matrix.os }} ${{ matrix.arch }} SQLite3
+    name: SQLite3 (${{ matrix.os }} ${{ matrix.arch }})
 
     steps:
       - uses: actions/checkout@v4
@@ -249,10 +254,19 @@ jobs:
           show-progress: false
 
       - uses: compnerd/gha-setup-vsdevenv@main
+        if: inputs.builder_os == 'Windows'
         with:
-          host_arch: amd64
+          host_arch: ${{ inputs.builder_arch }}
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        if: inputs.builder_os == 'Darwin'
+        with:
+          xcode-version: latest-stable
+
+      - uses: seanmiddleditch/gha-setup-ninja@master
+        if: inputs.builder_os == 'Darwin'
 
       - name: Compute workspace hash
         id: workspace_hash
@@ -274,6 +288,7 @@ jobs:
           variant: sccache
 
       - name: Configure SQLite
+        shell: pwsh
         run: |
           cmake -B ${{ github.workspace }}/BinaryCache/sqlite-${{ inputs.swift_toolchain_sqlite_version }} `
                 -D BUILD_SHARED_LIBS=NO `
@@ -287,6 +302,7 @@ jobs:
                 -D CMAKE_MT=mt `
                 -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr `
                 -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
+                -D CMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} `
                 -G Ninja `
                 -S ${{ github.workspace }}/SourceCache/swift-toolchain-sqlite
       - name: Build SQLite
@@ -300,6 +316,8 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr
 
   cmark_gfm:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -369,6 +387,8 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-0.29.0.gfm.13/usr
 
   build_tools:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [cmark_gfm]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -485,6 +505,8 @@ jobs:
             ${{ github.workspace }}/BinaryCache/0/bin/swift-compatibility-symbols.exe
 
   compilers:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [build_tools, cmark_gfm]
     runs-on: ${{ inputs.compilers_build_runner }}
 
@@ -756,6 +778,8 @@ jobs:
           searchPattern: '**/*.exe'
 
   zlib:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -890,6 +914,8 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-1.3/usr
 
   curl:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [zlib]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -1107,6 +1133,8 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/curl-8.9.1/usr
 
   libxml2:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -1247,6 +1275,8 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/libxml2-2.11.5/usr
 
   stdlib:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [compilers, cmark_gfm]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -1533,6 +1563,8 @@ jobs:
           searchPattern: '**/*.dll'
 
   macros:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [compilers, cmark_gfm, stdlib]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -1696,6 +1728,8 @@ jobs:
           searchPattern: '**/*.exe'
 
   sdk:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [libxml2, curl, zlib, compilers, cmark_gfm, stdlib, macros]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -2194,6 +2228,8 @@ jobs:
           searchPattern: '**/*.dll'
 
   devtools:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [sqlite, compilers, stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -2912,6 +2948,8 @@ jobs:
           searchPattern: '**/*.exe'
 
   debugging_tools:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [compilers, devtools, stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -3063,6 +3101,8 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot-DebuggingTools
 
   package_tools:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     name: Package Tools
     needs: [compilers, macros, debugging_tools, devtools]
     runs-on: ${{ inputs.default_build_runner }}
@@ -3223,6 +3263,8 @@ jobs:
             ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.arch }}/ide.cab
 
   package_windows_sdk_runtime:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     name: Package Windows SDK & Runtime
     needs: [stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
@@ -3327,6 +3369,8 @@ jobs:
             ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.arch }}/rtl.${{ matrix.arch }}.cab
 
   package_android_sdk_runtime:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     name: Package Android SDK & Runtime
     needs: [stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
@@ -3406,6 +3450,8 @@ jobs:
             ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.cpu }}/android_sdk.${{ matrix.cpu }}.cab
 
   installer:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [package_tools, package_windows_sdk_runtime, package_android_sdk_runtime]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -3540,6 +3586,8 @@ jobs:
           path: ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.arch }}/installer.exe
 
   smoke_test:
+    # TODO: Build this on macOS or make an equivalent Mac-only job
+    if: inputs.builder_os == 'Windows'
     needs: [installer]
     runs-on: ${{ inputs.default_build_runner }}
 
