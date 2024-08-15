@@ -1,4 +1,4 @@
-name: Swift Toolchains Build
+name: Swift Toolchain Build
 
 on:
   workflow_call:
