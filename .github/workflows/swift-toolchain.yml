@@ -258,7 +258,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
         with:
           max-size: 100M
-          key: ${{ matrix.os }}-${{ matrix.arch }}-sqlite
+          key: ${{ inputs.default_build_runner }}-${{ matrix.os }}-${{ matrix.arch }}-sqlite
           variant: sccache
 
       - name: Configure SQLite
@@ -315,7 +315,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
         with:
           max-size: 1M
-          key: windows-${{ matrix.arch }}-cmark-gfm
+          key: ${{ inputs.default_build_runner }}-windows-${{ matrix.arch }}-cmark-gfm
           variant: sccache
 
       - name: Configure cmark-gfm
@@ -375,7 +375,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
         with:
           max-size: 100M
-          key: windows-amd64-build_tools
+          key: ${{ inputs.default_build_runner }}-windows-amd64-build_tools
           variant: sccache
 
       - name: Configure Tools
@@ -558,7 +558,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
         with:
           max-size: 500M
-          key: windows-${{ matrix.arch }}-compilers
+          key: ${{ inputs.compilers_build_runner }}-windows-${{ matrix.arch }}-compilers
           variant: sccache
 
       - name: Configure Compilers
@@ -790,7 +790,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
         with:
           max-size: 100M
-          key: ${{ matrix.os }}-${{ matrix.arch }}-zlib
+          key: ${{ inputs.default_build_runner }}-${{ matrix.os }}-${{ matrix.arch }}-zlib
           variant: sccache
 
       - uses: nttld/setup-ndk@v1
@@ -918,7 +918,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
         with:
           max-size: 100M
-          key: ${{ matrix.os }}-${{ matrix.arch }}-curl
+          key: ${{ inputs.default_build_runner }}-${{ matrix.os }}-${{ matrix.arch }}-curl
           variant: sccache
 
       - uses: nttld/setup-ndk@v1
@@ -1117,7 +1117,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
         with:
           max-size: 100M
-          key: ${{ matrix.os }}-${{ matrix.arch }}-libxml2
+          key: ${{ inputs.default_build_runner }}-${{ matrix.os }}-${{ matrix.arch }}-libxml2
           variant: sccache
 
       - uses: nttld/setup-ndk@v1
