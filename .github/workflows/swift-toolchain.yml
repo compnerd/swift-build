@@ -3,11 +3,11 @@ name: Swift Toolchain Build
 on:
   workflow_call:
     inputs:
-      builder_os:
+      build_os:
         required: true
         type: string
 
-      builder_arch:
+      build_arch:
         required: true
         type: string
 
@@ -151,14 +151,6 @@ on:
         required: true
         type: string
 
-      HOST_CMAKE_C_FLAGS:
-        required: true
-        type: string
-
-      HOST_CMAKE_CXX_FLAGS:
-        required: true
-        type: string
-
       WINDOWS_CMAKE_C_FLAGS:
         required: true
         type: string
@@ -238,7 +230,11 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.host_matrix) }}
 
-    name: SQLite3 (${{ matrix.os }} ${{ matrix.arch }})
+    name: ${{ matrix.os }} ${{ matrix.arch }} SQLite3
+
+    defaults:
+      run:
+        shell: pwsh
 
     steps:
       - uses: actions/checkout@v4
@@ -253,24 +249,15 @@ jobs:
           path: ${{ github.workspace }}/SourceCache/swift-toolchain-sqlite
           show-progress: false
 
+      # TODO: Add a macOS-equivalent to set up ninja.
       - uses: compnerd/gha-setup-vsdevenv@main
-        if: inputs.builder_os == 'Windows'
         with:
-          host_arch: ${{ inputs.builder_arch }}
+          host_arch: ${{ inputs.build_arch }}
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        if: inputs.builder_os == 'Darwin'
-        with:
-          xcode-version: latest-stable
-
-      - uses: seanmiddleditch/gha-setup-ninja@master
-        if: inputs.builder_os == 'Darwin'
-
       - name: Compute workspace hash
         id: workspace_hash
-        shell: pwsh
         run: |
           $stringAsStream = [System.IO.MemoryStream]::new()
           $writer = [System.IO.StreamWriter]::new($stringAsStream)
@@ -288,7 +275,6 @@ jobs:
           variant: sccache
 
       - name: Configure SQLite
-        shell: pwsh
         run: |
           cmake -B ${{ github.workspace }}/BinaryCache/sqlite-${{ inputs.swift_toolchain_sqlite_version }} `
                 -D BUILD_SHARED_LIBS=NO `
@@ -317,7 +303,7 @@ jobs:
 
   cmark_gfm:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -388,7 +374,7 @@ jobs:
 
   build_tools:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [cmark_gfm]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -506,7 +492,7 @@ jobs:
 
   compilers:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [build_tools, cmark_gfm]
     runs-on: ${{ inputs.compilers_build_runner }}
 
@@ -779,7 +765,7 @@ jobs:
 
   zlib:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -915,7 +901,7 @@ jobs:
 
   curl:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [zlib]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -1134,7 +1120,7 @@ jobs:
 
   libxml2:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -1276,7 +1262,7 @@ jobs:
 
   stdlib:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [compilers, cmark_gfm]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -1564,7 +1550,7 @@ jobs:
 
   macros:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [compilers, cmark_gfm, stdlib]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -1729,7 +1715,7 @@ jobs:
 
   sdk:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [libxml2, curl, zlib, compilers, cmark_gfm, stdlib, macros]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -2229,7 +2215,7 @@ jobs:
 
   devtools:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [sqlite, compilers, stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -2949,7 +2935,7 @@ jobs:
 
   debugging_tools:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [compilers, devtools, stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -3102,7 +3088,7 @@ jobs:
 
   package_tools:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     name: Package Tools
     needs: [compilers, macros, debugging_tools, devtools]
     runs-on: ${{ inputs.default_build_runner }}
@@ -3264,7 +3250,7 @@ jobs:
 
   package_windows_sdk_runtime:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     name: Package Windows SDK & Runtime
     needs: [stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
@@ -3370,7 +3356,7 @@ jobs:
 
   package_android_sdk_runtime:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     name: Package Android SDK & Runtime
     needs: [stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
@@ -3451,7 +3437,7 @@ jobs:
 
   installer:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [package_tools, package_windows_sdk_runtime, package_android_sdk_runtime]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -3587,7 +3573,7 @@ jobs:
 
   smoke_test:
     # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.builder_os == 'Windows'
+    if: inputs.build_os == 'Windows'
     needs: [installer]
     runs-on: ${{ inputs.default_build_runner }}
 

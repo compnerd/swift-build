@@ -313,7 +313,7 @@ jobs:
                   "cxxflags": "${{ steps.context.outputs.DARWIN_CMAKE_CXX_FLAGS }}"
                 },
                 {
-                  "arch": "arm64",
+                  "arch": "aarch64",
                   "os": "Darwin",
                   "cc": "clang",
                   "ccflags": "${{ steps.context.outputs.DARWIN_CMAKE_C_FLAGS }}",
@@ -331,8 +331,8 @@ jobs:
     name: Windows Swift Toolchains Build
     uses: ./.github/workflows/swift-toolchain.yml
     with:
-      builder_os: Windows
-      builder_arch: amd64
+      build_os: Windows
+      build_arch: amd64
       curl_revision: ${{ needs.context.outputs.curl_revision }}
       indexstore_db_revision: ${{ needs.context.outputs.indexstore_db_revision }}
       libxml2_revision: ${{ needs.context.outputs.libxml2_revision }}
@@ -367,8 +367,6 @@ jobs:
       yams_revision: ${{ needs.context.outputs.yams_revision }}
       zlib_revision: ${{ needs.context.outputs.zlib_revision }}
       ANDROID_API_LEVEL: ${{ needs.context.outputs.ANDROID_API_LEVEL }}
-      HOST_CMAKE_C_FLAGS: ${{ needs.context.outputs.WINDOWS_CMAKE_C_FLAGS }}
-      HOST_CMAKE_CXX_FLAGS: ${{ needs.context.outputs.WINDOWS_CMAKE_CXX_FLAGS }}
       WINDOWS_CMAKE_C_FLAGS: ${{ needs.context.outputs.WINDOWS_CMAKE_C_FLAGS }}
       WINDOWS_CMAKE_CXX_FLAGS: ${{ needs.context.outputs.WINDOWS_CMAKE_CXX_FLAGS }}
       WINDOWS_CMAKE_EXE_LINKER_FLAGS: ${{ needs.context.outputs.WINDOWS_CMAKE_EXE_LINKER_FLAGS }}
@@ -397,8 +395,8 @@ jobs:
     name: macOS Swift Toolchains Build
     uses: ./.github/workflows/swift-toolchain.yml
     with:
-      builder_os: Darwin
-      builder_arch: aarch64
+      build_os: Darwin
+      build_arch: aarch64
       curl_revision: ${{ needs.context.outputs.curl_revision }}
       indexstore_db_revision: ${{ needs.context.outputs.indexstore_db_revision }}
       libxml2_revision: ${{ needs.context.outputs.libxml2_revision }}
@@ -426,14 +424,13 @@ jobs:
       swift_revision: ${{ needs.context.outputs.swift_revision }}
       swift_syntax_revision: ${{ needs.context.outputs.swift_syntax_revision }}
       swift_system_revision: ${{ needs.context.outputs.swift_system_revision }}
+      swift_testing_revision: ${{ needs.context.outputs.swift_testing_revision }}
       swift_toolchain_sqlite_revision: ${{ needs.context.outputs.swift_toolchain_sqlite_revision }}
       swift_toolchain_sqlite_version: ${{ needs.context.outputs.swift_toolchain_sqlite_version }}
       swift_tools_support_core_revision: ${{ needs.context.outputs.swift_tools_support_core_revision }}
       yams_revision: ${{ needs.context.outputs.yams_revision }}
       zlib_revision: ${{ needs.context.outputs.zlib_revision }}
       ANDROID_API_LEVEL: ${{ needs.context.outputs.ANDROID_API_LEVEL }}
-      HOST_CMAKE_C_FLAGS: ${{ needs.context.outputs.DARWIN_CMAKE_C_FLAGS }}
-      HOST_CMAKE_CXX_FLAGS: ${{ needs.context.outputs.DARWIN_CMAKE_CXX_FLAGS }}
       WINDOWS_CMAKE_C_FLAGS: ${{ needs.context.outputs.WINDOWS_CMAKE_C_FLAGS }}
       WINDOWS_CMAKE_CXX_FLAGS: ${{ needs.context.outputs.WINDOWS_CMAKE_CXX_FLAGS }}
       WINDOWS_CMAKE_EXE_LINKER_FLAGS: ${{ needs.context.outputs.WINDOWS_CMAKE_EXE_LINKER_FLAGS }}
