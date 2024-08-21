@@ -291,7 +291,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -514,7 +514,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -557,7 +557,7 @@ jobs:
         run: cmake --build ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }}
       - name: Install cmark-gfm
         run: cmake --build ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }} --target install
-      - uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
+      - uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d463a319b5b65b273db0a4e12ab0b10e72
         with:
           name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
@@ -573,7 +573,7 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} Compiler Build Tools
 
     steps:
-      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
@@ -593,7 +593,7 @@ jobs:
 
       - uses: compnerd/gha-setup-vsdevenv@main
 
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -691,7 +691,7 @@ jobs:
             Copy-Item -Path "${{ github.workspace }}/BinaryCache/0/bin/${Binary}${Suffix}" -Destination "${{ github.workspace }}/BuildRoot/bin/${Binary}${Suffix}" -Force
           }
 
-      - uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
+      - uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d463a319b5b65b273db0a4e12ab0b10e72
         with:
           name: build-tools-${{ matrix.os }}
           path: ${{ github.workspace }}/BuildRoot/bin
@@ -751,12 +751,12 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401
         if: inputs.build_os == 'Darwin'
 
       - name: Install Swift Toolchain (Mac)
         if: inputs.build_os == 'Darwin'
-        uses: compnerd/gha-setup-swift@b6c5fc1
+        uses: compnerd/gha-setup-swift@b6c5fc1ed5b5439ada8e7661985acb09ad8c3ba2
         with:
           branch: swift-6.0.1-release
           tag: 6.0.1-RELEASE
@@ -803,7 +803,7 @@ jobs:
               Copy-Item -Path "${SourceBinDir}/${binName}" -Destination $binPath -Force
           }
 
-      - uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
+      - uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d463a319b5b65b273db0a4e12ab0b10e72
         with:
           name: early-swift-driver-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot
@@ -834,15 +834,15 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} Toolchain
 
     steps:
-      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: build-tools-${{ matrix.os }}
           path: ${{ github.workspace }}/BinaryCache/0/bin
-      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BinaryCache/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
-      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         if: matrix.os == 'Darwin'
         with:
           name: early-swift-driver-${{ matrix.os }}-${{ matrix.arch }}
@@ -910,12 +910,12 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401
         if: inputs.build_os == 'Darwin'
 
       - name: Install Swift Toolchain (Windows)
         if: inputs.build_os == 'Windows'
-        uses: compnerd/gha-setup-swift@b6c5fc1
+        uses: compnerd/gha-setup-swift@b6c5fc1ed5b5439ada8e7661985acb09ad8c3ba2
         with:
           github-repo: thebrowsercompany/swift-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -924,7 +924,7 @@ jobs:
 
       - name: Install Swift Toolchain (Mac)
         if: inputs.build_os == 'Darwin'
-        uses: compnerd/gha-setup-swift@b6c5fc1
+        uses: compnerd/gha-setup-swift@b6c5fc1ed5b5439ada8e7661985acb09ad8c3ba2
         with:
           branch: swift-6.0.1-release
           tag: 6.0.1-RELEASE
@@ -1093,7 +1093,7 @@ jobs:
           }
 
       - name: Upload Compilers
-        uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
+        uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d463a319b5b65b273db0a4e12ab0b10e72
         with:
           name: compilers-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
@@ -1119,7 +1119,7 @@ jobs:
           Copy-Item -Path $module -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules"
 
       - name: Upload swift-syntax
-        uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
+        uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d463a319b5b65b273db0a4e12ab0b10e72
         with:
           name: swift-syntax-${{matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
@@ -1182,7 +1182,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -1270,7 +1270,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -1429,7 +1429,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -1607,7 +1607,7 @@ jobs:
 
     steps:
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@717214c
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
@@ -1642,7 +1642,7 @@ jobs:
       # we have not yet built the runtime, this requires that we use the runtime
       # from the previous build.
       - name: Install Swift Toolchain
-        uses: compnerd/gha-setup-swift@b6c5fc1
+        uses: compnerd/gha-setup-swift@b6c5fc1ed5b5439ada8e7661985acb09ad8c3ba2
         with:
           github-repo: thebrowsercompany/swift-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1798,12 +1798,12 @@ jobs:
 
     steps:
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@717214c
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - name: Download swift-syntax
-        uses: thebrowsercompany/gha-download-tar-artifact@717214c
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: swift-syntax-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
@@ -2042,7 +2042,7 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
 
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@717214c
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
@@ -2437,7 +2437,7 @@ jobs:
           path: ${{ github.workspace }}/BinaryCache/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr
 
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@717214c
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
@@ -2453,11 +2453,11 @@ jobs:
         with:
           name: macros-amd64
           path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: swift-syntax-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
-      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: cmark-gfm-Windows-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BinaryCache/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
@@ -3142,7 +3142,7 @@ jobs:
 
     steps:
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@717214c
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
@@ -3280,7 +3280,7 @@ jobs:
           name: debugging_tools-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/DebuggingTools
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@717214c
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c9da2a52b3407a5b0a1f31c00b8fde5681
         with:
           name: compilers-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
