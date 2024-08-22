@@ -2743,6 +2743,9 @@ jobs:
                 -D CMAKE_C_COMPILER=${CLANG_CL} `
                 -D CMAKE_C_COMPILER_TARGET=${{ matrix.triple }} `
                 -D CMAKE_C_FLAGS="${{ inputs.WINDOWS_CMAKE_C_FLAGS }}" `
+                -D CMAKE_CXX_COMPILER=${CLANG_CL} `
+                -D CMAKE_CXX_COMPILER_TARGET=${{ matrix.triple }} `
+                -D CMAKE_CXX_FLAGS="${{ inputs.WINDOWS_CMAKE_CXX_FLAGS }}" `
                 -D CMAKE_Swift_COMPILER=${SWIFTC} `
                 -D CMAKE_Swift_COMPILER_TARGET=${{ matrix.triple }} `
                 -D CMAKE_Swift_COMPILER_WORKS=YES `
