@@ -2228,15 +2228,7 @@ jobs:
           path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform
       - uses: actions/download-artifact@v4
         with:
-          name: Windows-stdlib-amd64
-          path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
           name: Windows-sdk-${{ matrix.arch }}
-          path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
-          name: Windows-sdk-amd64
           path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform
       - uses: actions/download-artifact@v4
         with:
@@ -2386,6 +2378,16 @@ jobs:
           Move-Item ${env:SDKROOT}/usr/lib/swift/windows/_FoundationICU.lib ${env:SDKROOT}/usr/lib/swift/windows/${{ matrix.cpu }}/
           Move-Item ${env:SDKROOT}/usr/lib/swift/windows/FoundationEssentials.lib ${env:SDKROOT}/usr/lib/swift/windows/${{ matrix.cpu }}/
           Move-Item ${env:SDKROOT}/usr/lib/swift/windows/FoundationInternationalization.lib ${env:SDKROOT}/usr/lib/swift/windows/${{ matrix.cpu }}/
+
+      # Download host libraries for the windows amd64 host, after moving the target libraries to the target-specific directory.
+      - uses: actions/download-artifact@v4
+        with:
+          name: Windows-stdlib-amd64
+          path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform
+      - uses: actions/download-artifact@v4
+        with:
+          name: Windows-sdk-amd64
+          path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform
 
       - name: Configure swift-argument-parser
         run: |
