@@ -2250,7 +2250,7 @@ jobs:
         if: matrix.arch == 'arm64'
         with:
           name: cmark-gfm-arm64-0.29.0.gfm.13
-          path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-0.29.0.gfm.13/usr
+          path: ${{ github.workspace }}/BinaryCache/Library/cmark-gfm-0.29.0.gfm.13/usr
 
       - uses: actions/checkout@v4
         with:
@@ -2758,7 +2758,7 @@ jobs:
                 -G Ninja `
                 -S ${{ github.workspace }}/SourceCache/swift-markdown `
                 -D ArgumentParser_DIR=${{ github.workspace }}/BinaryCache/swift-argument-parser/cmake/modules `
-                -D cmark-gfm_DIR=${{ github.workspace }}/BuildRoot/Library/cmark-gfm-0.29.0.gfm.13/usr/lib/cmake
+                -D cmark-gfm_DIR=${{ github.workspace }}/BinaryCache/Library/cmark-gfm-0.29.0.gfm.13/usr/lib/cmake
       - name: Build Markdown
         run: cmake --build ${{ github.workspace }}/BinaryCache/swift-markdown
 
