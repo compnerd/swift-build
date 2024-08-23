@@ -11,7 +11,15 @@ on:
         required: true
         type: string
 
+      build_matrix:
+        required: true
+        type: string
+
       host_matrix:
+        required: true
+        type: string
+
+      exe_suffix:
         required: true
         type: string
 
@@ -380,17 +388,19 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
 
   build_tools:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.build_os == 'Windows'
     needs: [cmark_gfm]
     runs-on: ${{ inputs.default_build_runner }}
 
-    name: Windows amd64 Compiler Build Tools
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.build_matrix) }}
+
+    name: ${{ matrix.os }} ${{ matrix.arch }} Compiler Build Tools
 
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: cmark-gfm-Windows-amd64-${{ inputs.swift_cmark_version }}
+          name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
 
       - uses: actions/checkout@v4
@@ -408,9 +418,11 @@ jobs:
 
       - uses: compnerd/gha-setup-vsdevenv@main
 
+      - uses: seanmiddleditch/gha-setup-ninja@master
+        if: inputs.build_os == 'Darwin'
+
       - name: Compute workspace hash
         id: workspace_hash
-        shell: pwsh
         run: |
           $stringAsStream = [System.IO.MemoryStream]::new()
           $writer = [System.IO.StreamWriter]::new($stringAsStream)
@@ -424,19 +436,19 @@ jobs:
         uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
         with:
           max-size: 100M
-          key: ${{ steps.workspace_hash.outputs.hash }}-windows-amd64-build_tools
+          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-build_tools
           variant: sccache
 
       - name: Configure Tools
         run: |
           cmake -B ${{ github.workspace }}/BinaryCache/0 `
                 -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_C_COMPILER=cl `
+                -D CMAKE_C_COMPILER=${{ matrix.cc }} `
                 -D CMAKE_C_COMPILER_LAUNCHER=sccache `
-                -D CMAKE_C_FLAGS="${{ inputs.WINDOWS_CMAKE_C_FLAGS }}" `
-                -D CMAKE_CXX_COMPILER=cl `
+                -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
+                -D CMAKE_CXX_COMPILER=${{ matrix.cxx }} `
                 -D CMAKE_CXX_COMPILER_LAUNCHER=sccache `
-                -D CMAKE_CXX_FLAGS="${{ inputs.WINDOWS_CMAKE_CXX_FLAGS }}" `
+                -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" `
                 -D CMAKE_MT=mt `
                 -D cmark-gfm_DIR=${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr/lib/cmake `
                 -G Ninja `
@@ -485,17 +497,17 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: build-tools
+          name: build-tools-${{ matrix.os }}
           path: |
-            ${{ github.workspace }}/BinaryCache/0/bin/llvm-tblgen.exe
-            ${{ github.workspace }}/BinaryCache/0/bin/clang-tblgen.exe
-            ${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen.exe
-            ${{ github.workspace }}/BinaryCache/0/bin/llvm-config.exe
-            ${{ github.workspace }}/BinaryCache/0/bin/clang-pseudo-gen.exe
-            ${{ github.workspace }}/BinaryCache/0/bin/clang-tidy-confusable-chars-gen.exe
-            ${{ github.workspace }}/BinaryCache/0/bin/swift-def-to-strings-converter.exe
-            ${{ github.workspace }}/BinaryCache/0/bin/swift-serialize-diagnostics.exe
-            ${{ github.workspace }}/BinaryCache/0/bin/swift-compatibility-symbols.exe
+            ${{ github.workspace }}/BinaryCache/0/bin/llvm-tblgen${{ inputs.exe_suffix }}
+            ${{ github.workspace }}/BinaryCache/0/bin/clang-tblgen${{ inputs.exe_suffix }}
+            ${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen${{ inputs.exe_suffix }}
+            ${{ github.workspace }}/BinaryCache/0/bin/llvm-config${{ inputs.exe_suffix }}
+            ${{ github.workspace }}/BinaryCache/0/bin/clang-pseudo-gen${{ inputs.exe_suffix }}
+            ${{ github.workspace }}/BinaryCache/0/bin/clang-tidy-confusable-chars-gen${{ inputs.exe_suffix }}
+            ${{ github.workspace }}/BinaryCache/0/bin/swift-def-to-strings-converter${{ inputs.exe_suffix }}
+            ${{ github.workspace }}/BinaryCache/0/bin/swift-serialize-diagnostics${{ inputs.exe_suffix }}
+            ${{ github.workspace }}/BinaryCache/0/bin/swift-compatibility-symbols${{ inputs.exe_suffix }}
 
   compilers:
     # TODO: Build this on macOS or make an equivalent Mac-only job
@@ -524,7 +536,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: build-tools
+          name: build-tools-Windows
           path: ${{ github.workspace }}/BinaryCache/0/bin
       - uses: actions/download-artifact@v4
         with:
