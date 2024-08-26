@@ -249,12 +249,14 @@ jobs:
           path: ${{ github.workspace }}/SourceCache/swift-toolchain-sqlite
           show-progress: false
 
-      # TODO: Add a macOS-equivalent to set up ninja.
       - uses: compnerd/gha-setup-vsdevenv@main
         with:
           host_arch: ${{ inputs.build_arch }}
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
+
+      - uses: seanmiddleditch/gha-setup-ninja@master
+        if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
         id: workspace_hash
