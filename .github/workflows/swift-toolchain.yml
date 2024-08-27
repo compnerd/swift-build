@@ -226,6 +226,10 @@ on:
 env:
   SCCACHE_DIRECT: on
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   sqlite:
     runs-on: ${{ inputs.default_build_runner }}
@@ -235,10 +239,6 @@ jobs:
       matrix: ${{ fromJSON(inputs.host_matrix) }}
 
     name: ${{ matrix.os }} ${{ matrix.arch }} SQLite3
-
-    defaults:
-      run:
-        shell: pwsh
 
     steps:
       - uses: actions/checkout@v4
@@ -315,10 +315,6 @@ jobs:
       matrix: ${{ fromJSON(inputs.host_matrix) }}
 
     name: ${{ matrix.os }} ${{ matrix.arch }} CMark GFM
-
-    defaults:
-      run:
-        shell: pwsh
 
     steps:
       - uses: actions/checkout@v4
