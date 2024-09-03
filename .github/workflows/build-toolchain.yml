@@ -367,7 +367,6 @@ jobs:
       build_arch: amd64
       build_matrix: ${{ needs.context.outputs.windows_build_matrix }}
       host_matrix: ${{ needs.context.outputs.windows_host_matrix }}
-      exe_suffix: .exe
       curl_revision: ${{ needs.context.outputs.curl_revision }}
       indexstore_db_revision: ${{ needs.context.outputs.indexstore_db_revision }}
       libxml2_revision: ${{ needs.context.outputs.libxml2_revision }}
@@ -434,7 +433,6 @@ jobs:
       build_arch: aarch64
       build_matrix: ${{ needs.context.outputs.darwin_build_matrix }}
       host_matrix: ${{ needs.context.outputs.darwin_host_matrix }}
-      exe_suffix: ''
       curl_revision: ${{ needs.context.outputs.curl_revision }}
       indexstore_db_revision: ${{ needs.context.outputs.indexstore_db_revision }}
       libxml2_revision: ${{ needs.context.outputs.libxml2_revision }}

@@ -19,10 +19,6 @@ on:
         required: true
         type: string
 
-      exe_suffix:
-        required: true
-        type: string
-
       curl_revision:
         required: true
         type: string
@@ -495,19 +491,37 @@ jobs:
       - name: Build swift-compatibility-symbols
         run: cmake --build ${{ github.workspace }}/BinaryCache/0 --target swift-compatibility-symbols
 
+      - name: Export binary paths
+        id: export-binary-paths
+        run: |
+          if ( "${{ matrix.os }}" -eq "Windows" ) {
+            $Suffix = ".exe"
+          } else {
+            $Suffix = ""
+          }
+          echo "llvm_tblgen=${{ github.workspace }}/BinaryCache/0/bin/llvm-tblgen${Suffix}" >> $env:GITHUB_OUTPUT
+          echo "clang_tblgen=${{ github.workspace }}/BinaryCache/0/bin/clang-tblgen${Suffix}" >> $env:GITHUB_OUTPUT
+          echo "lldb_tblgen=${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen${Suffix}" >> $env:GITHUB_OUTPUT
+          echo "llvm_config=${{ github.workspace }}/BinaryCache/0/bin/llvm-config${Suffix}" >> $env:GITHUB_OUTPUT
+          echo "clang_pseudo_gen=${{ github.workspace }}/BinaryCache/0/bin/clang-pseudo-gen${Suffix}" >> $env:GITHUB_OUTPUT
+          echo "clang_tidy_confusable_chars_gen=${{ github.workspace }}/BinaryCache/0/bin/clang-tidy-confusable-chars-gen${Suffix}" >> $env:GITHUB_OUTPUT
+          echo "swift_def_to_strings_converter=${{ github.workspace }}/BinaryCache/0/bin/swift-def-to-strings-converter${Suffix}" >> $env:GITHUB_OUTPUT
+          echo "swift_serialize_diagnostics=${{ github.workspace }}/BinaryCache/0/bin/swift-serialize-diagnostics${Suffix}" >> $env:GITHUB_OUTPUT
+          echo "swift_compatibility_symbols=${{ github.workspace }}/BinaryCache/0/bin/swift-compatibility-symbols${Suffix}" >> $env:GITHUB_OUTPUT
+
       - uses: actions/upload-artifact@v4
         with:
           name: build-tools-${{ matrix.os }}
           path: |
-            ${{ github.workspace }}/BinaryCache/0/bin/llvm-tblgen${{ inputs.exe_suffix }}
-            ${{ github.workspace }}/BinaryCache/0/bin/clang-tblgen${{ inputs.exe_suffix }}
-            ${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen${{ inputs.exe_suffix }}
-            ${{ github.workspace }}/BinaryCache/0/bin/llvm-config${{ inputs.exe_suffix }}
-            ${{ github.workspace }}/BinaryCache/0/bin/clang-pseudo-gen${{ inputs.exe_suffix }}
-            ${{ github.workspace }}/BinaryCache/0/bin/clang-tidy-confusable-chars-gen${{ inputs.exe_suffix }}
-            ${{ github.workspace }}/BinaryCache/0/bin/swift-def-to-strings-converter${{ inputs.exe_suffix }}
-            ${{ github.workspace }}/BinaryCache/0/bin/swift-serialize-diagnostics${{ inputs.exe_suffix }}
-            ${{ github.workspace }}/BinaryCache/0/bin/swift-compatibility-symbols${{ inputs.exe_suffix }}
+            ${{ steps.export-binary-paths.outputs.llvm_tblgen }}
+            ${{ steps.export-binary-paths.outputs.clang_tblgen }}
+            ${{ steps.export-binary-paths.outputs.lldb_tblgen }}
+            ${{ steps.export-binary-paths.outputs.llvm_config }}
+            ${{ steps.export-binary-paths.outputs.clang_pseudo_gen }}
+            ${{ steps.export-binary-paths.outputs.clang_tidy_confusable_chars_gen }}
+            ${{ steps.export-binary-paths.outputs.swift_def_to_strings_converter }}
+            ${{ steps.export-binary-paths.outputs.swift_serialize_diagnostics }}
+            ${{ steps.export-binary-paths.outputs.swift_compatibility_symbols }}
 
   compilers:
     # TODO: Build this on macOS or make an equivalent Mac-only job
