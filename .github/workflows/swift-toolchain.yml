@@ -494,11 +494,7 @@ jobs:
       - name: Export binary paths
         id: export-binary-paths
         run: |
-          if ( "${{ matrix.os }}" -eq "Windows" ) {
-            $Suffix = ".exe"
-          } else {
-            $Suffix = ""
-          }
+          $Suffix = if ( "${{ matrix.os }}" -eq "Windows" ) { ".exe" } else { "" }
           echo "llvm_tblgen=${{ github.workspace }}/BinaryCache/0/bin/llvm-tblgen${Suffix}" >> $env:GITHUB_OUTPUT
           echo "clang_tblgen=${{ github.workspace }}/BinaryCache/0/bin/clang-tblgen${Suffix}" >> $env:GITHUB_OUTPUT
           echo "lldb_tblgen=${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen${Suffix}" >> $env:GITHUB_OUTPUT
