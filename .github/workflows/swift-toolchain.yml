@@ -976,7 +976,7 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.target_matrix) }}
 
-    name: ${{ matrix.os }} ${{ matrix.arch }} Target libs
+    name: ${{ matrix.os }} ${{ matrix.arch }} Dependencies
 
     steps:
       # Setup build tools.
