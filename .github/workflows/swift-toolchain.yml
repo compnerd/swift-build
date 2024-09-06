@@ -969,7 +969,7 @@ jobs:
           symbolsFolder: ${{ github.workspace }}/BinaryCache/1
           searchPattern: '**/*.exe'
 
-  target_libs:
+  dependencies:
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
