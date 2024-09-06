@@ -969,23 +969,17 @@ jobs:
           symbolsFolder: ${{ github.workspace }}/BinaryCache/1
           searchPattern: '**/*.exe'
 
-  zlib:
+  target_libs:
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.target_matrix) }}
 
-    name: ${{ matrix.os }} ${{ matrix.arch }} zlib
+    name: ${{ matrix.os }} ${{ matrix.arch }} Target libs
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: madler/zlib
-          ref: ${{ inputs.zlib_revision }}
-          path: ${{ github.workspace }}/SourceCache/zlib
-          show-progress: false
-
+      # Setup build tools.
       - uses: compnerd/gha-setup-vsdevenv@main
         with:
           host_arch: amd64
@@ -1010,13 +1004,21 @@ jobs:
         uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
         with:
           max-size: 100M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-zlib
+          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-target-libs
           variant: sccache
 
       - uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
           ndk-version: ${{ inputs.ANDROID_NDK_VERSION }}
+
+      # Build zlib.
+      - uses: actions/checkout@v4
+        with:
+          repository: madler/zlib
+          ref: ${{ inputs.zlib_revision }}
+          path: ${{ github.workspace }}/SourceCache/zlib
+          show-progress: false
 
       - name: Configure zlib
         run: |
@@ -1052,60 +1054,13 @@ jobs:
           name: zlib-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.zlib_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
 
-  curl:
-    needs: [zlib]
-    runs-on: ${{ inputs.default_build_runner }}
-
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(inputs.target_matrix) }}
-
-    name: ${{ matrix.os }} ${{ matrix.arch }} curl
-
-    steps:
+      # Build curl.
       - uses: actions/checkout@v4
         with:
           repository: curl/curl
           ref: ${{ inputs.curl_revision }}
           path: ${{ github.workspace }}/SourceCache/curl
           show-progress: false
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: zlib-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.zlib_version }}
-          path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
-
-      - uses: compnerd/gha-setup-vsdevenv@main
-        with:
-          host_arch: amd64
-          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
-          arch: ${{ matrix.arch }}
-
-      - uses: seanmiddleditch/gha-setup-ninja@master
-        if: inputs.build_os == 'Darwin'
-
-      - name: Compute workspace hash
-        id: workspace_hash
-        run: |
-          $stringAsStream = [System.IO.MemoryStream]::new()
-          $writer = [System.IO.StreamWriter]::new($stringAsStream)
-          $writer.write("${{ github.workspace }}")
-          $writer.Flush()
-          $stringAsStream.Position = 0
-          $hash = (Get-FileHash -Algorithm SHA256 -InputStream $stringAsStream).Hash
-          echo "hash=$hash" >> $env:GITHUB_OUTPUT
-
-      - name: Setup sccache
-        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
-        with:
-          max-size: 100M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-curl
-          variant: sccache
-
-      - uses: nttld/setup-ndk@v1
-        id: setup-ndk
-        with:
-          ndk-version: ${{ inputs.ANDROID_NDK_VERSION }}
 
       - name: Configure curl
         run: |
@@ -1218,55 +1173,13 @@ jobs:
           name: curl-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.curl_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/curl-${{ inputs.curl_version }}/usr
 
-  libxml2:
-    runs-on: ${{ inputs.default_build_runner }}
-
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(inputs.target_matrix) }}
-
-    name: ${{ matrix.os }} ${{ matrix.arch }} libxml2
-
-    steps:
+      # Build libxml2.
       - uses: actions/checkout@v4
         with:
           repository: gnome/libxml2
           ref: ${{ inputs.libxml2_revision }}
           path: ${{ github.workspace }}/SourceCache/libxml2
           show-progress: false
-
-      - uses: compnerd/gha-setup-vsdevenv@main
-        with:
-          host_arch: amd64
-          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
-          arch: ${{ matrix.arch }}
-
-      - uses: seanmiddleditch/gha-setup-ninja@master
-        if: inputs.build_os == 'Darwin'
-
-      - name: Compute workspace hash
-        id: workspace_hash
-        shell: pwsh
-        run: |
-          $stringAsStream = [System.IO.MemoryStream]::new()
-          $writer = [System.IO.StreamWriter]::new($stringAsStream)
-          $writer.write("${{ github.workspace }}")
-          $writer.Flush()
-          $stringAsStream.Position = 0
-          $hash = (Get-FileHash -Algorithm SHA256 -InputStream $stringAsStream).Hash
-          echo "hash=$hash" >> $env:GITHUB_OUTPUT
-
-      - name: Setup sccache
-        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
-        with:
-          max-size: 100M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-libxml2
-          variant: sccache
-
-      - uses: nttld/setup-ndk@v1
-        id: setup-ndk
-        with:
-          ndk-version: ${{ inputs.ANDROID_NDK_VERSION }}
 
       - name: Configure libxml2
         run: |
@@ -1755,7 +1668,7 @@ jobs:
   sdk:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
-    needs: [libxml2, curl, zlib, compilers, cmark_gfm, stdlib, macros]
+    needs: [target_libs, compilers, cmark_gfm, stdlib, macros]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
