@@ -1668,7 +1668,7 @@ jobs:
   sdk:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
-    needs: [target_libs, compilers, cmark_gfm, stdlib, macros]
+    needs: [dependencies, compilers, cmark_gfm, stdlib, macros]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
