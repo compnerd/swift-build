@@ -763,249 +763,52 @@ jobs:
           branch: swift-6.0.1-release
           tag: 6.0.1-RELEASE
 
-      - name: Set up configuration context
-        id: context
+      - name: Build early swift-driver
         run: |
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $SDKROOT = "${env:SDKROOT}"
-            $SQLite3_lib = "${{ github.workspace }}/BuildRoot/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr/lib/SQLite3.lib"
-            $PlatformName = "windows"
+          swift build `
+                --configuration release `
+                --arch ${{ matrix.arch }} `
+                --package-path ${{ github.workspace }}/SourceCache/swift-driver `
+                --build-path ${{ github.workspace }}/BinaryCache/swift-driver `
+
+      - name: Create installable package
+        run: |
+          if ("${{ matrix.os }}" -eq "Darwin") {
+              $PlatformName = "windows"
+              $ExeSuffix = ""
+              $Cpu = "${{ matrix.arch }}"
+              $SourceBinDir = Join-Path "${{ github.workspace }}" "BinaryCache" "swift-driver" "${Cpu}-apple-macosx" "release"
           } else {
-            $SDKROOT = xcrun --sdk macosx --show-sdk-path
-            $SQLite3_lib = "${{ github.workspace }}/BuildRoot/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr/lib/libSQLite3.a"
-            $PlatformName = "macosx"
+              $PlatformName = "macosx"
+              $ExeSuffix = ".exe"
+              if ("${{ matrix.arch }}" -eq "ARM64") {
+                $Cpu = "aarch64"
+              } else {
+                $Cpu = "x86_64"
+              }
+              $SourceBinDir = Join-Path "${{ github.workspace }}" "BinaryCache" "swift-driver" "${Cpu}-unknown-windows-msvc" "release"
           }
 
           # The Swift compiler expects a specific folder name for the early swift-driver build.
           # TODO: Make this configurable upstream so we don't have to hardcode it here.
-          $InstallFolderName = "earlyswiftdriver-${PlatformName}-${{ matrix.arch }}"
+          $InstallFolderName = "earlyswiftdriver-${PlatformName}-${Cpu}"
+          $InstallBinDir = Join-Path "${{ github.workspace }}" "BinaryCache" $InstallFolderName "release" "bin"
 
-          echo "SDKROOT=$SDKROOT" >> $env:GITHUB_OUTPUT
-          echo "SQLite3_lib=$SQLite3_lib" >> $env:GITHUB_OUTPUT
-          echo "InstallFolderName=$InstallFolderName" >> $env:GITHUB_OUTPUT
-
-      - name: Configure swift-llbuild
-        run: |
-          cmake -B ${{ github.workspace }}/BinaryCache/swift-llbuild `
-                -D BUILD_SHARED_LIBS=YES `
-                -D BUILD_TESTING=NO `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_C_COMPILER=${{ matrix.cc }} `
-                -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
-                -D CMAKE_C_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_CXX_COMPILER=${{ matrix.cxx }} `
-                -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" `
-                -D CMAKE_CXX_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER=swiftc `
-                -D CMAKE_Swift_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER_WORKS=YES `
-                -D CMAKE_Swift_FLAGS="-sdk ${{ steps.context.outputs.SDKROOT }} ${{ matrix.swiftflags }}" `
-                -D CMAKE_Swift_FLAGS_RELEASE="-O" `
-                -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
-                ${{ matrix.extra_flags }} `
-                -G Ninja `
-                -S ${{ github.workspace }}/SourceCache/swift-llbuild `
-                -D LLBUILD_SUPPORT_BINDINGS=Swift `
-                -D SQLite3_LIBRARY=${{ steps.context.outputs.SQLite3_lib }} `
-                -D SQLite3_INCLUDE_DIR=${{ github.workspace }}/BuildRoot/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr/include
-      - name: Build swift-llbuild
-        run: cmake --build ${{ github.workspace }}/BinaryCache/swift-llbuild
-
-      - name: Configure swift-tools-support-core
-        run: |
-          cmake -B ${{ github.workspace }}/BinaryCache/swift-tools-support-core `
-                -D BUILD_SHARED_LIBS=YES `
-                -D BUILD_TESTING=NO `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_C_COMPILER=${{ matrix.cc }} `
-                -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
-                -D CMAKE_C_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_CXX_COMPILER=${{ matrix.cxx }} `
-                -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" `
-                -D CMAKE_CXX_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER=swiftc `
-                -D CMAKE_Swift_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER_WORKS=YES `
-                -D CMAKE_Swift_FLAGS="-sdk ${{ steps.context.outputs.SDKROOT }} ${{ matrix.swiftflags }}" `
-                -D CMAKE_Swift_FLAGS_RELEASE="-O" `
-                -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
-                ${{ matrix.extra_flags }} `
-                -G Ninja `
-                -S ${{ github.workspace }}/SourceCache/swift-tools-support-core `
-                -D SQLite3_LIBRARY=${{ steps.context.outputs.SQLite3_lib }} `
-                -D SQLite3_INCLUDE_DIR=${{ github.workspace }}/BuildRoot/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr/include
-      - name: Build swift-tools-support-core
-        run: cmake --build ${{ github.workspace }}/BinaryCache/swift-tools-support-core
-
-      - name: Configure swift-argument-parser
-        run: |
-          cmake -B ${{ github.workspace }}/BinaryCache/swift-argument-parser `
-                -D BUILD_SHARED_LIBS=YES `
-                -D BUILD_TESTING=NO `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_C_COMPILER=${{ matrix.cc }} `
-                -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
-                -D CMAKE_C_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_CXX_COMPILER=${{ matrix.cxx }} `
-                -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" `
-                -D CMAKE_CXX_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER=swiftc `
-                -D CMAKE_Swift_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER_WORKS=YES `
-                -D CMAKE_Swift_FLAGS="-sdk ${{ steps.context.outputs.SDKROOT }} ${{ matrix.swiftflags }}" `
-                -D CMAKE_Swift_FLAGS_RELEASE="-O" `
-                -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
-                ${{ matrix.extra_flags }} `
-                -G Ninja `
-                -S ${{ github.workspace }}/SourceCache/swift-argument-parser
-      - name: Build swift-argument-parser
-        run: cmake --build ${{ github.workspace }}/BinaryCache/swift-argument-parser
-
-      - name: Configure Yams
-        run: |
-          cmake -B ${{ github.workspace }}/BinaryCache/yams `
-                -D BUILD_SHARED_LIBS=NO `
-                -D BUILD_TESTING=NO `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_C_COMPILER=${{ matrix.cc }} `
-                -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
-                -D CMAKE_C_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_CXX_COMPILER=${{ matrix.cxx }} `
-                -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" `
-                -D CMAKE_CXX_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER=swiftc `
-                -D CMAKE_Swift_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER_WORKS=YES `
-                -D CMAKE_Swift_FLAGS="-sdk ${{ steps.context.outputs.SDKROOT }} ${{ matrix.swiftflags }}" `
-                -D CMAKE_Swift_FLAGS_RELEASE="-O" `
-                -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
-                ${{ matrix.extra_flags }} `
-                -G Ninja `
-                -S ${{ github.workspace }}/SourceCache/Yams
-      - name: Build Yams
-        run: cmake --build ${{ github.workspace }}/BinaryCache/yams
-
-      - name: Configure swift-driver
-        run: |
-          cmake -B ${{ github.workspace }}/BinaryCache/swift-driver `
-                -D BUILD_SHARED_LIBS=YES `
-                -D BUILD_TESTING=NO `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_C_COMPILER=${{ matrix.cc }} `
-                -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
-                -D CMAKE_C_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_CXX_COMPILER=${{ matrix.cxx }} `
-                -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" `
-                -D CMAKE_CXX_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER=swiftc `
-                -D CMAKE_Swift_COMPILER_TARGET=${{ matrix.compiler_target }} `
-                -D CMAKE_Swift_COMPILER_WORKS=YES `
-                -D CMAKE_Swift_FLAGS="-sdk ${{ steps.context.outputs.SDKROOT }} ${{ matrix.swiftflags }}" `
-                -D CMAKE_Swift_FLAGS_RELEASE="-O" `
-                -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
-                ${{ matrix.extra_flags }} `
-                -G Ninja `
-                -S ${{ github.workspace }}/SourceCache/swift-driver `
-                -D ArgumentParser_DIR=${{ github.workspace }}/BinaryCache/swift-argument-parser/cmake/modules `
-                -D LLBuild_DIR=${{ github.workspace }}/BinaryCache/swift-llbuild/cmake/modules `
-                -D TSC_DIR=${{ github.workspace }}/BinaryCache/swift-tools-support-core/cmake/modules `
-                -D Yams_DIR=${{ github.workspace }}/BinaryCache/yams/cmake/modules
-      - name: Build swift-driver
-        run: cmake --build ${{ github.workspace }}/BinaryCache/swift-driver
-
-      - name: Create installable package
-        run: |
-          $EarlySwiftDriverDir = Join-Path "${{ github.workspace }}" "BinaryCache" "${{ steps.context.outputs.InstallFolderName }}" "release"
-          $SourceBinDir = Join-Path "${{ github.workspace }}" "BinaryCache" "swift-driver" "bin"
-          $SwiftDriverSourceLibDir = Join-Path "${{ github.workspace }}" "BinaryCache" "swift-driver" "lib"
-          $SwiftTSCSourceLibDir = Join-Path "${{ github.workspace }}" "BinaryCache" "swift-tools-support-core" "lib"
-          $SwiftllbuildSourceLibDir = Join-Path "${{ github.workspace }}" "BinaryCache" "swift-llbuild" "lib"
-          $SwiftArgumentParserSourceLibDir = Join-Path "${{ github.workspace }}" "BinaryCache" "swift-argument-parser" "lib"
-          $InstallBinDir = Join-Path $EarlySwiftDriverDir "bin"
-          $SwiftBinaries = @("swift-driver", "swift-help")
-          $SwiftDriverSharedLibs = @("SwiftDriverExecution", "SwiftDriver", "SwiftOptions")
-          $SwiftTSCSharedLibs = @("TSCUtility", "TSCBasic")
-          $SwiftllbuildSharedLibs = @("llbuildSwift")
-          $SwiftArgumentParserSharedLibs = @("ArgumentParser")
-
-          if ("${{ matrix.os }}" -eq "Darwin") {
-              $InstallLibDir = Join-Path $EarlySwiftDriverDir "lib" "swift" "macosx"
-              $ExeSuffix = ""
-              $SharedLibsSuffix = ".dylib"
-              $SharedLibsPrefix = "lib"
-
-              # This is where Apple toolchains install the Swift libraries.
-              $rpath = "@executable_path/../lib/swift/macosx"
-          } else {
-              $InstallLibDir = $SourceBinDir
-              $ExeSuffix = ".exe"
-              $SharedLibsSuffix = ".dll"
-              $SharedLibsPrefix = ""
-          }
-
-          # Create folders.
+          # Create the target folder.
           New-Item -ItemType Directory -Path $InstallBinDir -Force
-          New-Item -ItemType Directory -Path $InstallLibDir -Force
 
           # Copy binaries.
+          $SwiftBinaries = @("swift-driver", "swift-help")
           foreach ($bin in $SwiftBinaries) {
               $binName = "${bin}${ExeSuffix}"
               $binPath = Join-Path $InstallBinDir $binName
               Copy-Item -Path "${SourceBinDir}/${binName}" -Destination $binPath -Force
-
-              if ("${{ matrix.os }}" -eq "Darwin") {
-                  # Fix absolute rpath in the binaries.
-                  install_name_tool -delete_rpath $SwiftDriverSourceLibDir $binPath
-                  install_name_tool -delete_rpath $SwiftTSCSourceLibDir $binPath
-                  if ($bin -eq "swift-help") {
-                      install_name_tool -delete_rpath $SwiftArgumentParserSourceLibDir $binPath
-                  }
-                  install_name_tool -add_rpath $rpath $binPath
-              }
-          }
-
-          # Copy libraries.
-          foreach ($lib in $SwiftDriverSharedLibs) {
-              $libName = "${SharedLibsPrefix}${lib}${SharedLibsSuffix}"
-              $libPath = Join-Path $InstallLibDir $libName
-              Copy-Item -Path "${SwiftDriverSourceLibDir}/${libName}" -Destination $libPath -Force
-
-              if ("${{ matrix.os }}" -eq "Darwin") {
-                  # Fix absolute rpath in the libraries.
-                  install_name_tool -delete_rpath $SwiftTSCSourceLibDir $libPath
-                  if ($lib -ne "SwiftOptions") {
-                      install_name_tool -delete_rpath $SwiftDriverSourceLibDir $libPath
-                  }
-                  if ($lib -eq "SwiftDriverExecution") {
-                      install_name_tool -delete_rpath $SwiftllbuildSourceLibDir $libPath
-                  }
-              }
-          }
-          foreach ($lib in $SwiftTSCSharedLibs) {
-              $libName = "${SharedLibsPrefix}${lib}${SharedLibsSuffix}"
-              $libPath = Join-Path $InstallLibDir $libName
-              Copy-Item -Path "${SwiftTSCSourceLibDir}/${libName}" -Destination $libPath -Force
-
-              if ("${{ matrix.os }}" -eq "Darwin" -and $lib -eq "TSCUtility") {
-                  # Fix absolute rpath in the libraries.
-                  install_name_tool -delete_rpath $SwiftTSCSourceLibDir $libPath
-              }
-          }
-          foreach ($lib in $SwiftllbuildSharedLibs) {
-              $libName = "${SharedLibsPrefix}${lib}${SharedLibsSuffix}"
-              $libPath = Join-Path $InstallLibDir $libName
-              Copy-Item -Path "${SwiftllbuildSourceLibDir}/${libName}" -Destination $libPath -Force
-          }
-          foreach ($lib in $SwiftArgumentParserSharedLibs) {
-              $libName = "${SharedLibsPrefix}${lib}${SharedLibsSuffix}"
-              $libPath = Join-Path $InstallLibDir $libName
-              Copy-Item -Path "${SwiftArgumentParserSourceLibDir}/${libName}" -Destination $libPath -Force
           }
 
           # Create an archive to preserve permissions.
           tar -czf "${{ github.workspace }}/BinaryCache/early-swift-driver.tar.gz" `
               -C "${{ github.workspace }}/BinaryCache" `
-              ${{ steps.context.outputs.InstallFolderName }}
+              $InstallFolderName
 
       - uses: actions/upload-artifact@v4
         with:
