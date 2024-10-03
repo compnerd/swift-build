@@ -756,7 +756,6 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@master
         if: inputs.build_os == 'Darwin'
 
-      # TODO: Use the TBC builds once we have a Mac toolchain release.
       - name: Install Swift Toolchain (Mac)
         if: inputs.build_os == 'Darwin'
         uses: compnerd/gha-setup-swift@main
@@ -778,6 +777,7 @@ jobs:
           }
 
           # The Swift compiler expects a specific folder name for the early swift-driver build.
+          # TODO: Make this configurable upstream so we don't have to hardcode it here.
           $InstallFolderName = "earlyswiftdriver-${PlatformName}-${{ matrix.arch }}"
 
           echo "SDKROOT=$SDKROOT" >> $env:GITHUB_OUTPUT
