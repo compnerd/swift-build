@@ -774,12 +774,12 @@ jobs:
       - name: Create installable package
         run: |
           if ("${{ matrix.os }}" -eq "Darwin") {
-              $PlatformName = "windows"
+              $PlatformName = "macosx"
               $ExeSuffix = ""
               $Cpu = "${{ matrix.arch }}"
               $SourceBinDir = Join-Path "${{ github.workspace }}" "BinaryCache" "swift-driver" "${Cpu}-apple-macosx" "release"
           } else {
-              $PlatformName = "macosx"
+              $PlatformName = "windows"
               $ExeSuffix = ".exe"
               if ("${{ matrix.arch }}" -eq "ARM64") {
                 $Cpu = "aarch64"
