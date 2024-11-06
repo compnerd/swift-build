@@ -503,9 +503,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: '.github/actions'
-      - uses: actions/checkout@v4
-        with:
           repository: swiftlang/swift-cmark
           ref: ${{ inputs.swift_cmark_revision }}
           path: ${{ github.workspace }}/SourceCache/cmark-gfm
@@ -560,7 +557,7 @@ jobs:
         run: cmake --build ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }}
       - name: Install cmark-gfm
         run: cmake --build ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }} --target install
-      - uses: ./.github/actions/upload-directory
+      - uses: thebrowsercompany/gha-upload-tar-artifact@main
         with:
           name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
@@ -576,10 +573,7 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} Compiler Build Tools
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: '.github/actions'
-      - uses: ./.github/actions/download-directory
+      - uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
@@ -697,7 +691,7 @@ jobs:
             Copy-Item -Path "${{ github.workspace }}/BinaryCache/0/bin/${Binary}" -Destination "${{ github.workspace }}/BuildRoot/bin/${Binary}" -Force
           }
 
-      - uses: ./.github/actions/upload-directory
+      - uses: thebrowsercompany/gha-upload-tar-artifact@main
         with:
           name: build-tools-${{ matrix.os }}
           path: ${{ github.workspace }}/BuildRoot/bin
@@ -715,10 +709,6 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} Early Swift Driver
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: '.github/actions'
-
       - uses: actions/download-artifact@v4
         with:
           name: sqlite-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_toolchain_sqlite_version }}
@@ -813,7 +803,7 @@ jobs:
               Copy-Item -Path "${SourceBinDir}/${binName}" -Destination $binPath -Force
           }
 
-      - uses: ./.github/actions/upload-directory
+      - uses: thebrowsercompany/gha-upload-tar-artifact@main
         with:
           name: early-swift-driver-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot
@@ -839,25 +829,18 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.host_matrix) }}
 
-    defaults:
-      run:
-        shell: pwsh
-
     name: ${{ matrix.os }} ${{ matrix.arch }} Toolchain
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: '.github/actions'
-      - uses: ./.github/actions/download-directory
+      - uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: build-tools-${{ matrix.os }}
           path: ${{ github.workspace }}/BinaryCache/0/bin
-      - uses: ./.github/actions/download-directory
+      - uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BinaryCache/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
-      - uses: ./.github/actions/download-directory
+      - uses: thebrowsercompany/gha-download-tar-artifact@main
         if: matrix.os == 'Darwin'
         with:
           name: early-swift-driver-${{ matrix.os }}-${{ matrix.arch }}
@@ -980,16 +963,20 @@ jobs:
             $SWIFTC = cygpath -m (Get-Command swiftc).Source
             # Use toolchain clang to avoid broken __prefetch intrinsic on arm64 in Clang 18.
             $CLANG_LOCATION = Split-Path (Get-Command swiftc).Source
-            $EXTRA_FLAGS = "-D SWIFT_NATIVE_SWIFT_TOOLS_PATH=${{ github.workspace }}/BinaryCache/0/bin"
+            $EXTRA_FLAGS = @(
+              "-D",
+              "SWIFT_NATIVE_SWIFT_TOOLS_PATH=${{ github.workspace }}/BinaryCache/0/bin"
+            )
             if ( "${{ matrix.arch }}" -eq "arm64" ) {
-              $EXTRA_FLAGS += " ${{ matrix.extra_flags }} -D CMAKE_SYSTEM_NAME=Windows"
+              $EXTRA_FLAGS += "${{ matrix.extra_flags }}".Split()
+              $EXTRA_FLAGS += @("-D", "CMAKE_SYSTEM_NAME=Windows")
               $CACHE="${{ github.workspace }}/SourceCache/swift/cmake/caches/Windows-aarch64.cmake"
 
               # FIXME(compnerd) re-enable runtimes after we sort out compiler-rt
               (Get-Content ${{ github.workspace }}/SourceCache/swift/cmake/caches/Windows-aarch64.cmake).Replace(' runtimes', '') | Set-Content ${{ github.workspace }}/SourceCache/swift/cmake/caches/Windows-aarch64.cmake
             } else {
-              # FIXME(Steelskin) Setting `CMAKE_SYSTEM_PROCESSOR=AMD64` breaks the compiler-rt build.
-              $EXTRA_FLAGS += " -D CMAKE_MT=mt"
+              # FIXME(steelskin) Setting `CMAKE_SYSTEM_PROCESSOR` and `CMAKE_SYSTEM_NAME` breaks the compiler-rt build.
+              $EXTRA_FLAGS += @("-D", "CMAKE_MT=mt")
               $CACHE="${{ github.workspace }}/SourceCache/swift/cmake/caches/Windows-x86_64.cmake"
             }
             $CC = "cl"
@@ -1009,7 +996,8 @@ jobs:
             $CXX = Join-Path $CLANG_LOCATION "clang++"
             $CACHE = "${{ github.workspace }}/SourceCache/swift-build/Darwin-${{ matrix.arch }}.cmake"
             $SDKROOT = xcrun --sdk macosx --show-sdk-path
-            $EXTRA_FLAGS = "${{ matrix.extra_flags }} -D CMAKE_SYSTEM_NAME=Darwin"
+            $EXTRA_FLAGS = "${{ matrix.extra_flags }}".Split()
+            $EXTRA_FLAGS += @("-D", "CMAKE_SYSTEM_NAME=Darwin")
             $LIBPYTHON_PATH = "${env:pythonLocation}/lib/python3.9/config-3.9-darwin/libpython3.9.a"
             $PYTHON_INCLUDE_DIR = "${env:pythonLocation}/include/python3.9"
             $ExeSuffix = ""
@@ -1019,7 +1007,6 @@ jobs:
           $LldbTablegen = "${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen${ExeSuffix}"
           $LlvmConfig = "${{ github.workspace }}/BinaryCache/0/bin/llvm-config${ExeSuffix}"
           $LlvmTablegen = "${{ github.workspace }}/BinaryCache/0/bin/llvm-tblgen${ExeSuffix}"
-          $EXTRA_FLAGS = $EXTRA_FLAGS.split()
           cmake -B ${{ github.workspace }}/BinaryCache/1 `
                 -C "${CACHE}" `
                 -D CMAKE_BUILD_TYPE=Release `
@@ -1093,7 +1080,7 @@ jobs:
           }
 
       - name: Upload Compilers
-        uses: ./.github/actions/upload-directory
+        uses: thebrowsercompany/gha-upload-tar-artifact@main
         with:
           name: compilers-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
@@ -1118,7 +1105,7 @@ jobs:
           Copy-Item -Path $module -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules"
 
       - name: Upload swift-syntax
-        uses: ./.github/actions/upload-directory
+        uses: thebrowsercompany/gha-upload-tar-artifact@main
         with:
           name: swift-syntax-${{matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
@@ -1605,12 +1592,8 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} Standard Library
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: '.github/actions'
-
       - name: Download Compilers
-        uses: ./.github/actions/download-directory
+        uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
@@ -1782,7 +1765,7 @@ jobs:
   macros:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: always() && inputs.build_os == 'Windows' && needs.stdlib.result == 'success'
-    needs: [stdlib]
+    needs: [compilers, cmark_gfm, stdlib]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -1800,17 +1783,13 @@ jobs:
     name: Windows ${{ matrix.arch }} Macros
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: '.github/actions'
-
       - name: Download Compilers
-        uses: ./.github/actions/download-directory
+        uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - name: Download swift-syntax
-        uses: ./.github/actions/download-directory
+        uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: swift-syntax-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
@@ -1827,7 +1806,6 @@ jobs:
         with:
           name: windows-vfs-overlay-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift/stdlib
-
       - uses: actions/checkout@v4
         with:
           repository: swiftlang/swift
@@ -1935,7 +1913,7 @@ jobs:
   sdk:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: always() && inputs.build_os == 'Windows' && needs.macros.result == 'success'
-    needs: [libxml2, curl, zlib, cmark_gfm, stdlib, macros]
+    needs: [libxml2, curl, zlib, compilers, cmark_gfm, stdlib, macros]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -2036,10 +2014,6 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} SDK
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: '.github/actions'
-
       - uses: actions/download-artifact@v4
         with:
           name: libxml2-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.libxml2_version }}
@@ -2054,7 +2028,7 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
 
       - name: Download Compilers
-        uses: ./.github/actions/download-directory
+        uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
@@ -2075,7 +2049,6 @@ jobs:
         with:
           name: macros-amd64
           path: ${{ github.workspace }}/BinaryCache/Library
-
       - uses: actions/checkout@v4
         with:
           repository: apple/swift-corelibs-libdispatch
@@ -2426,7 +2399,7 @@ jobs:
   devtools:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: always() && inputs.build_os == 'Windows' && needs.sdk.result == 'success'
-    needs: [sqlite, stdlib, sdk]
+    needs: [sqlite, compilers, stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -2444,17 +2417,13 @@ jobs:
     name: Windows ${{ matrix.arch }} Developer Tools
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: '.github/actions'
-
       - uses: actions/download-artifact@v4
         with:
           name: sqlite-Windows-${{ matrix.arch }}-${{ inputs.swift_toolchain_sqlite_version }}
           path: ${{ github.workspace }}/BinaryCache/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr
 
       - name: Download Compilers
-        uses: ./.github/actions/download-directory
+        uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
@@ -2470,11 +2439,11 @@ jobs:
         with:
           name: macros-amd64
           path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: ./.github/actions/download-directory
+      - uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: swift-syntax-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
-      - uses: ./.github/actions/download-directory
+      - uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: cmark-gfm-Windows-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BinaryCache/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
@@ -3141,7 +3110,7 @@ jobs:
   debugging_tools:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: always() && inputs.build_os == 'Windows' && needs.devtools.result == 'success'
-    needs: [devtools, stdlib, sdk]
+    needs: [compilers, devtools, stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -3158,12 +3127,8 @@ jobs:
     name: Windows ${{ matrix.arch }} Debugging Tools
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: '.github/actions'
-
       - name: Download Compilers
-        uses: ./.github/actions/download-directory
+        uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
@@ -3286,7 +3251,7 @@ jobs:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: always() && inputs.build_os == 'Windows' && needs.debugging_tools.result == 'success'
     name: Package Tools
-    needs: [macros, debugging_tools, devtools]
+    needs: [compilers, macros, debugging_tools, devtools]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -3295,25 +3260,23 @@ jobs:
         arch: ['amd64' , 'arm64']
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: '.github/actions'
-
       - name: Download Debugging Tools
         uses: actions/download-artifact@v4
         with:
           name: debugging_tools-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/DebuggingTools
       - name: Download Compilers
-        uses: ./.github/actions/download-directory
+        uses: thebrowsercompany/gha-download-tar-artifact@main
         with:
           name: compilers-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
+
       - name: Download Developer Tools
         uses: actions/download-artifact@v4
         with:
           name: devtools-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
+
       - name: Download Macros
         uses: actions/download-artifact@v4
         with:
@@ -3663,7 +3626,7 @@ jobs:
   installer:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: |
-      always() && 
+      always() &&
       inputs.build_os == 'Windows' &&
       needs.package_tools.result == 'success' &&
       needs.package_windows_sdk_runtime.result == 'success' &&
