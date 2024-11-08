@@ -1085,22 +1085,23 @@ jobs:
           name: compilers-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
 
-      - name: extract swift-syntax
+      - name: Extract swift-syntax
         run: |
-          $bindir = "${{ github.workspace }}/BinaryCache/1"
+          New-Item -Path ${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host -ItemType Directory | Out-Null
           if ("${{ matrix.os }}" -eq "Windows") {
-            $libSuffix = ".lib"
-            $bindir = cygpath -m "${bindir}"
+            $bindir = cygpath -m "${{ github.workspace }}/BinaryCache/1"
+            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/*.lib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib"
+            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/*.lib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host"
+            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/swift/host/*.swiftmodule" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host" -Recurse
           } else {
-            $libSuffix = ".dylib"
+            $bindir = "${{ github.workspace }}/BinaryCache/1"
+            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/*.dylib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib"
+            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/swift/host/*.dylib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host"
+            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/swift/host/*.swiftmodule" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host" -Recurse
           }
 
           $module = "${{ github.workspace }}/BinaryCache/1/cmake/modules/SwiftSyntaxConfig.cmake"
           (Get-Content $module).Replace("${bindir}", '<BINARY_DIR>') | Set-Content $module
-          New-Item -Path ${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host -ItemType Directory | Out-Null
-          Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/*${libSuffix}" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib"
-          Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/*${libSuffix}" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host"
-          Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/swift/host/*.swiftmodule" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host" -Recurse
           New-Item -Path ${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules -ItemType Directory | Out-Null
           Copy-Item -Path $module -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules"
 
