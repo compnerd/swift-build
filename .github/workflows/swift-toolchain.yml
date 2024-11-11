@@ -674,21 +674,21 @@ jobs:
         run: |
           $Suffix = if ( "${{ matrix.os }}" -eq "Windows" ) { ".exe" } else { "" }
           $Binaries = @(
-            "llvm-tblgen${Suffix}",
-            "clang-tblgen${Suffix}",
-            "lldb-tblgen${Suffix}",
-            "llvm-config${Suffix}",
-            "clang-pseudo-gen${Suffix}",
-            "clang-tidy-confusable-chars-gen${Suffix}",
-            "swift-def-to-strings-converter${Suffix}",
-            "swift-serialize-diagnostics${Suffix}",
-            "swift-compatibility-symbols${Suffix}"
+            "llvm-tblgen",
+            "clang-tblgen",
+            "lldb-tblgen",
+            "llvm-config",
+            "clang-pseudo-gen",
+            "clang-tidy-confusable-chars-gen",
+            "swift-def-to-strings-converter",
+            "swift-serialize-diagnostics",
+            "swift-compatibility-symbols"
           )
 
           # Create the target folder.
           New-Item -ItemType Directory -Path "${{ github.workspace }}/BuildRoot/bin" -Force | Out-Null
           foreach ($Binary in $Binaries) {
-            Copy-Item -Path "${{ github.workspace }}/BinaryCache/0/bin/${Binary}" -Destination "${{ github.workspace }}/BuildRoot/bin/${Binary}" -Force
+            Copy-Item -Path "${{ github.workspace }}/BinaryCache/0/bin/${Binary}${Suffix}" -Destination "${{ github.workspace }}/BuildRoot/bin/${Binary}${Suffix}" -Force
           }
 
       - uses: thebrowsercompany/gha-upload-tar-artifact@main
