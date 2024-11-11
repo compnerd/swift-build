@@ -291,7 +291,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -514,7 +514,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -557,7 +557,7 @@ jobs:
         run: cmake --build ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }}
       - name: Install cmark-gfm
         run: cmake --build ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }} --target install
-      - uses: thebrowsercompany/gha-upload-tar-artifact@main
+      - uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
         with:
           name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
@@ -573,7 +573,7 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} Compiler Build Tools
 
     steps:
-      - uses: thebrowsercompany/gha-download-tar-artifact@main
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
@@ -593,7 +593,7 @@ jobs:
 
       - uses: compnerd/gha-setup-vsdevenv@main
 
-      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -691,7 +691,7 @@ jobs:
             Copy-Item -Path "${{ github.workspace }}/BinaryCache/0/bin/${Binary}${Suffix}" -Destination "${{ github.workspace }}/BuildRoot/bin/${Binary}${Suffix}" -Force
           }
 
-      - uses: thebrowsercompany/gha-upload-tar-artifact@main
+      - uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
         with:
           name: build-tools-${{ matrix.os }}
           path: ${{ github.workspace }}/BuildRoot/bin
@@ -751,12 +751,12 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
         if: inputs.build_os == 'Darwin'
 
       - name: Install Swift Toolchain (Mac)
         if: inputs.build_os == 'Darwin'
-        uses: compnerd/gha-setup-swift@main
+        uses: compnerd/gha-setup-swift@b6c5fc1
         with:
           branch: swift-6.0.1-release
           tag: 6.0.1-RELEASE
@@ -803,13 +803,15 @@ jobs:
               Copy-Item -Path "${SourceBinDir}/${binName}" -Destination $binPath -Force
           }
 
-      - uses: thebrowsercompany/gha-upload-tar-artifact@main
+      - uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
         with:
           name: early-swift-driver-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot
 
   compilers:
     needs: [build_tools, cmark_gfm, early_swift_driver]
+    # We need to manually check for earlier jobs successes here because early_swift_driver is not
+    # currently run on Windows.
     if: |
       always() &&
       needs.build_tools.result == 'success' &&
@@ -832,15 +834,15 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} Toolchain
 
     steps:
-      - uses: thebrowsercompany/gha-download-tar-artifact@main
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: build-tools-${{ matrix.os }}
           path: ${{ github.workspace }}/BinaryCache/0/bin
-      - uses: thebrowsercompany/gha-download-tar-artifact@main
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: cmark-gfm-${{ matrix.os }}-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BinaryCache/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
-      - uses: thebrowsercompany/gha-download-tar-artifact@main
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
         if: matrix.os == 'Darwin'
         with:
           name: early-swift-driver-${{ matrix.os }}-${{ matrix.arch }}
@@ -876,10 +878,6 @@ jobs:
           ref: ${{ inputs.swift_corelibs_libdispatch_revision }}
           path: ${{ github.workspace }}/SourceCache/swift-corelibs-libdispatch
           show-progress: false
-      - uses: actions/checkout@v4
-        if: matrix.os == 'Darwin'
-        with:
-          path: ${{ github.workspace }}/SourceCache/swift-build
 
       - name: Install Python ${{ env.PYTHON_VERSION }} (Host)
         uses: actions/setup-python@v5
@@ -888,11 +886,11 @@ jobs:
           python-version: '${{ env.PYTHON_VERSION }}'
 
       - uses: nuget/setup-nuget@v2
-        if: matrix.arch == 'arm64' && inputs.build_os == 'Windows'
+        if: inputs.build_os == 'Windows' && matrix.arch == 'arm64'
 
       # TODO(lxbndr) use actions/cache to improve this step timings
       - name: Install Python ${{ env.PYTHON_VERSION_FULL }} (Windows arm64)
-        if: matrix.arch == 'arm64' && inputs.build_os == 'Windows'
+        if: inputs.build_os == 'Windows' && matrix.arch == 'arm64'
         run: |
           $NugetSources=[string](nuget Sources List -Format short)
           if (-Not ($NugetSources.contains("api.nuget.org"))) {
@@ -912,12 +910,12 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
         if: inputs.build_os == 'Darwin'
 
       - name: Install Swift Toolchain (Windows)
         if: inputs.build_os == 'Windows'
-        uses: compnerd/gha-setup-swift@main
+        uses: compnerd/gha-setup-swift@b6c5fc1
         with:
           github-repo: thebrowsercompany/swift-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -926,7 +924,7 @@ jobs:
 
       - name: Install Swift Toolchain (Mac)
         if: inputs.build_os == 'Darwin'
-        uses: compnerd/gha-setup-swift@main
+        uses: compnerd/gha-setup-swift@b6c5fc1
         with:
           branch: swift-6.0.1-release
           tag: 6.0.1-RELEASE
@@ -959,9 +957,13 @@ jobs:
         env:
           NDKPATH: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
+          $CxxFlags = "${{ matrix.cxxflags }}
+          $SwiftFlags = ""
+
           if ( "${{ matrix.os }}" -eq "Windows" ) {
             $SWIFTC = cygpath -m (Get-Command swiftc).Source
             # Use toolchain clang to avoid broken __prefetch intrinsic on arm64 in Clang 18.
+            # TODO: Use llvm-19 when available. See https://github.com/compnerd/swift-build/issues/846
             $CLANG_LOCATION = Split-Path (Get-Command swiftc).Source
             $EXTRA_FLAGS = @(
               "-D",
@@ -981,32 +983,43 @@ jobs:
             }
             $CC = "cl"
             $CXX = "cl"
+
+            # Workaround for compiler and STL version mismatch on Windows.
+            $CxxFlags += " -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH"
+            $SwiftFlags += " -Xcc -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH"
+
             $SDKROOT = cygpath -m ${env:SDKROOT}
             $CLANG_LOCATION = cygpath -m $CLANG_LOCATION
             $LIBPYTHON_PATH = "${env:PYTHON_LOCATION_${{ matrix.arch }}}/libs/python39.lib"
             $PYTHON_INCLUDE_DIR = "${env:PYTHON_LOCATION_${{ matrix.arch }}}/include"
+            $PYTHON_BINARY="python.exe"
             $ExeSuffix = ".exe"
             Remove-Item env:\SDKROOT
           } elseif ( "${{ matrix.os }}" -eq "Darwin" ) {
             # Default swiftc comes from /usr/bin and is not compatible with the toolchain.
             $CLANG_LOCATION = "${env:HOME}/Library/Developer/Toolchains/swift-6.0.1-RELEASE.xctoolchain/usr/bin"
             $SWIFTC = Join-Path $CLANG_LOCATION "swiftc"
+
             # We need to use llvm-17 to build the compiler on macOS. We get it from the Swift toolchain.
             $CC = Join-Path $CLANG_LOCATION "clang"
             $CXX = Join-Path $CLANG_LOCATION "clang++"
-            $CACHE = "${{ github.workspace }}/SourceCache/swift-build/Darwin-${{ matrix.arch }}.cmake"
+            $CACHE = "${{ github.workspace }}/SourceCache/swift/cmake/caches/Darwin-${{ matrix.arch }}.cmake"
             $SDKROOT = xcrun --sdk macosx --show-sdk-path
             $EXTRA_FLAGS = "${{ matrix.extra_flags }}".Split()
             $EXTRA_FLAGS += @("-D", "CMAKE_SYSTEM_NAME=Darwin")
             $LIBPYTHON_PATH = "${env:pythonLocation}/lib/python3.9/config-3.9-darwin/libpython3.9.a"
             $PYTHON_INCLUDE_DIR = "${env:pythonLocation}/include/python3.9"
+            $PYTHON_BINARY="python3"
             $ExeSuffix = ""
           }
-          $ClangTablegen = "${{ github.workspace }}/BinaryCache/0/bin/clang-tblgen${ExeSuffix}"
-          $ClangTidyConfusableCharsGen = "${{ github.workspace }}/BinaryCache/0/bin/clang-tidy-confusable-chars-gen${ExeSuffix}"
-          $LldbTablegen = "${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen${ExeSuffix}"
-          $LlvmConfig = "${{ github.workspace }}/BinaryCache/0/bin/llvm-config${ExeSuffix}"
-          $LlvmTablegen = "${{ github.workspace }}/BinaryCache/0/bin/llvm-tblgen${ExeSuffix}"
+
+          $SwiftFlags += " -sdk `"${SDKROOT}`""
+          $CLANG_TBLGEN = "${{ github.workspace }}/BinaryCache/0/bin/clang-tblgen${ExeSuffix}"
+          $CLANG_TIDY_CONFUSABLE_CHARS_GEN = "${{ github.workspace }}/BinaryCache/0/bin/clang-tidy-confusable-chars-gen${ExeSuffix}"
+          $LLDB_TBLGEN = "${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen${ExeSuffix}"
+          $LLVM_CONFIG = "${{ github.workspace }}/BinaryCache/0/bin/llvm-config${ExeSuffix}"
+          $LLVM_TBLGEN = "${{ github.workspace }}/BinaryCache/0/bin/llvm-tblgen${ExeSuffix}"
+
           cmake -B ${{ github.workspace }}/BinaryCache/1 `
                 -C "${CACHE}" `
                 -D CMAKE_BUILD_TYPE=Release `
@@ -1015,22 +1028,22 @@ jobs:
                 -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
                 -D CMAKE_CXX_COMPILER="${CXX}" `
                 -D CMAKE_CXX_COMPILER_LAUNCHER=sccache `
-                -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }} -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH" `
+                -D CMAKE_CXX_FLAGS="${CxxFlags}" `
                 -D CMAKE_Swift_COMPILER="${SWIFTC}" `
                 -D CMAKE_Swift_COMPILER_WORKS=YES `
-                -D CMAKE_Swift_FLAGS="-sdk `"${SDKROOT}`" -Xcc -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH" `
+                -D CMAKE_Swift_FLAGS="${SwiftFlags}" `
                 ${{ matrix.cmake_linker_flags }} `
                 -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr `
                 @EXTRA_FLAGS `
                 -G Ninja `
                 -S ${{ github.workspace }}/SourceCache/llvm-project/llvm `
-                -D CLANG_TABLEGEN="${ClangTablegen}" `
-                -D CLANG_TIDY_CONFUSABLE_CHARS_GEN="${ClangTidyConfusableCharsGen}" `
-                -D LLDB_TABLEGEN="${LldbTablegen}" `
-                -D LLVM_CONFIG_PATH="${LlvmConfig}" `
+                -D CLANG_TABLEGEN="${CLANG_TBLGEN}" `
+                -D CLANG_TIDY_CONFUSABLE_CHARS_GEN="${CLANG_TIDY_CONFUSABLE_CHARS_GEN}" `
+                -D LLDB_TABLEGEN="${LLDB_TBLGEN}" `
+                -D LLVM_CONFIG_PATH="${LLVM_CONFIG}" `
                 -D LLVM_EXTERNAL_SWIFT_SOURCE_DIR=${{ github.workspace }}/SourceCache/swift `
                 -D LLVM_NATIVE_TOOL_DIR=${{ github.workspace }}/BinaryCache/0/bin `
-                -D LLVM_TABLEGEN="${LlvmTablegen}" `
+                -D LLVM_TABLEGEN="${LLVM_TBLGEN}" `
                 -D LLVM_USE_HOST_TOOLS=NO `
                 -D SWIFT_BUILD_DYNAMIC_SDK_OVERLAY=NO `
                 -D SWIFT_BUILD_DYNAMIC_STDLIB=NO `
@@ -1057,7 +1070,7 @@ jobs:
                 -D SWIFT_PARALLEL_LINK_JOBS=2 `
                 -D LLVM_APPEND_VC_REV=NO `
                 -D LLVM_VERSION_SUFFIX="" `
-                -D LLDB_PYTHON_EXE_RELATIVE_PATH=python3${ExeSuffix} `
+                -D LLDB_PYTHON_EXE_RELATIVE_PATH=${PYTHON_BINARY} `
                 -D LLDB_PYTHON_EXT_SUFFIX=.pyd `
                 -D LLDB_PYTHON_RELATIVE_PATH=lib/site-packages `
                 -D Python3_EXECUTABLE=${{ steps.python.outputs.python-path }} `
@@ -1080,7 +1093,7 @@ jobs:
           }
 
       - name: Upload Compilers
-        uses: thebrowsercompany/gha-upload-tar-artifact@main
+        uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
         with:
           name: compilers-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
@@ -1088,17 +1101,17 @@ jobs:
       - name: Extract swift-syntax
         run: |
           New-Item -Path ${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host -ItemType Directory | Out-Null
+          $ToolchainRoot = "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain"
           if ("${{ matrix.os }}" -eq "Windows") {
             $bindir = cygpath -m "${{ github.workspace }}/BinaryCache/1"
-            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/*.lib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib"
-            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/*.lib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host"
-            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/swift/host/*.swiftmodule" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host" -Recurse
+            Copy-Item -Path "${ToolchainRoot}/usr/lib/*.lib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib"
+            Copy-Item -Path "${ToolchainRoot}/usr/lib/*.lib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host"
           } else {
             $bindir = "${{ github.workspace }}/BinaryCache/1"
-            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/*.dylib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib"
-            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/swift/host/*.dylib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host"
-            Copy-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/lib/swift/host/*.swiftmodule" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host" -Recurse
+            Copy-Item -Path "${ToolchainRoot}/usr/lib/*.dylib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib"
+            Copy-Item -Path "${ToolchainRoot}/usr/lib/swift/host/*.dylib" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host"
           }
+          Copy-Item -Path "${ToolchainRoot}/lib/swift/host/*.swiftmodule" -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/lib/swift/host" -Recurse
 
           $module = "${{ github.workspace }}/BinaryCache/1/cmake/modules/SwiftSyntaxConfig.cmake"
           (Get-Content $module).Replace("${bindir}", '<BINARY_DIR>') | Set-Content $module
@@ -1106,7 +1119,7 @@ jobs:
           Copy-Item -Path $module -Destination "${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules"
 
       - name: Upload swift-syntax
-        uses: thebrowsercompany/gha-upload-tar-artifact@main
+        uses: thebrowsercompany/gha-upload-tar-artifact@d8f9b9d
         with:
           name: swift-syntax-${{matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
@@ -1169,7 +1182,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -1257,7 +1270,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -1416,7 +1429,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6e
         if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
@@ -1594,7 +1607,7 @@ jobs:
 
     steps:
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@main
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
@@ -1629,7 +1642,7 @@ jobs:
       # we have not yet built the runtime, this requires that we use the runtime
       # from the previous build.
       - name: Install Swift Toolchain
-        uses: compnerd/gha-setup-swift@main
+        uses: compnerd/gha-setup-swift@b6c5fc1
         with:
           github-repo: thebrowsercompany/swift-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1785,12 +1798,12 @@ jobs:
 
     steps:
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@main
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - name: Download swift-syntax
-        uses: thebrowsercompany/gha-download-tar-artifact@main
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: swift-syntax-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
@@ -2029,7 +2042,7 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
 
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@main
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
@@ -2424,7 +2437,7 @@ jobs:
           path: ${{ github.workspace }}/BinaryCache/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr
 
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@main
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
@@ -2440,11 +2453,11 @@ jobs:
         with:
           name: macros-amd64
           path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: thebrowsercompany/gha-download-tar-artifact@main
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: swift-syntax-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
-      - uses: thebrowsercompany/gha-download-tar-artifact@main
+      - uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: cmark-gfm-Windows-${{ matrix.arch }}-${{ inputs.swift_cmark_version }}
           path: ${{ github.workspace }}/BinaryCache/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
@@ -3129,7 +3142,7 @@ jobs:
 
     steps:
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@main
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
@@ -3267,7 +3280,7 @@ jobs:
           name: debugging_tools-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/DebuggingTools
       - name: Download Compilers
-        uses: thebrowsercompany/gha-download-tar-artifact@main
+        uses: thebrowsercompany/gha-download-tar-artifact@717214c
         with:
           name: compilers-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
