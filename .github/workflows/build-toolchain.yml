@@ -312,7 +312,10 @@ jobs:
               "include": [
                 {
                   "arch": "amd64",
+                  "cpu": "x86_64",
                   "os": "Windows",
+                  "platform": "Windows",
+                  "triple": "x86_64-unknown-windows-msvc",
                   "cc": "cl",
                   "cflags": "${{ steps.context.outputs.WINDOWS_CMAKE_C_FLAGS }}",
                   "cxx": "cl",
@@ -323,7 +326,10 @@ jobs:
                 },
                 {
                   "arch": "arm64",
+                  "cpu": "aarch64",
                   "os": "Windows",
+                  "platform": "Windows",
+                  "triple": "aarch64-unknown-windows-msvc",
                   "cc": "cl",
                   "cflags": "${{ steps.context.outputs.WINDOWS_CMAKE_C_FLAGS }}",
                   "cxx": "cl",
@@ -471,7 +477,10 @@ jobs:
               "include": [
                 {
                   "arch": "x86_64",
+                  "cpu": "x86_64",
                   "os": "Darwin",
+                  "platform": "MacOSX",
+                  "triple": "x86_64-apple-macosx15.0",
                   "cc": "clang",
                   "cflags": "${{ steps.context.outputs.DARWIN_CMAKE_C_FLAGS }}",
                   "cxx": "clang++",
@@ -482,7 +491,10 @@ jobs:
                 },
                 {
                   "arch": "arm64",
+                  "cpu": "aarch64",
                   "os": "Darwin",
+                  "platform": "MacOSX",
+                  "triple": "aarch64-apple-macosx15.0",
                   "cc": "clang",
                   "cflags": "${{ steps.context.outputs.DARWIN_CMAKE_C_FLAGS }}",
                   "cxx": "clang++",
