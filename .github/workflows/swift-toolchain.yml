@@ -583,7 +583,7 @@ jobs:
           github-repo: thebrowsercompany/swift-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
           release-asset-name: installer-amd64.exe
-          release-tag-name: '20231016.0'
+          release-tag-name: '20231016.5'
 
       - uses: nttld/setup-ndk@v1
         id: setup-ndk
