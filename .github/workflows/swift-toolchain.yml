@@ -1913,14 +1913,6 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - name: Install Swift Toolchain
-        uses: compnerd/gha-setup-swift@main
-        with:
-          github-repo: thebrowsercompany/swift-build
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          release-asset-name: installer-amd64.exe
-          release-tag-name: '20231016.0'
-
       # FIXME(compnerd): workaround CMake 3.30 issue
       # FIXME(compnerd): workaround CMake 3.29-3.30 issue
       - uses: jwlawson/actions-setup-cmake@v2
