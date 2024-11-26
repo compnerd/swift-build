@@ -264,7 +264,7 @@ defaults:
 
 jobs:
   sqlite:
-    runs-on: ${{ inputs.default_build_runner }}
+    runs-on: ${{ matrix.runner }}
 
     strategy:
       fail-fast: false
@@ -287,12 +287,12 @@ jobs:
 
       - uses: compnerd/gha-setup-vsdevenv@f1ba60d553a3216ce1b89abe0201213536bc7557 # main
         with:
-          host_arch: ${{ inputs.build_arch }}
+          host_arch: ${{ matrix.build_arch }}
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
+        if: matrix.build_os == 'Darwin'
 
       - name: Compute workspace hash
         id: workspace_hash
@@ -492,7 +492,7 @@ jobs:
           path: ${{ github.workspace }}/BinaryCache/Library/Developer
 
   cmark_gfm:
-    runs-on: ${{ inputs.default_build_runner }}
+    runs-on: ${{ matrix.runner }}
 
     strategy:
       fail-fast: false
@@ -510,12 +510,12 @@ jobs:
 
       - uses: compnerd/gha-setup-vsdevenv@f1ba60d553a3216ce1b89abe0201213536bc7557 # main
         with:
-          host_arch: ${{ inputs.build_arch }}
+          host_arch: ${{ matrix.build_arch }}
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
+        if: matrix.build_os == 'Darwin'
 
       - name: Compute workspace hash
         id: workspace_hash
@@ -564,7 +564,7 @@ jobs:
 
   build_tools:
     needs: [cmark_gfm]
-    runs-on: ${{ inputs.default_build_runner }}
+    runs-on: ${{ matrix.runner }}
 
     strategy:
       fail-fast: false
@@ -594,7 +594,7 @@ jobs:
       - uses: compnerd/gha-setup-vsdevenv@f1ba60d553a3216ce1b89abe0201213536bc7557 # main
 
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
+        if: matrix.build_os == 'Darwin'
 
       - name: Compute workspace hash
         id: workspace_hash
@@ -702,7 +702,7 @@ jobs:
     # TODO: Build this on Windows too.
     if: inputs.build_os == 'Darwin'
     needs: [sqlite]
-    runs-on: ${{ inputs.default_build_runner }}
+    runs-on: ${{ matrix.runner }}
 
     strategy:
       fail-fast: false
@@ -749,15 +749,15 @@ jobs:
 
       - uses: compnerd/gha-setup-vsdevenv@f1ba60d553a3216ce1b89abe0201213536bc7557 # main
         with:
-          host_arch: ${{ inputs.build_arch }}
+          host_arch: ${{ matrix.build_arch }}
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
+        if: matrix.build_os == 'Darwin'
 
       - name: Install Swift Toolchain (Mac)
-        if: inputs.build_os == 'Darwin'
+        if: matrix.build_os == 'Darwin'
         uses: compnerd/gha-setup-swift@b6c5fc1ed5b5439ada8e7661985acb09ad8c3ba2 # main
         with:
           branch: swift-6.0.1-release
@@ -832,7 +832,6 @@ jobs:
           - arch: 'amd64'
             cpu: 'x86_64'
             triple: 'x86_64-unknown-windows-msvc'
-
           - arch: 'arm64'
             cpu: 'aarch64'
             triple: 'aarch64-unknown-windows-msvc'
@@ -1093,7 +1092,7 @@ jobs:
           searchPattern: '**/*.exe'
 
   zlib:
-    runs-on: ${{ inputs.default_build_runner }}
+    runs-on: ${{ matrix.runner }}
 
     strategy:
       fail-fast: false
@@ -1116,7 +1115,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
+        if: matrix.build_os == 'Darwin'
 
       - name: Compute workspace hash
         id: workspace_hash
@@ -1144,7 +1143,7 @@ jobs:
       - name: Configure zlib
         run: |
           $NDKPATH = "${{ steps.setup-ndk.outputs.ndk-path }}"
-          if ( "${{ inputs.build_os }}" -eq "Windows" ) {
+          if ( "${{ matrix.build_os }}" -eq "Windows" ) {
             $NDKPATH = cygpath -m $NDKPATH
           }
           cmake -B ${{ github.workspace }}/BinaryCache/zlib-${{ inputs.zlib_version }} `
@@ -1176,7 +1175,7 @@ jobs:
 
   curl:
     needs: [zlib]
-    runs-on: ${{ inputs.default_build_runner }}
+    runs-on: ${{ matrix.runner }}
 
     strategy:
       fail-fast: false
@@ -1204,7 +1203,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
+        if: matrix.build_os == 'Darwin'
 
       - name: Compute workspace hash
         id: workspace_hash
@@ -1232,7 +1231,7 @@ jobs:
       - name: Configure curl
         run: |
           $NDKPATH = "${{ steps.setup-ndk.outputs.ndk-path }}"
-          if ( "${{ inputs.build_os }}" -eq "Windows" ) {
+          if ( "${{ matrix.build_os }}" -eq "Windows" ) {
             $NDKPATH = cygpath -m $NDKPATH
           }
           cmake -B ${{ github.workspace }}/BinaryCache/curl-${{ inputs.curl_version }} `
@@ -1340,7 +1339,7 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/curl-${{ inputs.curl_version }}/usr
 
   libxml2:
-    runs-on: ${{ inputs.default_build_runner }}
+    runs-on: ${{ matrix.runner }}
 
     strategy:
       fail-fast: false
@@ -1363,7 +1362,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
+        if: matrix.build_os == 'Darwin'
 
       - name: Compute workspace hash
         id: workspace_hash
@@ -1392,7 +1391,7 @@ jobs:
       - name: Configure libxml2
         run: |
           $NDKPATH = "${{ steps.setup-ndk.outputs.ndk-path }}"
-          if ( "${{ inputs.build_os }}" -eq "Windows" ) {
+          if ( "${{ matrix.build_os }}" -eq "Windows" ) {
             $NDKPATH = cygpath -m $NDKPATH
           }
           cmake -B ${{ github.workspace }}/BinaryCache/libxml2-${{ inputs.libxml2_version }} `
