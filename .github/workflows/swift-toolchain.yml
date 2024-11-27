@@ -711,7 +711,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(inputs.host_matrix) }}
+      matrix: ${{ fromJSON(inputs.build_matrix) }}
 
     name: ${{ matrix.os }} ${{ matrix.arch }} early swift-driver
 
