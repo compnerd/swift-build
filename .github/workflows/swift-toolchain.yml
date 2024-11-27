@@ -711,8 +711,9 @@ jobs:
 
     strategy:
       fail-fast: false
+      matrix: ${{ fromJSON(inputs.host_matrix) }}
 
-    name: Windows amd64 early swift-driver
+    name: ${{ matrix.os }} ${{ matrix.arch }} early swift-driver
 
     steps:
       - uses: actions/checkout@v4
@@ -770,12 +771,13 @@ jobs:
 
       - id: export-binary-paths
         run: |
-          echo "swift_driver=${{ github.workspace }}/BinaryCache/swift-driver/x86_64-unknown-windows-msvc/release/swift-driver.exe" >> $env:GITHUB_OUTPUT
-          echo "swift_help=${{ github.workspace }}/BinaryCache/swift-driver/x86_64-unknown-windows-msvc/release/swift-help.exe" >> $env:GITHUB_OUTPUT
+          $Suffix = if ("${{ matrix.os }}" -eq "Windows") { ".exe" } else { "" }
+          echo "swift_driver=${{ github.workspace }}/BinaryCache/swift-driver/x86_64-unknown-windows-msvc/release/swift-driver${Suffix}" >> $env:GITHUB_OUTPUT
+          echo "swift_help=${{ github.workspace }}/BinaryCache/swift-driver/x86_64-unknown-windows-msvc/release/swift-help${Suffix}" >> $env:GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
-          name: early-swift-driver-Windows-amd64
+          name: early-swift-driver-${{ matrix.os }}-${{ matrix.arch }}
           path: |
             ${{ steps.export-binary-paths.outputs.swift_driver }}
             ${{ steps.export-binary-paths.outputs.swift_help }}
