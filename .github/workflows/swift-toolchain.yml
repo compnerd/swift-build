@@ -762,10 +762,10 @@ jobs:
       - name: Build early swift-driver
         run: |
           $env:SWIFTCI_USE_LOCAL_DEPS=1
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $LinkerFlags = @("-Xlinker", "${env:SDKROOT}/usr/lib/swift/windows/x86_64/swiftCore.lib")
+          $LinkerFlags = if ("${{ matrix.os }}" -eq "Windows") {
+            @("-Xlinker", "${env:SDKROOT}/usr/lib/swift/windows/x86_64/swiftCore.lib")
           } else {
-            $LinkerFlags = @()
+            @()
           }
 
           swift build `
