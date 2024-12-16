@@ -887,13 +887,13 @@ jobs:
           path: ${{ github.workspace }}/SourceCache/swift-corelibs-libdispatch
           show-progress: false
 
-      - name: Install Python ${{ env.PYTHON_VERSION }} (Mac Host)
+      - name: Install Python ${{ env.PYTHON_VERSION }} (Host)
         if: matrix.os == 'Darwin'
         uses: actions/setup-python@v5
         with:
           python-version: '${{ env.PYTHON_VERSION }}'
 
-      - name: Install Python ${{ env.PYTHON_VERSION }} (Windows Host)
+      - name: Install Python ${{ env.PYTHON_VERSION }} (Host)
         if: matrix.os == 'Windows' && (matrix.arch == 'amd64' || inputs.build_arch == 'amd64')
         uses: actions/setup-python@v5
         id: python
@@ -929,7 +929,7 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
         if: inputs.build_os == 'Darwin'
 
-      - name: Install Swift Toolchain (Windows amd64)
+      - name: Install Swift Toolchain
         if: inputs.build_os == 'Windows' && inputs.build_arch == 'amd64'
         uses: compnerd/gha-setup-swift@b6c5fc1ed5b5439ada8e7661985acb09ad8c3ba2 # main
         with:
@@ -937,7 +937,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           release-asset-name: installer-${{ inputs.build_arch }}.exe
           release-tag-name: ${{ env.WORKAROUND_WINDOWS_PINNED_BOOTSTRAP_TOOLCHAIN_RELEASE }}
-      - name: Install Swift Toolchain (Windows arm64)
+      - name: Install Swift Toolchain
         if: inputs.build_os == 'Windows' && inputs.build_arch == 'arm64'
         uses: compnerd/gha-setup-swift@b6c5fc1ed5b5439ada8e7661985acb09ad8c3ba2 # main
         with:
@@ -946,7 +946,7 @@ jobs:
           release-asset-name: installer-${{ inputs.build_arch }}.exe
           release-tag-name: ${{ env.WORKAROUND_WINDOWS_ARM64_PINNED_BOOTSTRAP_TOOLCHAIN_RELEASE }}
 
-      - name: Install Swift Toolchain (Mac)
+      - name: Install Swift Toolchain
         if: inputs.build_os == 'Darwin'
         uses: compnerd/gha-setup-swift@b6c5fc1ed5b5439ada8e7661985acb09ad8c3ba2 # main
         with:
