@@ -1048,18 +1048,22 @@ jobs:
 
           $SwiftFlags += " -sdk `"${SDKROOT}`""
 
-          Write-Output "cc=${CC}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "cxx=${CXX}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "swiftc=${SWIFTC}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "cxxflags=${CxxFlags}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "swiftflags=${SwiftFlags}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "extra_flags=${ExtraFlags}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "cache=${CACHE}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "clang_location=${CLANG_LOCATION}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "libpython_path=${LIBPYTHON_PATH}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "python_include_dir=${PYTHON_INCLUDE_DIR}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "python_binary=${PYTHON_BINARY}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Output "sdkroot=${SDKROOT}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          # Output the context for the configure task.
+          $Context = @"
+          cc=${CC}
+          cxx=${CXX}
+          swiftc=${SWIFTC}
+          cxxflags=${CxxFlags}
+          swiftflags=${SwiftFlags}
+          extra_flags=${ExtraFlags}
+          cache=${CACHE}
+          clang_location=${CLANG_LOCATION}
+          libpython_path=${LIBPYTHON_PATH}
+          python_include_dir=${PYTHON_INCLUDE_DIR}
+          python_binary=${PYTHON_BINARY}
+          sdkroot=${SDKROOT}
+          "@
+          Write-Output $Context | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Configure Compilers
         env:
