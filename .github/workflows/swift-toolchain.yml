@@ -1757,10 +1757,10 @@ jobs:
           }
           cmake --build ${{ github.workspace }}/BinaryCache/swift --target install
 
-      - uses: actions/upload-artifact@v4
+      - uses: thebrowsercompany/gha-upload-tar-artifact@e18c33b1cd416d0d96a91dc6dce06219f98e4e27 # main
         if: matrix.os != 'Android' || inputs.build_android
         with:
-          name: ${{ matrix.os }}-stdlib-${{ matrix.arch }}
+          name: stdlib-${{ matrix.os}}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
 
       - uses: actions/upload-artifact@v4
@@ -1788,8 +1788,6 @@ jobs:
           searchPattern: '**/*.dll'
 
   macros:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.build_os == 'Windows'
     needs: [compilers, cmark_gfm, stdlib]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -1797,29 +1795,30 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.host_matrix) }}
 
-    name: Windows ${{ matrix.arch }} Macros
+    name: ${{ matrix.os }} ${{ matrix.arch }} Macros
 
     steps:
       - name: Download Compilers
         uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: compilers-Windows-${{ inputs.build_arch }}
+          name: compilers-${{ inputs.build_os }}-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - name: Download swift-syntax
         uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: swift-syntax-Windows-${{ matrix.arch }}
+          name: swift-syntax-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift-syntax
-      - uses: actions/download-artifact@v4
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: Windows-stdlib-${{ matrix.arch }}
+          name: stdlib-${{ matrix.os }}-${{ matrix.arch }}
+          path: ${{ github.workspace }}/BinaryCache/Library
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
+        if: matrix.os == 'Windows' && matrix.arch == 'arm64'
+        with:
+          name: stdlib-Windows-amd64
           path: ${{ github.workspace }}/BinaryCache/Library
       - uses: actions/download-artifact@v4
-        if: matrix.arch == 'arm64'
-        with:
-          name: Windows-stdlib-${{ inputs.build_arch }}
-          path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: actions/download-artifact@v4
+        if: matrix.os == 'Windows'
         with:
           name: windows-vfs-overlay-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift/stdlib
@@ -1849,30 +1848,45 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - run: |
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401
+        if: inputs.build_os == 'Darwin'
+
+      - name: Export RTLPath
+        if: matrix.os == 'Windows'
+        run: |
+          # Export the path to the runtime libraries. This is only needed for Windows.
           $RTLPath = cygpath -w ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/bin
           echo ${RTLPath} | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: extract swift-syntax
+      - name: Extract swift-syntax
         run: |
+          $bindir = "${{ github.workspace }}/BinaryCache/swift-syntax"
+          if ("${{ matrix.os }}" -eq "Windows") {
+            $bindir = cygpath -m $bindir
+          }
+
           $module = "${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules/SwiftSyntaxConfig.cmake"
-          $bindir = cygpath -m ${{ github.workspace }}/BinaryCache/swift-syntax
           (Get-Content $module).Replace('<BINARY_DIR>', "${bindir}") | Set-Content $module
 
       - name: Configure Foundation Macros
         run: |
-          $WINDOWS_VFS_OVERLAY = cygpath -m ${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml
-          $SWIFTC = cygpath -m ${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/bin/swiftc.exe
+          if ("${{ matrix.os }}" -eq "Windows") {
+            $HostToolchain = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain"
+            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
+            $SDKRoot = "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.platform }}.platform/Developer/SDKs/${{ matrix.platform }}.sdk"
+          } else {
+            $HostToolchain = "${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain"
+          }
 
           cmake -B ${{ github.workspace }}/BinaryCache/swift-foundation-macros `
                 -D CMAKE_BUILD_TYPE=Release `
                 -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr `
-                -D CMAKE_Swift_COMPILER=${SWIFTC} `
+                -D CMAKE_Swift_COMPILER=${{ matrix.host_built_swiftc }} `
                 -D CMAKE_Swift_COMPILER_TARGET=${{ matrix.triple }} `
-                -D CMAKE_Swift_FLAGS="-resource-dir ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift -L${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows -vfsoverlay ${WINDOWS_VFS_OVERLAY} -strict-implicit-module-context -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules ${{ inputs.CMAKE_Swift_FLAGS }}" `
+                -D CMAKE_Swift_FLAGS="${{ matrix.swiftflags }} ${{ matrix.macros_swiftflags }}" `
                 -D CMAKE_Swift_FLAGS_RELEASE="-O" `
-                -D CMAKE_SYSTEM_NAME=Windows `
-                -D CMAKE_SYSTEM_PROCESSOR=${{ matrix.cpu }} `
+                -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
+                ${{ matrix.extra_flags }} `
                 -G Ninja `
                 -S ${{ github.workspace }}/SourceCache/swift-foundation/Sources/FoundationMacros `
                 -D SwiftSyntax_DIR=${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules
@@ -1881,17 +1895,22 @@ jobs:
 
       - name: Configure Testing Macros
         run: |
-          $WINDOWS_VFS_OVERLAY = cygpath -m ${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml
-          $SWIFTC = cygpath -m ${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/bin/swiftc.exe
+          if ("${{ matrix.os }}" -eq "Windows") {
+            $HostToolchain = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain"
+            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
+            $SDKRoot = "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.platform }}.platform/Developer/SDKs/${{ matrix.platform }}.sdk"
+          } else {
+            $HostToolchain = "${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain"
+          }
 
           cmake -B ${{ github.workspace }}/BinaryCache/swift-testing-macros `
                 -D CMAKE_BUILD_TYPE=Release `
                 -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr `
-                -D CMAKE_Swift_COMPILER=${SWIFTC} `
+                -D CMAKE_Swift_COMPILER=${{ matrix.host_built_swiftc }} `
                 -D CMAKE_Swift_COMPILER_TARGET=${{ matrix.triple }} `
-                -D CMAKE_Swift_FLAGS="-resource-dir ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift -L${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows -vfsoverlay ${WINDOWS_VFS_OVERLAY} -strict-implicit-module-context -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules ${{ inputs.CMAKE_Swift_FLAGS }}" `
-                -D CMAKE_SYSTEM_NAME=Windows `
-                -D CMAKE_SYSTEM_PROCESSOR=${{ matrix.cpu }} `
+                -D CMAKE_Swift_FLAGS="${{ matrix.swiftflags }} ${{ matrix.macros_swiftflags }}" `
+                -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
+                ${{ matrix.extra_flags }} `
                 -G Ninja `
                 -S ${{ github.workspace }}/SourceCache/swift-testing/Sources/TestingMacros `
                 -D SwiftSyntax_DIR=${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules
@@ -1904,14 +1923,14 @@ jobs:
         run: cmake --build ${{ github.workspace }}/BinaryCache/swift-testing-macros --target install
 
       - name: Upload macros
-        uses: actions/upload-artifact@v4
+        uses: thebrowsercompany/gha-upload-tar-artifact@e18c33b1cd416d0d96a91dc6dce06219f98e4e27 # main
         with:
-          name: macros-${{ matrix.arch }}
+          name: macros-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
 
       - name: Upload PDBs to Azure
         uses: microsoft/action-publish-symbols@v2.1.6
-        if: ${{ inputs.debug_info }}
+        if: ${{ inputs.debug_info && matrix.os  == 'Windows' }}
         with:
           accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
           personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
@@ -1920,7 +1939,7 @@ jobs:
 
       - name: Upload DLLs to Azure
         uses: microsoft/action-publish-symbols@v2.1.6
-        if: ${{ inputs.debug_info }}
+        if: ${{ inputs.debug_info && matrix.os  == 'Windows' }}
         with:
           accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
           personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
@@ -2052,24 +2071,26 @@ jobs:
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: actions/download-artifact@v4
+
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         if: matrix.os != 'Android' || inputs.build_android
         with:
-          name: ${{ matrix.os }}-stdlib-${{ matrix.arch }}
+          name: stdlib-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: actions/download-artifact@v4
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: Windows-stdlib-${{ inputs.build_arch }}
+          name: stdlib-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - uses: actions/download-artifact@v4
         if: matrix.os == 'Windows'
         with:
           name: windows-vfs-overlay-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/swift/stdlib
-      - uses: actions/download-artifact@v4
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: macros-${{ inputs.build_arch }}
+          name: macros-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
+
       - uses: actions/checkout@v4
         with:
           repository: apple/swift-corelibs-libdispatch
@@ -2465,17 +2486,17 @@ jobs:
         with:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: actions/download-artifact@v4
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: Windows-stdlib-${{ matrix.arch }}
+          name: stdlib-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - uses: actions/download-artifact@v4
         with:
           name: Windows-sdk-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: macros-${{ inputs.build_arch }}
+          name: macros-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
@@ -2620,9 +2641,9 @@ jobs:
           Move-Item ${env:SDKROOT}/usr/lib/swift/windows/FoundationInternationalization.lib ${env:SDKROOT}/usr/lib/swift/windows/${{ matrix.cpu }}/
 
       # Download host libraries for the windows amd64 host, after moving the target libraries to the target-specific directory.
-      - uses: actions/download-artifact@v4
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: Windows-stdlib-${{ inputs.build_arch }}
+          name: stdlib-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - uses: actions/download-artifact@v4
         with:
@@ -3192,9 +3213,9 @@ jobs:
           name: compilers-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - name: Download stdlib
-        uses: actions/download-artifact@v4
+        uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: Windows-stdlib-${{ matrix.arch }}
+          name: stdlib-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - name: Download SDK
         uses: actions/download-artifact@v4
@@ -3240,9 +3261,9 @@ jobs:
           Move-Item ${env:SDKROOT}/usr/lib/swift/windows/FoundationInternationalization.lib ${env:SDKROOT}/usr/lib/swift/windows/${{ matrix.cpu }}/
 
       # Download host SDK on top of the target SDK, so that the runtime DLLs are the host ones.
-      - uses: actions/download-artifact@v4
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: Windows-stdlib-${{ inputs.build_arch }}
+          name: stdlib-Windows-${{ inputs.build_arch }}
           path: ${{ github.workspace }}/BinaryCache/Library
       - uses: actions/download-artifact@v4
         with:
@@ -3309,9 +3330,9 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library
 
       - name: Download Macros
-        uses: actions/download-artifact@v4
+        uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: macros-${{ matrix.arch }}
+          name: macros-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
 
       - uses: actions/checkout@v4
@@ -3476,9 +3497,9 @@ jobs:
             platform: x86
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: Windows-stdlib-${{ matrix.arch }}
+          name: stdlib-Windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
       - uses: actions/download-artifact@v4
         with:
@@ -3583,11 +3604,11 @@ jobs:
             triple_no_api_level: x86_64-unknown-linux-android
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         # There is currently no Android NDK for Windows ARM64 so build Android only on Windows X64 host only
         if: inputs.build_android
         with:
-          name: Android-stdlib-${{ matrix.arch }}
+          name: stdlib-Android-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library
       - uses: actions/download-artifact@v4
         if: inputs.build_android
