@@ -3680,6 +3680,12 @@ jobs:
       - name: Package SDK
         if: inputs.build_android
         run: |
+          if ("${{ inputs.build_arch }}" -eq "amd64") {
+            $InstallerPlatform = "x64"
+          } else {
+            $InstallerPlatform = "arm64"
+          }
+
           msbuild -nologo -restore -maxCpuCount `
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
@@ -3691,6 +3697,7 @@ jobs:
               -p:SDK_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform/Developer/SDKs/Android.sdk `
               -p:ProductVersion=${{ inputs.swift_version }} `
               -p:ProductArchitecture=${{ matrix.msarch }} `
+              -p:InstallerPlatform=${InstallerPlatform} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/sdk/drd/sdk.wixproj
 
       - uses: actions/upload-artifact@v4
