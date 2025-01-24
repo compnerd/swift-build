@@ -3612,19 +3612,15 @@ jobs:
       matrix:
         include:
           - arch: arm64
-            cpu: aarch64
             msarch: arm64
             triple_no_api_level: aarch64-unknown-linux-android
           - arch: armv7
-            cpu: armv7
             msarch: arm
             triple_no_api_level: armv7-unknown-linux-androideabi
           - arch: i686
-            cpu: i686
             msarch: x86
             triple_no_api_level: i686-unknown-linux-android
           - arch: x86_64
-            cpu: x86_64
             msarch: amd64
             triple_no_api_level: x86_64-unknown-linux-android
 
@@ -3705,8 +3701,8 @@ jobs:
         with:
           name: sdk-android-${{ matrix.arch }}-msi
           path: |
-            ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.cpu }}/sdk.android.${{ matrix.cpu }}.msi
-            ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.cpu }}/sdk.android.${{ matrix.cpu }}.cab
+            ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.msarch }}/sdk.android.${{ matrix.msarch }}.msi
+            ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.msarch }}/sdk.android.${{ matrix.msarch }}.cab
 
   installer:
     # TODO: Build this on macOS or make an equivalent Mac-only job
