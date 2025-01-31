@@ -520,6 +520,82 @@ jobs:
           name: ds2-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ github.workspace }}/BinaryCache/Library/Developer
 
+  mimalloc:
+    if: ${{ inputs.build_os == 'Windows' }}
+    runs-on: ${{ inputs.default_build_runner }}
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.host_matrix) }}
+
+    name: ${{ matrix.os }} ${{ matrix.arch }} mimalloc
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: microsoft/mimalloc
+          ref: ${{ inputs.mimalloc_revision }}
+          path: ${{ github.workspace }}/SourceCache/mimalloc
+
+      - uses: compnerd/gha-setup-vsdevenv@f1ba60d553a3216ce1b89abe0201213536bc7557 # main
+        with:
+          host_arch: ${{ inputs.build_arch }}
+          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
+          arch: ${{ matrix.arch }}
+
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
+
+      - name: Compute workspace hash
+        id: workspace_hash
+        run: |
+          $stringAsStream = [System.IO.MemoryStream]::new()
+          $writer = [System.IO.StreamWriter]::new($stringAsStream)
+          $writer.write("${{ github.workspace }}")
+          $writer.Flush()
+          $stringAsStream.Position = 0
+          $hash = (Get-FileHash -Algorithm SHA256 -InputStream $stringAsStream).Hash
+          echo "hash=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Setup sccache
+        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+        with:
+          max-size: 1M
+          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-mimmalloc
+          variant: sccache
+
+      - name: Configure mimalloc
+        run: |
+          cmake -B ${{ github.workspace }}/BinaryCache/mimalloc `
+                -D CMAKE_BUILD_TYPE=Release `
+                -D CMAKE_C_COMPILER=${{ matrix.cc }} `
+                -D CMAKE_C_COMPILER_LAUNCHER=sccache `
+                -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
+                -D CMAKE_CXX_COMPILER=${{ matrix.cxx }} `
+                -D CMAKE_CXX_COMPILER_LAUNCHER=sccache `
+                -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" `
+                -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/mimalloc-3.0.1/usr `
+                -D CMAKE_SYSTEM_NAME=${{ matrix.os }} `
+                -D CMAKE_SYSTEM_PROCESSOR=${{ matrix.cpu }} `
+                -G Ninja `
+                -S ${{ github.workspace }}/SourceCache/mimalloc `
+                -D MI_BUILD_OBJECT=NO `
+                -D MI_BUILD_STATIC=NO `
+                -D MI_BUILD_TESTS=NO `
+                -D MI_OPT_SIMD=YES `
+                -D MI_SKIP_COLLECT_ON_EXIT=YES `
+                -D MI_WIN_USE_FIXED_TLS=YES
+
+      - name: Build mimalloc
+        run: cmake --build ${{ github.workspace }}/BinaryCache/mimalloc
+
+      - name: Install mimalloc
+        run: cmake --build ${{ github.workspace }}/BinaryCache/mimalloc --target install
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mimalloc-${{ matrix.os }}-${{ matrix.arch }}
+          path: ${{ github.workspace }}/BuildRoot/Library/mimalloc-3.0.1/usr
+
   cmark_gfm:
     runs-on: ${{ inputs.default_build_runner }}
 
