@@ -3142,7 +3142,7 @@ jobs:
             if ([string]::IsNullOrEmpty((Get-PackageSource | %{ $_.Location } | Select-String -Pattern api.nuget.org))) {
               Register-PackageSource -Name NuGet -Location https://www.nuget.org/api/v2 -ProviderName NuGet
             }
-            Install-Package -Name WixToolset.Sdk -RequiredVersion 4.0.1 -Force
+            Install-Package -Name WixToolset.Sdk -RequiredVersion 4.0.6 -Force
           }
 
       - name: Package Build Tools
@@ -3284,7 +3284,7 @@ jobs:
             if ([string]::IsNullOrEmpty((Get-PackageSource | %{ $_.Location } | Select-String -Pattern api.nuget.org))) {
               Register-PackageSource -Name NuGet -Location https://www.nuget.org/api/v2 -ProviderName NuGet
             }
-            Install-Package -Name WixToolset.Sdk -RequiredVersion 4.0.1 -Force
+            Install-Package -Name WixToolset.Sdk -RequiredVersion 4.0.6 -Force
           }
 
       - name: Package SDK
@@ -3390,7 +3390,7 @@ jobs:
             if ([string]::IsNullOrEmpty((Get-PackageSource | %{ $_.Location } | Select-String -Pattern api.nuget.org))) {
               Register-PackageSource -Name NuGet -Location https://www.nuget.org/api/v2 -ProviderName NuGet
             }
-            Install-Package -Name WixToolset.Sdk -RequiredVersion 4.0.1 -Force
+            Install-Package -Name WixToolset.Sdk -RequiredVersion 4.0.6 -Force
           }
 
       - name: Package SDK
