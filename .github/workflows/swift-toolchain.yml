@@ -1079,7 +1079,6 @@ jobs:
                 -D CMAKE_CXX_COMPILER="${{ steps.setup-context.outputs.cxx }}" `
                 -D CMAKE_CXX_COMPILER_LAUNCHER=sccache `
                 -D CMAKE_CXX_FLAGS="${{ steps.setup-context.outputs.cxxflags }}" `
-                -D CMAKE_STATIC_LIBRARY_PREFIX_Swift= `
                 -D CMAKE_Swift_COMPILER="${{ steps.setup-context.outputs.swiftc }}" `
                 -D CMAKE_Swift_COMPILER_WORKS=YES `
                 -D CMAKE_Swift_FLAGS="${{ steps.setup-context.outputs.swiftflags }}" `
