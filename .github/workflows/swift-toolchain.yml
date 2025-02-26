@@ -1669,6 +1669,9 @@ jobs:
             # NOTE: clang-cl is required to build the Swift Standard Library on Windows.
             $CC = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr/bin/clang-cl.exe"
             $CXX = $CC
+          } elseif ("${{ matrix.os }}" -eq "Darwin") {
+            $CC = "${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr/bin/clang"
+            $CXX = "${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr/bin/clang++"
           } else {
             $CC = "${{ matrix.cc }}"
             $CXX = "${{ matrix.cxx }}"
