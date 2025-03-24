@@ -1164,7 +1164,7 @@ jobs:
       - name: Upload Compilers
         uses: thebrowsercompany/gha-upload-tar-artifact@e18c33b1cd416d0d96a91dc6dce06219f98e4e27 # main
         with:
-          name: ${{ matrix.variant}}-${{ matrix.os }}-${{ matrix.arch }}-compilers
+          name: ${{ matrix.variant }}-${{ matrix.os }}-${{ matrix.arch }}-compilers
           path: ${{ github.workspace }}/BuildRoot/Library
 
       - name: Extract swift-syntax
@@ -1197,7 +1197,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: false # ${{ inputs.debug_info }}
         with:
-          name: ${{ matrix.variant}}-${{ matrix.os }}-${{ matrix.arch }}-compilers-debug-info
+          name: ${{ matrix.variant }}-${{ matrix.os }}-${{ matrix.arch }}-compilers-debug-info
           path: |
             ${{ github.workspace }}/BinaryCache/1/**/*.pdb
 
