@@ -343,11 +343,10 @@ jobs:
           echo "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: Setup sccache
-        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+        uses: ./.github/actions/setup-sccache
         with:
-          max-size: 100M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-sqlite
-          variant: sccache
+          disk-max-size: 100M
+          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-sqlite
 
       - name: Configure SQLite
         run: |
@@ -589,11 +588,10 @@ jobs:
           echo "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: Setup sccache
-        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+        uses: ./.github/actions/setup-sccache
         with:
-          max-size: 1M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-cmark-gfm
-          variant: sccache
+          disk-max-size: 1M
+          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-cmark-gfm
 
       - name: Configure cmark-gfm
         run: >
@@ -673,11 +671,10 @@ jobs:
           echo "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: Setup sccache
-        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+        uses: ./.github/actions/setup-sccache
         with:
-          max-size: 100M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-build_tools
-          variant: sccache
+          disk-max-size: 100M
+          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-build_tools
 
       - name: Configure Tools
         run: |
@@ -1070,11 +1067,10 @@ jobs:
           echo "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: Setup sccache
-        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+        uses: ./.github/actions/setup-sccache
         with:
-          max-size: 500M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.variant }}-compilers
-          variant: sccache
+          disk-max-size: 500M
+          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.variant }}-compilers
 
       - name: Setup context
         id: setup-context
@@ -1345,11 +1341,10 @@ jobs:
           echo "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: Setup sccache
-        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+        uses: ./.github/actions/setup-sccache
         with:
-          max-size: 100M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-zlib
-          variant: sccache
+          disk-max-size: 100M
+          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-zlib
 
       - uses: nttld/setup-ndk@v1
         if: matrix.os == 'Android'
@@ -1440,11 +1435,10 @@ jobs:
           echo "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: Setup sccache
-        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+        uses: ./.github/actions/setup-sccache
         with:
-          max-size: 100M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-curl
-          variant: sccache
+          disk-max-size: 100M
+          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-curl
 
       - uses: nttld/setup-ndk@v1
         if: matrix.os == 'Android'
@@ -1607,11 +1601,10 @@ jobs:
           echo "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: Setup sccache
-        uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+        uses: ./.github/actions/setup-sccache
         with:
-          max-size: 100M
-          key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-libxml2
-          variant: sccache
+          disk-max-size: 100M
+          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-libxml2
 
       - uses: nttld/setup-ndk@v1
         if: matrix.os == 'Android'
