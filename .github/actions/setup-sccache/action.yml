@@ -31,6 +31,18 @@ runs:
       shell: pwsh
       run: |
         if (${{ inputs.s3-arn }} -ne '') {
+          $requiredParams = @{
+              's3-bucket' = '${{ inputs.s3-bucket }}'
+              's3-bucket-encryption' = '${{ inputs.s3-bucket-encryption }}'
+              'aws-region' = '${{ inputs.aws-region }}'
+          }
+
+          foreach ($param in $requiredParams.GetEnumerator()) {
+              if ([string]::IsNullOrEmpty($param.Value)) {
+                  Write-Error -Message "$($param.Key) input cannot be empty when aws-arn is provided" -ErrorAction Stop
+              }
+          }
+
           Write-Host "Using S3 bucket ${{ inputs.s3-bucket }} for cache storage."
           $env:SCCACHE_BUCKET = ${{ inputs.s3-bucket }}
           $env:SCCACHE_REGION = ${{ inputs.aws-region }}
