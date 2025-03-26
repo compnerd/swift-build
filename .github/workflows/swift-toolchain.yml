@@ -343,7 +343,7 @@ jobs:
           echo "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: Setup sccache
-        uses: ./.github/actions/setup-sccache
+        uses: ./SourceCache/swift-build/.github/actions/setup-sccache
         with:
           disk-max-size: 100M
           disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-sqlite
