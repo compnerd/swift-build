@@ -564,7 +564,7 @@ jobs:
           path: ${{ github.workspace }}/SourceCache/swift-build
           show-progress: false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
         with:
           repository: swiftlang/swift-cmark
           ref: ${{ inputs.swift_cmark_revision }}
@@ -636,7 +636,7 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} Compiler Build Tools
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
         with:
           path: ${{ github.workspace }}/SourceCache/swift-build
           show-progress: false
@@ -922,7 +922,7 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.arch }} ${{ matrix.variant }} Toolchain
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
         with:
           path: ${{ github.workspace }}/SourceCache/swift-build
           show-progress: false
@@ -1332,7 +1332,7 @@ jobs:
           path: ${{ github.workspace }}/SourceCache/swift-build
           show-progress: false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
         with:
           repository: madler/zlib
           ref: ${{ inputs.zlib_revision }}
@@ -1426,7 +1426,7 @@ jobs:
           path: ${{ github.workspace }}/SourceCache/swift-build
           show-progress: false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
         with:
           repository: curl/curl
           ref: ${{ inputs.curl_revision }}
@@ -1601,7 +1601,7 @@ jobs:
           path: ${{ github.workspace }}/SourceCache/swift-build
           show-progress: false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
         with:
           repository: gnome/libxml2
           ref: ${{ inputs.libxml2_revision }}
