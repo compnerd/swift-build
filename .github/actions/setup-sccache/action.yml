@@ -11,7 +11,6 @@ inputs:
   s3-bucket:
     description: "The s3 bucket to use for cache storage."
     required: false
-    default: "toolchain-sccache-swift-build"
   s3-bucket-encryption:
     description: "Whether to enable server-side encryption for the S3 bucket."
     required: false
@@ -22,7 +21,6 @@ inputs:
   aws-region:
     description: "The region of the S3 bucket to use for the cache"
     required: false
-    default: "us-east-2"
 
 runs:
   using: composite
@@ -62,7 +60,7 @@ runs:
         aws-region: ${{ inputs.aws-region }}
 
     - name: Setup sccache
-      uses: hendrikmuhs/ccache-action@2e0e89e8d74340a03f75d58d02aae4c5ee1b15c6
+      uses: hendrikmuhs/ccache-action@a1209f81afb8c005c13b4296c32e363431bffea5 # v1.2.17
       with:
         max-size: ${{ inputs.disk-max-size }}
         key: ${{ inputs.disk-cache-key }}
