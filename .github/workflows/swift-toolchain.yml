@@ -1882,6 +1882,13 @@ jobs:
             Remove-Item env:\SDKROOT
           }
           cmake --build ${{ github.workspace }}/BinaryCache/swift --target install
+      - name: Parameterize vfs-overlay
+        if: matrix.os == 'Windows'
+        run: |
+          $VfsOverlay = "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
+          $ModuleMapDir = cygpath -m ${{ github.workspace }}/SourceCache/swift/stdlib
+          $ModuleMapDir += "\\public\\Platform\\"
+          (Get-Content $VfsOverlay).Replace("${ModuleMapDir}", "<MODULE_MAP_DIR>/") | Set-Content $VfsOverlay
 
       - uses: thebrowsercompany/gha-upload-tar-artifact@e18c33b1cd416d0d96a91dc6dce06219f98e4e27 # main
         if: matrix.os != 'Android' || inputs.build_android
@@ -1980,11 +1987,15 @@ jobs:
           $RTLPath = cygpath -w ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/bin
           echo ${RTLPath} | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: extract swift-syntax
+      - name: Extract swift-syntax and vfs-overlay
         run: |
           $module = "${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules/SwiftSyntaxConfig.cmake"
           $bindir = cygpath -m ${{ github.workspace }}/BinaryCache/swift-syntax
           (Get-Content $module).Replace('<BINARY_DIR>', "${bindir}") | Set-Content $module
+
+          $VfsOverlay = "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
+          $ModuleMapDir = cygpath -m ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/share
+          (Get-Content $VfsOverlay).Replace("<MODULE_MAP_DIR>", "${ModuleMapDir}") | Set-Content $VfsOverlay
 
       - name: Configure Foundation Macros
         run: |
@@ -2308,6 +2319,13 @@ jobs:
         id: setup-ndk
         with:
           ndk-version: ${{ inputs.ANDROID_NDK_VERSION }}
+
+      - name: Extract vfs-overlay
+        if: matrix.os == 'Windows'
+        run: |
+          $VfsOverlay = "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
+          $ModuleMapDir = cygpath -m ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/share
+          (Get-Content $VfsOverlay).Replace("<MODULE_MAP_DIR>", "${ModuleMapDir}") | Set-Content $VfsOverlay
 
       - name: Configure libdispatch
         if: matrix.os != 'Android' || inputs.build_android
