@@ -2016,7 +2016,7 @@ jobs:
                   type: file
                   external-contents: "${ModuleMapDir}/vcruntime.apinotes"
           "@
-          $VfsOverlayDir = Split-Path -parent $VfsOverlay
+          $VfsOverlayDir = Split-Path -Parent $VfsOverlay
           New-Item -ItemType Directory -Path $VfsOverlayDir
           Write-Output $ModuleMap | Out-File -FilePath $VfsOverlay -Encoding utf8
 
@@ -2380,7 +2380,7 @@ jobs:
                   external-contents: "${ModuleMapDir}/vcruntime.apinotes"
           "@
 
-          $VfsOverlayDir = Split-Path -parent $VfsOverlay
+          $VfsOverlayDir = Split-Path -Parent $VfsOverlay
           New-Item -ItemType Directory -Path $VfsOverlayDir
           Write-Output $ModuleMap | Out-File -FilePath $VfsOverlay -Encoding utf8
 
