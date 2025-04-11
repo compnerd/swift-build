@@ -3746,7 +3746,7 @@ jobs:
               -p:SignOutput=${{ inputs.signed }} `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
-              -p:TOOLCHAIN_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts `
+              -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
               -p:ENABLE_MIMALLOC=true `
               -p:WORKAROUND_MIMALLOC_ISSUE_997=$WORKAROUND_MIMALLOC_ISSUE_997 `
               -p:ProductArchitecture=${{ matrix.arch }} `
@@ -3761,7 +3761,7 @@ jobs:
               -p:SignOutput=${{ inputs.signed }} `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
-              -p:TOOLCHAIN_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts `
+              -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
               -p:ProductArchitecture=${{ matrix.arch }} `
               -p:ProductVersion=${{ inputs.swift_version }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/cli/cli.wixproj
@@ -3774,7 +3774,7 @@ jobs:
               -p:SignOutput=${{ inputs.signed }} `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
-              -p:TOOLCHAIN_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts `
+              -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
               -p:ProductArchitecture=${{ matrix.arch }} `
               -p:ProductVersion=${{ inputs.swift_version }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/dbg/dbg.wixproj
@@ -3787,7 +3787,7 @@ jobs:
               -p:SignOutput=${{ inputs.signed }} `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
-              -p:TOOLCHAIN_ROOT=${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts `
+              -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
               -p:ProductArchitecture=${{ matrix.arch }} `
               -p:ProductVersion=${{ inputs.swift_version }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/ide/ide.wixproj
