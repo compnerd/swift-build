@@ -25,36 +25,41 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Configure caching enviornment
+    - name: Configure Caching Enviornment
       shell: pwsh
       run: |
+        # Prefer preprocessor caching; this has no effect when local caching is
+        # not used.
+        "SCCACHE_DIRECT=true" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
+
+        if ("$env:ACTIONS_STEP_DEBUG" -eq "true") {
+          "SCCACHE_LOG_LEVEL=debug" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
+        }
+
         $AWSArn = '${{ inputs.aws-arn }}'
         if ($AWSArn) {
-          $requiredParams = @{
+          $Parameters = @{
             's3-bucket' = '${{ inputs.s3-bucket }}'
             's3-bucket-encryption' = '${{ inputs.s3-bucket-encryption }}'
             'aws-region' = '${{ inputs.aws-region }}'
           }
 
-          foreach ($param in $requiredParams.GetEnumerator()) {
-            if ([string]::IsNullOrEmpty($param.Value)) {
-              Write-Error -Message "$($param.Key) input cannot be empty when aws-arn is provided" -ErrorAction Stop
+          foreach ($Parameter in $Prameters.GetEnumerator()) {
+            if ([string]::IsNullOrEmpty($Parameter.Value)) {
+              Write-Output "::error::$($Parameter.Key) input cannot be empty when aws-arn is provided"
             }
           }
 
-          Write-Host "Using S3 bucket ${{ inputs.s3-bucket }} for cache storage."
-          "SCCACHE_BUCKET=${{ inputs.s3-bucket }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "SCCACHE_REGION=${{ inputs.aws-region }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "SCCACHE_S3_SERVER_SIDE_ENCRYPTION=${{ inputs.s3-bucket-encryption }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        } else {
-          Write-Host "Using local disk cache."
-          "SCCACHE_DIRECT=on" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Output "::info::Using S3 bucket ${{ inputs.s3-bucket }} for cache storage"
+          "SCCACHE_BUCKET=${{ inputs.s3-bucket }}" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
+          "SCCACHE_REGION=${{ inputs.aws-region }}" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
+          "SCCACHE_S3_SERVER_SIDE_ENCRYPTION=${{ inputs.s3-bucket-encryption }}" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
         }
 
     - name: Authenticate to AWS
       id: aws-credentials
-      uses: aws-actions/configure-aws-credentials@v3
       if: inputs.aws-arn != ''
+      uses: aws-actions/configure-aws-credentials@v3
       with:
         role-to-assume: ${{ inputs.aws-arn }}
         role-session-name: ToolchainCISccacheAccess
