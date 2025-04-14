@@ -31,15 +31,15 @@ runs:
         $AWSArn = '${{ inputs.aws-arn }}'
         if ($AWSArn) {
           $requiredParams = @{
-              's3-bucket' = '${{ inputs.s3-bucket }}'
-              's3-bucket-encryption' = '${{ inputs.s3-bucket-encryption }}'
-              'aws-region' = '${{ inputs.aws-region }}'
+            's3-bucket' = '${{ inputs.s3-bucket }}'
+            's3-bucket-encryption' = '${{ inputs.s3-bucket-encryption }}'
+            'aws-region' = '${{ inputs.aws-region }}'
           }
 
           foreach ($param in $requiredParams.GetEnumerator()) {
-              if ([string]::IsNullOrEmpty($param.Value)) {
-                  Write-Error -Message "$($param.Key) input cannot be empty when aws-arn is provided" -ErrorAction Stop
-              }
+            if ([string]::IsNullOrEmpty($param.Value)) {
+              Write-Error -Message "$($param.Key) input cannot be empty when aws-arn is provided" -ErrorAction Stop
+            }
           }
 
           Write-Host "Using S3 bucket ${{ inputs.s3-bucket }} for cache storage."
