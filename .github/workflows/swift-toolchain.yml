@@ -4071,19 +4071,19 @@ jobs:
         with:
           name: Windows-amd64-rtl-msm
           path: |
-            ${{ github.workspace }}/BinaryCache/installer/Release/${{ inputs.build_arch }}/rtl.amd64.msm
+            ${{ github.workspace }}/BinaryCache/installer/Release/amd64/rtl.amd64.msm
 
       - uses: actions/upload-artifact@v4
         with:
           name: Windows-arm64-rtl-msm
           path: |
-            ${{ github.workspace }}/BinaryCache/installer/Release/${{ inputs.build_arch }}/rtl.arm64.msm
+            ${{ github.workspace }}/BinaryCache/installer/Release/arm64/rtl.arm64.msm
 
       - uses: actions/upload-artifact@v4
         with:
           name: Windows-x86-rtl-msm
           path: |
-            ${{ github.workspace }}/BinaryCache/installer/Release/${{ inputs.build_arch }}/rtl.x86.msm
+            ${{ github.workspace }}/BinaryCache/installer/Release/x86/rtl.x86.msm
 
   package_android_platform:
     # TODO: Build this on macOS or make an equivalent Mac-only job
