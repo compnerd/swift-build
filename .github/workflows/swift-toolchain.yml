@@ -3815,6 +3815,7 @@ jobs:
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
               -p:WORKAROUND_MIMALLOC_ISSUE_997=$WORKAROUND_MIMALLOC_ISSUE_997 `
               -p:ProductVersion=${{ inputs.swift_version }} `
+              -p:ProductArchitecture=${{ matrix.arch }} `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bld/bld.wixproj
 
       - name: Package CLI Tools
