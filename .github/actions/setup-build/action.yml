@@ -6,7 +6,7 @@ inputs:
     description: The Windows SDK version to use, e.g. "10.0.22621.0"
     required: false
     type: string
-  windows-msvc-version:
+  msvc-version:
     description: The Windows MSVC version to use, e.g. "14.42"
     required: false
     type: string
@@ -28,9 +28,9 @@ runs:
       shell: pwsh
       run: |
         if ($IsWindows) {
-          $HostOs = "windows"
+          $HostOS = "windows"
         } elseif ($IsMacOS) {
-          $HostOs = "mac"
+          $HostOS = "mac"
         } else {
           Write-Output "::error::Unsupported host OS."
           exit 1
@@ -46,23 +46,23 @@ runs:
           }
         }
 
-        $WinMsvcVersion = "${{ inputs.windows-msvc-version }}"
-        if ($WinMsvcVersion -ne "") {
-          $ParsedWinMsvcVersion = [System.Version]::Parse($WinMsvcVersion)
-          if ($ParsedWinMsvcVersion -eq $null) {
-            Write-Output "::error::Invalid Windows MSVC version: `"${WinMsvcVersion}`"."
+        $MSVCVersion = "${{ inputs.msvc-version }}"
+        if ($MSVCVersion -ne "") {
+          $ParsedMSVCVersion = [System.Version]::Parse($MSVCVersion)
+          if ($ParsedMSVCVersion -eq $null) {
+            Write-Output "::error::Invalid Windows MSVC version: `"${MSVCVersion}`"."
             exit 1
           }
-          if ($ParsedWinMsvcVersion.Major -ne 14) {
-            Write-Output "::error::Unsupported Windows MSVC version (major version not supported): `"${WinMsvcVersion}`"."
+          if ($ParsedMSVCVersion.Major -ne 14) {
+            Write-Output "::error::Unsupported Windows MSVC version (major version not supported): `"${MSVCVersion}`"."
             exit 1
           }
-          if ($ParsedWinMsvcVersion.Build -ne -1) {
-            Write-Output "::error::Unsupported Windows MSVC version (build version was specified): `"${WinMsvcVersion}`"."
+          if ($ParsedMSVCVersion.Build -ne -1) {
+            Write-Output "::error::Unsupported Windows MSVC version (build version was specified): `"${MSVCVersion}`"."
             exit 1
           }
-          if ($ParsedWinMsvcVersion.Revision -ne -1) {
-            Write-Output "::error::Unsupported Windows MSVC version (revision version was specified): `"${WinMsvcVersion}`"."
+          if ($ParsedMSVCVersion.Revision -ne -1) {
+            Write-Output "::error::Unsupported Windows MSVC version (revision version was specified): `"${MSVCVersion}`"."
             exit 1
           }
         }
@@ -78,16 +78,16 @@ runs:
           }
         }
 
-        Write-Output "Host OS: $HostOs"
-        Write-Output "Host architecture: $HostArch"
-        Write-Output "Target architecture: $TargetArch"
+        Write-Output "::info::Build OS: $HostOS"
+        Write-Output "::info::Build architecture: $HostArch"
+        Write-Output "::info::Host OS: $HostOS"
+        Write-Output "::info::Host architecture: $TargetArch"
 
-        $VerifiedInput = @"
-        host-os=$HostOs
+        @"
+        host-os=$HostOS
         host-arch=$HostArch
         target-arch=$TargetArch
-        "@
-        Write-Output $VerifiedInput | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        "@ | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
     - name: Install Windows SDK version ${{ inputs.windows-sdk-version }}
       if: steps.verify-input.outputs.host-os == 'windows' && inputs.windows-sdk-version != ''
@@ -105,16 +105,16 @@ runs:
         $Win10SdkIncludeVersion = Join-Path $Win10SdkInclude $WinSdkVersionString
 
         if (Test-Path -Path $Win10SdkIncludeVersion -PathType Container) {
-          Write-Output "Windows SDK ${WinSdkVersionString} already installed."
+          Write-Output "::info::Windows SDK ${WinSdkVersionString} already installed."
         } else {
           # Install the missing SDK.
           Write-Output "Installing Windows SDK ${WinSdkVersionString}..."
 
           $InstallerLocation = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio" "Installer"
-          $VsWhere = Join-Path "${InstallerLocation}" "vswhere.exe"
-          $VsInstaller = Join-Path "${InstallerLocation}" "vs_installer.exe"
-          $InstallPath = (& "$VsWhere" -latest -products * -format json | ConvertFrom-Json).installationPath
-          $process = Start-Process "$VsInstaller" `
+          $VSWhere = Join-Path "${InstallerLocation}" "VSWhere.exe"
+          $VSInstaller = Join-Path "${InstallerLocation}" "vs_installer.exe"
+          $InstallPath = (& "$VSWhere" -latest -products * -format json | ConvertFrom-Json).installationPath
+          $process = Start-Process "$VSInstaller" `
               -PassThru `
               -ArgumentList "modify", `
                   "--installPath", "`"$InstallPath`"", `
@@ -136,6 +136,8 @@ runs:
 
         # Remove more recent Windows SDKs, if present. This is used to work
         # around issues where LLVM uses the most recent Windows SDK.
+        # This should be removed once a more permanent solution is found.
+        # See https://github.com/compnerd/swift-build/issues/958 for details.
         Get-ChildItem -Path $Win10SdkInclude -Directory | ForEach-Object {
           $IncludeDirName = $_.Name
           try {
@@ -151,65 +153,69 @@ runs:
           }
         }
 
-    - name: Install Windows MSVC version ${{ inputs.windows-msvc-version }}
-      if: steps.verify-input.outputs.host-os == 'windows' && inputs.windows-msvc-version != ''
+    - name: Install Windows MSVC version ${{ inputs.msvc-version }}
+      if: steps.verify-input.outputs.host-os == 'windows' && inputs.msvc-version != ''
       shell: pwsh
       run: |
         # This is assuming a VS2022 toolchain. e.g.
         # MSVC 14.42 corresponds to the 14.42.17.12 package.
         # MSVC 14.43 corresponds to the 14.43.17.13 package.
-        $WinMsvcVersionString = "${{ inputs.windows-msvc-version }}"
+        $MSVCVersionString = "${{ inputs.msvc-version }}"
 
         $InstallerLocation = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio" "Installer"
-        $VsWhere = Join-Path "${InstallerLocation}" "vswhere.exe"
-        $VsInstaller = Join-Path "${InstallerLocation}" "vs_installer.exe"
-        $InstallPath = (& "$VsWhere" -latest -products * -format json | ConvertFrom-Json).installationPath
+        $VSWhere = Join-Path "${InstallerLocation}" "VSWhere.exe"
+        $VSInstaller = Join-Path "${InstallerLocation}" "vs_installer.exe"
+        $InstallPath = (& "$VSWhere" -latest -products * -format json | ConvertFrom-Json).installationPath
         $MSVCDir = Join-Path $InstallPath "VC" "Tools" "MSVC"
 
         # Check if this MSVC version is already installed.
         Get-ChildItem -Path $MSVCDir -Directory | ForEach-Object {
-          $MsvcDirName = $_.Name
-          if ($MsvcDirName.StartsWith($WinMsvcVersionString)) {
-            Write-Output "MSVC ${WinMsvcVersionString} already installed."
+          $MSVCDirName = $_.Name
+          if ($MSVCDirName.StartsWith($MSVCVersionString)) {
+            Write-Output "::info::MSVC ${MSVCVersionString} already installed."
             exit 0
           }
         }
 
-        # Compute the MSVC version package name.
-        $WinMsvcVersion = [System.Version]::Parse($WinMsvcVersionString)
-        $MajorVersion = $WinMsvcVersion.Major
-        $MinorVersion = $WinMsvcVersion.Minor
+        # Compute the MSVC version package name from the MSVC version, assuming this is coming from
+        # a VS2022 installation. The version package follows the following format:
+        # * Major and minor version are the same as the MSVC version.
+        # * Build version is always 17 (VS2002 is VS17).
+        # * The revision is set to the number of minor versions since VS17 release.
+        $MSVCVersion = [System.Version]::Parse($MSVCVersionString)
+        $MajorVersion = $MSVCVersion.Major
+        $MinorVersion = $MSVCVersion.Minor
         $BuildVersion = 17
         $RevisionVersion = $MinorVersion - 30
-        $WinMsvcVersionBuild = "${MajorVersion}.${MinorVersion}.${BuildVersion}.${RevisionVersion}"
+        $MSVCPackageVersion = "${MajorVersion}.${MinorVersion}.${BuildVersion}.${RevisionVersion}"
 
         # Install the missing MSVC version.
-        Write-Output "Installing MSVC packages for ${WinMsvcVersionBuild}..."
-        $process = Start-Process "$VsInstaller" `
+        Write-Output "Installing MSVC packages for ${MSVCPackageVersion}..."
+        $process = Start-Process "$VSInstaller" `
             -PassThru `
             -ArgumentList "modify", `
                 "--installPath", "`"$InstallPath`"", `
                 "--channelId", "https://aka.ms/vs/17/release/channel", `
                 "--quiet", "--norestart", "--nocache", `
-                "--add", "Microsoft.VisualStudio.Component.VC.${WinMsvcVersionBuild}.x86.x64", `
-                "--add", "Microsoft.VisualStudio.Component.VC.${WinMsvcVersionBuild}.ATL", `
-                "--add", "Microsoft.VisualStudio.Component.VC.${WinMsvcVersionBuild}.ARM64", `
-                "--add", "Microsoft.VisualStudio.Component.VC.${WinMsvcVersionBuild}.ATL.ARM64"
+                "--add", "Microsoft.VisualStudio.Component.VC.${MSVCPackageVersion}.x86.x64", `
+                "--add", "Microsoft.VisualStudio.Component.VC.${MSVCPackageVersion}.ATL", `
+                "--add", "Microsoft.VisualStudio.Component.VC.${MSVCPackageVersion}.ARM64", `
+                "--add", "Microsoft.VisualStudio.Component.VC.${MSVCPackageVersion}.ATL.ARM64"
         $process.WaitForExit()
 
         # Check if the MSVC version was installed successfully.
         $MSVCDirFound = $false
-        Get-ChildItem -Path $MSVCDir -Directory | ForEach-Object {
-          $MsvcDirName = $_.Name
-          if ($MsvcDirName.StartsWith($WinMsvcVersionString)) {
-            Write-Output "MSVC ${WinMsvcVersionString} installed successfully."
+        foreach ($dir in Get-ChildItem -Path $MSVCDir -Directory) {
+          $MSVCDirName = $dir.Name
+          if ($MSVCDirName.StartsWith($MSVCVersionString)) {
+            Write-Output "MSVC ${MSVCVersionString} installed successfully."
             $MSVCDirFound = $true
             break
           }
         }
 
         if (-not $MSVCDirFound) {
-          Write-Output "::error::Failed to install MSVC ${WinMsvcVersionString}."
+          Write-Output "::error::Failed to install MSVC ${MSVCVersionString}."
           Write-Output "Installer log:"
           $log = Get-ChildItem "${env:TEMP}" -Filter "dd_installer_*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
           Get-Content $log.FullName
@@ -222,5 +228,5 @@ runs:
       with:
         host_arch: ${{ steps.verify-input.outputs.host-arch }}
         arch: ${{ steps.verify-input.outputs.target-arch }}
-        winsdk: ${{ inputs.windows-msvc-version }}
-        toolset_version: ${{ inputs.windows-msvc-version }}
+        winsdk: ${{ inputs.msvc-version }}
+        toolset_version: ${{ inputs.msvc-version }}

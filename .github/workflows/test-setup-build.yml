@@ -35,7 +35,7 @@ jobs:
         uses: ./.github/actions/setup-build
         with:
           windows-sdk-version: ${{ env.TEST_WIN_SDK_VERSION }}
-          windows-msvc-version: ${{ env.TEST_MSVC_VERSION }}
+          msvc-version: ${{ env.TEST_MSVC_VERSION }}
           setup-vs-dev-env: true
 
       - name: Check environment
@@ -78,13 +78,13 @@ jobs:
 
           # Check if the correct MSVC version is installed.
           $InstallerLocation = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio" "Installer"
-          $VsWhere = Join-Path "${InstallerLocation}" "vswhere.exe"
-          $InstallPath = (& "$VsWhere" -latest -products * -format json | ConvertFrom-Json).installationPath
+          SWhere = Join-Path "${InstallerLocation}" "vswhere.exe"
+          $InstallPath = (& "$VSWhere" -latest -products * -format json | ConvertFrom-Json).installationPath
           $MSVCDir = Join-Path $InstallPath "VC" "Tools" "MSVC"
           $DirFound = $false
           foreach ($dir in Get-ChildItem -Path $MSVCDir -Directory) {
-            $MsvcDirName = $dir.Name
-            if ($MsvcDirName.StartsWith($env:TEST_MSVC_VERSION)) {
+            $MSVCDirName = $dir.Name
+            if ($MSVCDirName.StartsWith($env:TEST_MSVC_VERSION)) {
               $DirFound = $true
               break
             }
@@ -103,8 +103,9 @@ jobs:
           $lastLine = $clOutput | Select-Object -Last 1
           Remove-Item $tempFile -Force
 
-          $ParsedMsvcVersion = [System.Version]::Parse($env:TEST_MSVC_VERSION)
-          $ExpectedVersion = ($ParsedMsvcVersion.Major + 5) * 100 + $ParsedMsvcVersion.Minor
+          # _MSC_VER expands to a number like 1942 for MSVC 14.42.
+          $ParsedMSVCVersion = [System.Version]::Parse($env:TEST_MSVC_VERSION)
+          $ExpectedVersion = ($ParsedMSVCVersion.Major + 5) * 100 + $ParsedMSVCVersion.Minor
           if ($lastLine -eq $ExpectedVersion) {
             Write-Output "✅ cl.exe reports expected _MSC_VER `"${ExpectedVersion}`"."
           } else {
