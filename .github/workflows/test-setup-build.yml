@@ -78,7 +78,7 @@ jobs:
 
           # Check if the correct MSVC version is installed.
           $InstallerLocation = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio" "Installer"
-          SWhere = Join-Path "${InstallerLocation}" "vswhere.exe"
+          $VSWhere = Join-Path "${InstallerLocation}" "vswhere.exe"
           $InstallPath = (& "$VSWhere" -latest -products * -format json | ConvertFrom-Json).installationPath
           $MSVCDir = Join-Path $InstallPath "VC" "Tools" "MSVC"
           $DirFound = $false
