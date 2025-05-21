@@ -78,10 +78,10 @@ runs:
           }
         }
 
-        Write-Output "::info::Build OS: $HostOS"
-        Write-Output "::info::Build architecture: $HostArch"
-        Write-Output "::info::Host OS: $HostOS"
-        Write-Output "::info::Host architecture: $TargetArch"
+        Write-Output "ℹ️ Host OS: $HostOS"
+        Write-Output "ℹ️ Host architecture: $HostArch"
+        Write-Output "ℹ️ Host OS: $HostOS"
+        Write-Output "ℹ️ Host architecture: $TargetArch"
 
         @"
         host-os=$HostOS
@@ -105,10 +105,10 @@ runs:
         $Win10SdkIncludeVersion = Join-Path $Win10SdkInclude $WinSdkVersionString
 
         if (Test-Path -Path $Win10SdkIncludeVersion -PathType Container) {
-          Write-Output "::info::Windows SDK ${WinSdkVersionString} already installed."
+          Write-Output "ℹ️ MSVCPackageVersionWindows SDK ${WinSdkVersionString} already installed."
         } else {
           # Install the missing SDK.
-          Write-Output "Installing Windows SDK ${WinSdkVersionString}..."
+          Write-Output "ℹ️ Installing Windows SDK ${WinSdkVersionString}..."
 
           $InstallerLocation = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio" "Installer"
           $VSWhere = Join-Path "${InstallerLocation}" "VSWhere.exe"
@@ -124,7 +124,7 @@ runs:
           $process.WaitForExit()
 
           if (Test-Path -Path $Win10SdkIncludeVersion -PathType Container) {
-            Write-Output "Windows SDK ${WinSdkVersionString} installed successfully."
+            Write-Output "ℹ️ Windows SDK ${WinSdkVersionString} installed successfully."
           } else {
             Write-Output "::error::Failed to install Windows SDK ${WinSdkVersionString}."
             Write-Output "Installer log:"
@@ -144,7 +144,7 @@ runs:
             $IncludeDirVersion = [System.Version]::Parse($IncludeDirName)
             if ($IncludeDirVersion -gt $WinSdkVersion) {
               $LibDirVersion = Join-Path $Win10SdkLib $IncludeDirName
-              Write-Output "Removing folders for Windows SDK ${IncludeDirVersion}."
+              Write-Output "ℹ️ Removing folders for Windows SDK ${IncludeDirVersion}."
               Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction Ignore
               Remove-Item -Path $LibDirVersion -Recurse -Force -ErrorAction Ignore
             }
@@ -172,7 +172,7 @@ runs:
         Get-ChildItem -Path $MSVCDir -Directory | ForEach-Object {
           $MSVCDirName = $_.Name
           if ($MSVCDirName.StartsWith($MSVCVersionString)) {
-            Write-Output "::info::MSVC ${MSVCVersionString} already installed."
+            Write-Output "ℹ️ MSVCPackageVersionMSVC ${MSVCVersionString} already installed."
             exit 0
           }
         }
@@ -190,7 +190,7 @@ runs:
         $MSVCPackageVersion = "${MajorVersion}.${MinorVersion}.${BuildVersion}.${RevisionVersion}"
 
         # Install the missing MSVC version.
-        Write-Output "Installing MSVC packages for ${MSVCPackageVersion}..."
+        Write-Output "ℹ️ Installing MSVC packages for ${MSVCPackageVersion}..."
         $process = Start-Process "$VSInstaller" `
             -PassThru `
             -ArgumentList "modify", `
@@ -208,7 +208,7 @@ runs:
         foreach ($dir in Get-ChildItem -Path $MSVCDir -Directory) {
           $MSVCDirName = $dir.Name
           if ($MSVCDirName.StartsWith($MSVCVersionString)) {
-            Write-Output "MSVC ${MSVCVersionString} installed successfully."
+            Write-Output "ℹ️ MSVC ${MSVCVersionString} installed successfully."
             $MSVCDirFound = $true
             break
           }
