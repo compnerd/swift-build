@@ -20,6 +20,11 @@ inputs:
     required: false
     type: string
 
+outputs:
+  windows-build-tools-version:
+    description: The full version of the Windows build tools installed, eg. "14.42.34433"
+    value: ${{ steps.install-msvc.outputs.windows-build-tools-version }}
+
 runs:
   using: composite
   steps:
@@ -154,6 +159,7 @@ runs:
         }
 
     - name: Install Windows MSVC version ${{ inputs.msvc-version }}
+      id: install-msvc
       if: steps.verify-input.outputs.host-os == 'windows' && inputs.msvc-version != ''
       shell: pwsh
       run: |
@@ -173,6 +179,7 @@ runs:
           $MSVCDirName = $_.Name
           if ($MSVCDirName.StartsWith($MSVCVersionString)) {
             Write-Output "ℹ️ MSVCPackageVersionMSVC ${MSVCVersionString} already installed."
+            "windows-build-tools-version=${MSVCDirName}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             exit 0
           }
         }
@@ -204,22 +211,25 @@ runs:
         $process.WaitForExit()
 
         # Check if the MSVC version was installed successfully.
-        $MSVCDirFound = $false
+        $MSVCBuildToolsVersion = ""
         foreach ($dir in Get-ChildItem -Path $MSVCDir -Directory) {
           $MSVCDirName = $dir.Name
           if ($MSVCDirName.StartsWith($MSVCVersionString)) {
             Write-Output "ℹ️ MSVC ${MSVCVersionString} installed successfully."
-            $MSVCDirFound = $true
+            $MSVCBuildToolsVersion = $MsvcDirName
             break
           }
         }
 
-        if (-not $MSVCDirFound) {
+        if ($MSVCBuildToolsVersion -eq "") {
           Write-Output "::error::Failed to install MSVC ${MSVCVersionString}."
           Write-Output "Installer log:"
           $log = Get-ChildItem "${env:TEMP}" -Filter "dd_installer_*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
           Get-Content $log.FullName
           exit 1
+        } else {
+          Write-Output "MSVC ${WinMsvcVersionString} installed successfully."
+          "windows-build-tools-version=${MSVCBuildToolsVersion}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
 
     - name: Setup Visual Studio Developer Environment
