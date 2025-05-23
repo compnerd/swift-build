@@ -46,6 +46,10 @@ runs:
           }
         }
 
+        # Validate the MSVC version input.
+        # If specified, it is expected to have a format "major.minor", without the build and
+        # revision numbers. When a value such as "14.42" is parsed as a `System.Version`, the build
+        # and revision numbers in that object are set to -1.
         $MSVCVersion = "${{ inputs.msvc-version }}"
         if ($MSVCVersion -ne "") {
           $ParsedMSVCVersion = [System.Version]::Parse($MSVCVersion)
