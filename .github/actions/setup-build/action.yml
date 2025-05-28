@@ -17,8 +17,8 @@ inputs:
     type: boolean
   host-arch:
     description: |
-      The compiler's host architecture, "x86", "amd64" or "arm64". Defaults to the build
-      architecture. (a.k.a. the current runner's architecture).
+      The output's host architecture, "x86", "amd64" or "arm64". Defaults to the build architecture
+      (a.k.a. the current runner's architecture).
       This is the target architecture for the Visual Studio Developer Environment.
     required: false
     type: string
@@ -42,7 +42,7 @@ runs:
         } elseif ($IsMacOS) {
           $BuildOS = "macosx"
         } else {
-          Write-Output "::error::Unsupported host OS."
+          Write-Output "::error::Unsupported build OS."
           exit 1
         }
 
@@ -51,7 +51,7 @@ runs:
           "X64" { $BuildArch = "amd64" }
           "Arm64" { $BuildArch = "arm64" }
           default {
-            Write-Output "::error::Unsupported host architecture: `"$BuildArch`""
+            Write-Output "::error::Unsupported build architecture: `"$Arch`""
             exit 1
           }
         }
