@@ -2,12 +2,6 @@ name: Setup build
 description: Sets up the build environment for the current job
 
 inputs:
-  upload-prefix:
-    description: |
-      The prefix to use for the uploaded artifacts. This is used to distinguish
-      between different matrix jobs in the same workflow.
-    required: true
-    type: string
   windows-sdk-version:
     description: The Windows SDK version to use, e.g. "10.0.22621.0"
     required: false
@@ -147,13 +141,12 @@ runs:
                   "--add", "Microsoft.VisualStudio.Component.Windows11SDK.${WinSdkVersionBuild}"
           $process.WaitForExit()
 
-          $LogFile = Get-ChildItem "${env:TEMP}" -Filter "dd_installer_*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-          "log-file=$($LogFile.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
           if (Test-Path -Path $Win10SdkIncludeVersion -PathType Container) {
             Write-Output "ℹ️ Windows SDK ${WinSdkVersionString} installed successfully."
           } else {
             Write-Output "::error::Failed to install Windows SDK ${WinSdkVersionString}. Check the installer log for details."
+            $LogFile = Get-ChildItem "${env:TEMP}" -Filter "dd_installer_*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            "log-file=$($LogFile.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             exit 1
           }
         }
@@ -181,7 +174,7 @@ runs:
       if: always() && steps.setup-windows-sdk.outputs.log-file != ''
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.upload-prefix }}-windows-sdk-installer-log
+        name: ${{ github.job }}-windows-sdk-installer-log
         path: ${{ steps.setup-windows-sdk.outputs.log-file }}
 
     - name: Install Windows MSVC version ${{ inputs.msvc-version }}
@@ -226,9 +219,6 @@ runs:
                 "--add", "Microsoft.VisualStudio.Component.VC.${MSVCPackageVersion}.ATL.ARM64"
         $process.WaitForExit()
 
-        $LogFile = Get-ChildItem "${env:TEMP}" -Filter "dd_installer_*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-        "log-file=$($LogFile.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
         # Check if the MSVC version was installed successfully.
         $MSVCBuildToolsVersion = ""
         foreach ($dir in Get-ChildItem -Path $MSVCDir -Directory) {
@@ -242,6 +232,8 @@ runs:
 
         if ($MSVCBuildToolsVersion -eq "") {
           Write-Output "::error::Failed to install MSVC ${MSVCVersionString}. Check the installer log for details."
+          $LogFile = Get-ChildItem "${env:TEMP}" -Filter "dd_installer_*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          "log-file=$($LogFile.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           exit 1
         } else {
           Write-Output "ℹ️ MSVC ${MSVCBuildToolsVersion} installed successfully."
@@ -252,7 +244,7 @@ runs:
       if: always() && steps.setup-msvc.outputs.log-file != ''
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.upload-prefix }}-msvc-installer-log
+        name: ${{ github.job }}-msvc-installer-log
         path: ${{ steps.setup-msvc.outputs.log-file }}
 
     - name: Setup Visual Studio Developer Environment

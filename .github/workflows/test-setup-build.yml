@@ -36,7 +36,6 @@ jobs:
         id: setup-build
         uses: ./.github/actions/setup-build
         with:
-          upload-prefix: "test-build-windows-vs-dev-env"
           windows-sdk-version: ${{ env.TEST_WIN_SDK_VERSION }}
           msvc-version: ${{ env.TEST_MSVC_VERSION }}
           setup-vs-dev-env: true
@@ -142,7 +141,6 @@ jobs:
         id: setup-build
         uses: ./.github/actions/setup-build
         with:
-          upload-prefix: "test-build-windows-no-vs-dev-env"
           windows-sdk-version: ${{ env.TEST_WIN_SDK_VERSION }}
           msvc-version: ${{ env.TEST_MSVC_VERSION }}
           setup-vs-dev-env: false
@@ -241,14 +239,13 @@ jobs:
         id: setup-build
         uses: ./.github/actions/setup-build
         with:
-          upload-prefix: "test-incorrect-windows-sdk-version"
           windows-sdk-version: "99.99.9999.0"  # Intentionally incorrect version
         continue-on-error: true
 
       - name: Download log file
         uses: actions/download-artifact@v4
         with:
-          name: test-incorrect-windows-sdk-version-windows-sdk-installer-log
+          name: ${{ github.job }}-windows-sdk-installer-log
           path: ${{ github.workspace }}/windows-sdk-installer-log
 
       - name: Check the log file existence
@@ -273,14 +270,13 @@ jobs:
         id: setup-build
         uses: ./.github/actions/setup-build
         with:
-          upload-prefix: "test-incorrect-msvc-version"
           msvc-version: "14.99"  # Intentionally incorrect version
         continue-on-error: true
 
       - name: Download log file
         uses: actions/download-artifact@v4
         with:
-          name: test-incorrect-msvc-version-msvc-installer-log
+          name: ${{ github.job }}-msvc-installer-log
           path: ${{ github.workspace }}/msvc-installer-log
 
       - name: Check the log file existence
