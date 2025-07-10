@@ -115,9 +115,6 @@ You may also sync to specific toolchain versions by providing `repo` with the co
 "%ProgramFiles(x86)%\Microsoft Visual Studio\Shared\Python39_64\python.exe" S:\Applications\repo sync -m path\to\stable.xml
 ```
 
-> [!NOTE]
-> The first clone will fail if you do not have git-lfs. The failure is due to the inability to checkout the ICU data which is stored using LFS, but is not fatal in practice.
-
 ## Building
 
 The full toolchain can be built in an automated fashion.  The following script
