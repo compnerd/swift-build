@@ -2660,11 +2660,9 @@ jobs:
           cmake -B ${{ github.workspace }}/BinaryCache/StaticFoundation `
                 -D CMAKE_BUILD_TYPE=Release `
                 -D CMAKE_C_COMPILER=${{ matrix.cc }} `
-                -D CMAKE_C_COMPILER_LAUNCHER=sccache `
                 -D CMAKE_C_COMPILER_TARGET=${{ matrix.triple }} `
                 -D CMAKE_C_FLAGS="${{ matrix.cflags }}" `
                 -D CMAKE_CXX_COMPILER=${{ matrix.cxx }} `
-                -D CMAKE_CXX_COMPILER_LAUNCHER=sccache `
                 -D CMAKE_CXX_COMPILER_TARGET=${{ matrix.triple }} `
                 -D CMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" `
                 -D CMAKE_Swift_COMPILER=${SWIFTC} `
