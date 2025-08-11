@@ -4771,8 +4771,8 @@ jobs:
                                    "lld-link.exe",
                                    "ld.lld.exe",
                                    "ld64.lld.exe")
-          $AssertBinaries = $MimallocExecutables | ForEach-Object {[IO.Path]::Combine($AssertToolchainBin, $_)}
-          $NoAssertBinaries = $MimallocExecutables | ForEach-Object {[IO.Path]::Combine($NoAssertToolchainBin, $_)}
+          $AssertBinaries = $MimallocExecutables | ForEach-Object { [IO.Path]::Combine($AssertToolchainBin, $_) }
+          $NoAssertBinaries = $MimallocExecutables | ForEach-Object { [IO.Path]::Combine($NoAssertToolchainBin, $_) }
           $Binaries = $AssertBinaries + $NoAssertBinaries
           foreach ($Exe in $Binaries) {
             # Binary-patch in place
@@ -4783,7 +4783,6 @@ jobs:
 
       - name: Package Build Tools (Asserts)
         run: |
-          # When cross-compiling, bundle the second mimalloc redirect dll as a workaround for
           msbuild -nologo -restore -maxCpuCount `
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
@@ -4798,7 +4797,6 @@ jobs:
 
       - name: Package Build Tools (NoAsserts)
         run: |
-         # When cross-compiling, bundle the second mimalloc redirect dll as a workaround for
           msbuild -nologo -restore -maxCpuCount `
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
