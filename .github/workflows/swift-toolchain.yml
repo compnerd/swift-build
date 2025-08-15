@@ -729,7 +729,7 @@ jobs:
       - name: Configure Tools
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
         with:
-          project-name: Tools
+          project-name: Build Tools
           swift-version: ${{ inputs.swift_version }}
           enable-caching: true
           debug-info: ${{ inputs.debug_info }}
