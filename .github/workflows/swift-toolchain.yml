@@ -2411,6 +2411,7 @@ jobs:
                 -G Ninja `
                 -S ${{ github.workspace }}/SourceCache/swift/Runtimes/Core `
                 -D SwiftCore_ENABLE_CONCURRENCY=YES `
+                -D SwiftCore_ENABLE_REMOTE_MIRROR=YES `
                 -D dispatch_DIR=${{ github.workspace }}/BinaryCache/libdispatch-c/cmake/modules
       - name: Build Experimental Runtime
         if: matrix.os != 'Android' || inputs.build_android
@@ -2473,7 +2474,8 @@ jobs:
                 ${{ matrix.extra_flags }} `
                 -G Ninja `
                 -S ${{ github.workspace }}/SourceCache/swift/Runtimes/Overlay `
-                -D SwiftCore_DIR=${{ github.workspace }}/BinaryCache/ExperimentalRuntime/cmake/SwiftCore
+                -D SwiftCore_DIR=${{ github.workspace }}/BinaryCache/ExperimentalRuntime/cmake/SwiftCore `
+                -D SwiftOverlay_ENABLE_CXX_INTEROP=YES
       - name: Build Experimental Overlay
         if: matrix.os != 'Android' || inputs.build_android
         run: |
