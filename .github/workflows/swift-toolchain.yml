@@ -2369,17 +2369,6 @@ jobs:
           if ("${{ matrix.os }}" -eq "Android") {
             # Used by matrix definitions.
             $NDKPATH = cygpath -m ${{ steps.setup-ndk.outputs.ndk-path }}
-          }
-
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
-            $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift"
-            $SwiftFlags += " -vfsoverlay ${WINDOWS_VFS_OVERLAY}"
-            $SwiftFlags += " -strict-implicit-module-context"
-            $SwiftFlags += " -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules"
-            $SwiftFlags += " -resource-dir $SwiftResourceDir"
-            $SwiftFlags += " -L $SwiftResourceDir/windows"
-          } elseif ("${{ matrix.os }}" -eq "Android") {
             $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Android.platform/Developer/SDKs/Android.sdk/usr/lib/swift"
             $SwiftFlags += " -sdk $NDKPATH/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
             $SwiftFlags += " -resource-dir $SwiftResourceDir"
@@ -2434,17 +2423,6 @@ jobs:
           if ("${{ matrix.os }}" -eq "Android") {
             # Used by matrix definitions.
             $NDKPATH = cygpath -m ${{ steps.setup-ndk.outputs.ndk-path }}
-          }
-
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
-            $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift"
-            $SwiftFlags += " -vfsoverlay ${WINDOWS_VFS_OVERLAY}"
-            $SwiftFlags += " -strict-implicit-module-context"
-            $SwiftFlags += " -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules"
-            $SwiftFlags += " -resource-dir $SwiftResourceDir"
-            $SwiftFlags += " -L $SwiftResourceDir/windows"
-          } elseif ("${{ matrix.os }}" -eq "Android") {
             $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Android.platform/Developer/SDKs/Android.sdk/usr/lib/swift"
             $SwiftFlags += " -sdk $NDKPATH/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
             $SwiftFlags += " -resource-dir $SwiftResourceDir"
@@ -2497,17 +2475,6 @@ jobs:
           if ("${{ matrix.os }}" -eq "Android") {
             # Used by matrix definitions.
             $NDKPATH = cygpath -m ${{ steps.setup-ndk.outputs.ndk-path }}
-          }
-
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
-            $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift"
-            $SwiftFlags += " -vfsoverlay ${WINDOWS_VFS_OVERLAY}"
-            $SwiftFlags += " -strict-implicit-module-context"
-            $SwiftFlags += " -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules"
-            $SwiftFlags += " -resource-dir $SwiftResourceDir"
-            $SwiftFlags += " -L $SwiftResourceDir/windows"
-          } elseif ("${{ matrix.os }}" -eq "Android") {
             $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Android.platform/Developer/SDKs/Android.sdk/usr/lib/swift"
             $SwiftFlags += " -sdk $NDKPATH/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
             $SwiftFlags += " -resource-dir $SwiftResourceDir"
@@ -2555,17 +2522,6 @@ jobs:
           if ("${{ matrix.os }}" -eq "Android") {
             # Used by matrix definitions.
             $NDKPATH = cygpath -m ${{ steps.setup-ndk.outputs.ndk-path }}
-          }
-
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
-            $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift"
-            $SwiftFlags += " -vfsoverlay ${WINDOWS_VFS_OVERLAY}"
-            $SwiftFlags += " -strict-implicit-module-context"
-            $SwiftFlags += " -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules"
-            $SwiftFlags += " -resource-dir $SwiftResourceDir"
-            $SwiftFlags += " -L $SwiftResourceDir/windows"
-          } elseif ("${{ matrix.os }}" -eq "Android") {
             $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Android.platform/Developer/SDKs/Android.sdk/usr/lib/swift"
             $SwiftFlags += " -sdk $NDKPATH/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
             $SwiftFlags += " -resource-dir $SwiftResourceDir"
@@ -2614,17 +2570,6 @@ jobs:
           if ("${{ matrix.os }}" -eq "Android") {
             # Used by matrix definitions.
             $NDKPATH = cygpath -m ${{ steps.setup-ndk.outputs.ndk-path }}
-          }
-
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
-            $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift"
-            $SwiftFlags += " -vfsoverlay ${WINDOWS_VFS_OVERLAY}"
-            $SwiftFlags += " -strict-implicit-module-context"
-            $SwiftFlags += " -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules"
-            $SwiftFlags += " -resource-dir $SwiftResourceDir"
-            $SwiftFlags += " -L $SwiftResourceDir/windows"
-          } elseif ("${{ matrix.os }}" -eq "Android") {
             $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Android.platform/Developer/SDKs/Android.sdk/usr/lib/swift"
             $SwiftFlags += " -sdk $NDKPATH/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
             $SwiftFlags += " -resource-dir $SwiftResourceDir"
@@ -2677,17 +2622,6 @@ jobs:
           if ("${{ matrix.os }}" -eq "Android") {
             # Used by matrix definitions.
             $NDKPATH = cygpath -m ${{ steps.setup-ndk.outputs.ndk-path }}
-          }
-
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
-            $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift"
-            $SwiftFlags += " -vfsoverlay ${WINDOWS_VFS_OVERLAY}"
-            $SwiftFlags += " -strict-implicit-module-context"
-            $SwiftFlags += " -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules"
-            $SwiftFlags += " -resource-dir $SwiftResourceDir"
-            $SwiftFlags += " -L $SwiftResourceDir/windows"
-          } elseif ("${{ matrix.os }}" -eq "Android") {
             $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Android.platform/Developer/SDKs/Android.sdk/usr/lib/swift"
             $SwiftFlags += " -sdk $NDKPATH/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
             $SwiftFlags += " -resource-dir $SwiftResourceDir"
@@ -2736,17 +2670,6 @@ jobs:
           if ("${{ matrix.os }}" -eq "Android") {
             # Used by matrix definitions.
             $NDKPATH = cygpath -m ${{ steps.setup-ndk.outputs.ndk-path }}
-          }
-
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
-            $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift"
-            $SwiftFlags += " -vfsoverlay ${WINDOWS_VFS_OVERLAY}"
-            $SwiftFlags += " -strict-implicit-module-context"
-            $SwiftFlags += " -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules"
-            $SwiftFlags += " -resource-dir $SwiftResourceDir"
-            $SwiftFlags += " -L $SwiftResourceDir/windows"
-          } elseif ("${{ matrix.os }}" -eq "Android") {
             $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Android.platform/Developer/SDKs/Android.sdk/usr/lib/swift"
             $SwiftFlags += " -sdk $NDKPATH/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
             $SwiftFlags += " -resource-dir $SwiftResourceDir"
@@ -2800,17 +2723,6 @@ jobs:
           if ("${{ matrix.os }}" -eq "Android") {
             # Used by matrix definitions.
             $NDKPATH = cygpath -m ${{ steps.setup-ndk.outputs.ndk-path }}
-          }
-
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $WINDOWS_VFS_OVERLAY = cygpath -m "${{ github.workspace }}/BinaryCache/swift/stdlib/windows-vfs-overlay.yaml"
-            $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift"
-            $SwiftFlags += " -vfsoverlay ${WINDOWS_VFS_OVERLAY}"
-            $SwiftFlags += " -strict-implicit-module-context"
-            $SwiftFlags += " -Xcc -Xclang -Xcc -fbuiltin-headers-in-system-modules"
-            $SwiftFlags += " -resource-dir $SwiftResourceDir"
-            $SwiftFlags += " -L $SwiftResourceDir/windows"
-          } elseif ("${{ matrix.os }}" -eq "Android") {
             $SwiftResourceDir = cygpath -m "${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Android.platform/Developer/SDKs/Android.sdk/usr/lib/swift"
             $SwiftFlags += " -sdk $NDKPATH/toolchains/llvm/prebuilt/windows-x86_64/sysroot"
             $SwiftFlags += " -resource-dir $SwiftResourceDir"
