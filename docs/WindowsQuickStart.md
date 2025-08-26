@@ -36,7 +36,7 @@ del /q vs_community.exe
 
 ### Install Python
 
-The `repo` tool uses python, and as such, we need a python installation on the host. Download and install the appropriate python for your platform from https://www.python.org.
+The `repo` tool uses Python, and as such, we need a Python installation on the host. We recommend installing **Python 3.9.10** to ensure compatibility with the provided scripts and examples. Download and install Python 3.9.10 for your platform from [https://www.python.org/downloads/release/python-3910/](https://www.python.org/downloads/release/python-3910/).
 
 ### Enable Symbolic Links Support
 
