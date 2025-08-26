@@ -36,7 +36,7 @@ del /q vs_community.exe
 
 ### Install Python
 
-The `repo` tool uses Python, and as such, we need a Python installation on the host. We recommend installing **Python 3.9.10** to ensure compatibility with the provided scripts and examples. Download and install Python 3.10.1 for your platform from [https://www.python.org/downloads/release/python-3101/](https://www.python.org/downloads/release/python-3101/).
+The `repo` tool uses Python, and as such, we need a Python installation on the host. We recommend installing **Python 3.10.1** to ensure compatibility with the provided scripts and examples. Download and install Python 3.10.1 for your platform from [https://www.python.org/downloads/release/python-3101/](https://www.python.org/downloads/release/python-3101/).
 
 ### Enable Symbolic Links Support
 
