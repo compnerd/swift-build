@@ -1111,6 +1111,7 @@ jobs:
               'LLDB_TABLEGEN' = "${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen${ExeSuffix}";
               'LLVM_CONFIG_PATH' = "${{ github.workspace }}/BinaryCache/0/bin/llvm-config${ExeSuffix}";
               'LLVM_ENABLE_ASSERTIONS' = ${{ matrix.variant == 'Asserts' && '"YES"' || '"NO"' }};
+              'LLVM_ENABLE_LLD' = "${{ inputs.build_compilers_with_llvm && 'YES' || 'NO' }}";
               'LLVM_EXTERNAL_SWIFT_SOURCE_DIR' = "${{ github.workspace }}/SourceCache/swift";
               'LLVM_HOST_TRIPLE' = "${{ matrix.triple }}";
               'LLVM_NATIVE_TOOL_DIR' = "${{ github.workspace }}/BinaryCache/0/bin";
@@ -1145,7 +1146,7 @@ jobs:
               'LLVM_VERSION_SUFFIX' = "";
               'LLVM_PARALLEL_LINK_JOBS' = "${{ steps.setup-context.outputs.link-jobs }}";
               'SWIFT_PARALLEL_LINK_JOBS' = "${{ steps.setup-context.outputs.link-jobs }}";
-              'CMAKE_Swift_FLAGS' = "${{ inputs.build_compilers_with_llvm && '-use-ld=lld-link' || '' }}";
+              'CMAKE_Swift_FLAGS' = "${{ inputs.build_compilers_with_llvm && '-use-ld=lld' || '' }}";
             }
 
       - name: Build Compiler Distribution
