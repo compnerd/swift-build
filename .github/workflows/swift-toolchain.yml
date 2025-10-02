@@ -2140,7 +2140,12 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}-zlib-${{ inputs.zlib_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
-
+      - uses: actions/download-artifact@v4
+        if: matrix.os != 'Android' || inputs.build_android
+        with:
+          name: ${{ matrix.os }}-${{ matrix.arch }}-brotli-${{ inputs.brotli_version }}
+          path: ${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr
+  
       - name: Download Compilers
         if: matrix.os != 'Android' || inputs.build_android
         uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
@@ -2801,7 +2806,12 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}-zlib-${{ inputs.zlib_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
-
+      - uses: actions/download-artifact@v4
+        if: matrix.os != 'Android' || inputs.build_android
+        with:
+          name: ${{ matrix.os }}-${{ matrix.arch }}-brotli-${{ inputs.brotli_version }}
+          path: ${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr
+  
       - name: Download Compilers
         if: matrix.os != 'Android' || inputs.build_android
         uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
