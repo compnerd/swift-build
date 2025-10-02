@@ -1408,7 +1408,7 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr
 
   curl:
-    needs: [zlib, brotli]
+    needs: [zlib]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -1460,10 +1460,6 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}-zlib-${{ inputs.zlib_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
-      - uses: actions/download-artifact@v4
-        with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-brotli-${{ inputs.brotli_version }}
-          path: ${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr
 
       - uses: nttld/setup-ndk@v1
         if: matrix.os == 'Android'
@@ -1501,7 +1497,7 @@ jobs:
               'CURL_CA_BUNDLE' = "none";
               'CURL_CA_FALLBACK' = "NO";
               'CURL_CA_PATH' = "none";
-              'CURL_BROTLI' = "YES";
+              'CURL_BROTLI' = "NO";
               'CURL_DISABLE_ALTSVC' = "NO";
               'CURL_DISABLE_AWS' = "YES";
               'CURL_DISABLE_BASIC_AUTH' = "NO";
@@ -1579,9 +1575,6 @@ jobs:
               'USE_WIN32_LDAP' = "NO";
               'ZLIB_ROOT' = "${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr";
               'ZLIB_LIBRARY' = "${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr/lib/zlibstatic.lib";
-              'BROTLI_INCLUDE_DIR' = "${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr/include";
-              'BROTLICOMMON_LIBRARY' = "${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr/lib/brotlicommon.lib";
-              'BROTLIDEC_LIBRARY' = "${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr/lib/brotlidec.lib";
             }
       - name: Build curl
         run: cmake --build ${{ github.workspace }}/BinaryCache/curl-${{ inputs.curl_version }}
@@ -2140,12 +2133,7 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}-zlib-${{ inputs.zlib_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
-      - uses: actions/download-artifact@v4
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-brotli-${{ inputs.brotli_version }}
-          path: ${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr
-  
+
       - name: Download Compilers
         if: matrix.os != 'Android' || inputs.build_android
         uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
@@ -2806,12 +2794,7 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}-zlib-${{ inputs.zlib_version }}
           path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
-      - uses: actions/download-artifact@v4
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-brotli-${{ inputs.brotli_version }}
-          path: ${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr
-  
+
       - name: Download Compilers
         if: matrix.os != 'Android' || inputs.build_android
         uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
