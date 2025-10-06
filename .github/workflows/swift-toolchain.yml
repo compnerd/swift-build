@@ -4165,7 +4165,7 @@ jobs:
       - name: Prepare trusted signing arguments
         if: inputs.signed && needs.configure_signing.outputs.uses_trusted_signing == 'true'
         run: |
-          # We're unconditionally using x64 because there's no arm64 version of signtool.exe as of Oct 2025.
+          # We're unconditionally using x64 because there's no arm64 version of the DLL as of Oct 2025.
           # TODO: Update with more info once we've filed a bug against Microsoft.
           $signtoolPath = Join-Path -Path ${env:WindowsSdkVerBinPath} -ChildPath "x64/"
           echo "SIGNTOOL_PATH=$signtoolPath" | Out-File -FilePath ${env:GITHUB_ENV} -Encoding utf8 -Append
@@ -4783,7 +4783,7 @@ jobs:
       - name: Prepare trusted signing arguments
         if: inputs.signed && needs.configure_signing.outputs.uses_trusted_signing == 'true'
         run: |
-          # We're unconditionally using x64 because there's no arm64 version of signtool.exe as of Oct 2025.
+          # We're unconditionally using x64 because there's no arm64 version of the DLL as of Oct 2025.
           # TODO: Update with more info once we've filed a bug against Microsoft.
           $signtoolPath = Join-Path -Path ${env:WindowsSdkVerBinPath} -ChildPath "x64/"
           echo "SIGNTOOL_PATH=$signtoolPath" | Out-File -FilePath ${env:GITHUB_ENV} -Encoding utf8 -Append
@@ -5116,7 +5116,7 @@ jobs:
       - name: Prepare trusted signing arguments
         if: inputs.build_android && inputs.signed && needs.configure_signing.outputs.uses_trusted_signing == 'true'
         run: |
-          # We're unconditionally using x64 because there's no arm64 version of signtool.exe as of Oct 2025.
+          # We're unconditionally using x64 because there's no arm64 version of the DLL as of Oct 2025.
           # TODO: Update with more info once we've filed a bug against Microsoft.
           $signtoolPath = Join-Path -Path ${env:WindowsSdkVerBinPath} -ChildPath "x64/"
           echo "SIGNTOOL_PATH=$signtoolPath" | Out-File -FilePath ${env:GITHUB_ENV} -Encoding utf8 -Append
@@ -5298,7 +5298,7 @@ jobs:
       - name: Prepare trusted signing arguments
         if: inputs.signed && needs.configure_signing.outputs.uses_trusted_signing == 'true'
         run: |
-          # We're unconditionally using x64 because there's no arm64 version of signtool.exe as of Oct 2025.
+          # We're unconditionally using x64 because there's no arm64 version of the DLL as of Oct 2025.
           # TODO: Update with more info once we've filed a bug against Microsoft.
           $signtoolPath = Join-Path -Path ${env:WindowsSdkVerBinPath} -ChildPath "x64/"
           echo "SIGNTOOL_PATH=$signtoolPath" | Out-File -FilePath ${env:GITHUB_ENV} -Encoding utf8 -Append
