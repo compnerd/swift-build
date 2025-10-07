@@ -251,7 +251,7 @@ on:
       build_compilers_with_llvm:
         required: false
         type: boolean
-        default: true
+        default: false
 
     secrets:
       SYMBOL_SERVER_PAT:
