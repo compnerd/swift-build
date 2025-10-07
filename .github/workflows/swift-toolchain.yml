@@ -248,7 +248,7 @@ on:
         required: true
         type: string
 
-      build_compilers_with_llvm:
+      llvm_clang:
         required: false
         type: boolean
         default: false
@@ -355,7 +355,8 @@ jobs:
           install-dir: ${{ github.workspace }}/BuildRoot/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
-          msvc-compilers: '@("C")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("C")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("C")' || '@()' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -439,7 +440,8 @@ jobs:
           arch: ${{ inputs.build_arch }}
           src-dir: ${{ github.workspace }}/SourceCache/ds2/Tools/RegsGen2
           bin-dir: ${{ github.workspace }}/BinaryCache/RegsGen2
-          msvc-compilers: '@("C", "CXX")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("C", "CXX")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("C", "CXX")' || '@()' }}
           cache-script: ${{ github.workspace }}/SourceCache/ds2/cmake/caches/MSVCWarnings.cmake
       - name: Build RegsGen2
         if: inputs.build_android
@@ -637,7 +639,8 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/cmark-gfm
           bin-dir: ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }}
           install-dir: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
-          msvc-compilers: '@("C", "CXX")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("C", "CXX")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("C", "CXX")' || '@()' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -730,7 +733,8 @@ jobs:
           arch: ${{ matrix.arch }}
           src-dir: ${{ github.workspace }}/SourceCache/llvm-project/llvm
           bin-dir: ${{ github.workspace }}/BinaryCache/0
-          msvc-compilers: '@("ASM_MASM", "C", "CXX")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("ASM_MASM", "C", "CXX")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("ASM_MASM", "C", "CXX")' || '@()' }}
           cmake-defines: |
             @{
               'CMAKE_CROSSCOMPILING' = "NO";
@@ -1092,8 +1096,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/1
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+${{ matrix.variant }}/usr
           swift-sdk-path: ${{ steps.setup-context.outputs.sdkroot }}
-          msvc-compilers: ${{ inputs.build_compilers_with_llvm && '@()' || '@("C", "CXX")' }}
-          pinned-compilers: ${{ inputs.build_compilers_with_llvm && '@("C", "CXX", "Swift")' || '@("Swift")' }}
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("C", "CXX")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("C", "CXX", "Swift")' || '@("Swift")' }}
           cache-script: ${{ github.workspace }}/SourceCache/swift/cmake/caches/${{ matrix.os }}-${{ matrix.cpu }}.cmake
           cmake-defines: |
             @{
@@ -1111,7 +1115,7 @@ jobs:
               'LLDB_TABLEGEN' = "${{ github.workspace }}/BinaryCache/0/bin/lldb-tblgen${ExeSuffix}";
               'LLVM_CONFIG_PATH' = "${{ github.workspace }}/BinaryCache/0/bin/llvm-config${ExeSuffix}";
               'LLVM_ENABLE_ASSERTIONS' = ${{ matrix.variant == 'Asserts' && '"YES"' || '"NO"' }};
-              'LLVM_ENABLE_LLD' = "${{ inputs.build_compilers_with_llvm && 'YES' || 'NO' }}";
+              'LLVM_ENABLE_LLD' = "${{ inputs.llvm_clang && 'YES' || 'NO' }}";
               'LLVM_EXTERNAL_SWIFT_SOURCE_DIR' = "${{ github.workspace }}/SourceCache/swift";
               'LLVM_HOST_TRIPLE' = "${{ matrix.triple }}";
               'LLVM_NATIVE_TOOL_DIR' = "${{ github.workspace }}/BinaryCache/0/bin";
@@ -1146,7 +1150,7 @@ jobs:
               'LLVM_VERSION_SUFFIX' = "";
               'LLVM_PARALLEL_LINK_JOBS' = "${{ steps.setup-context.outputs.link-jobs }}";
               'SWIFT_PARALLEL_LINK_JOBS' = "${{ steps.setup-context.outputs.link-jobs }}";
-              'CMAKE_Swift_FLAGS' = "${{ inputs.build_compilers_with_llvm && '-use-ld=lld' || '' }}";
+              'CMAKE_Swift_FLAGS' = "${{ inputs.llvm_clang && '-use-ld=lld' || '' }}";
             }
 
       - name: Build Compiler Distribution
@@ -1315,7 +1319,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: '@("C")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("C")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("C")' || '@()' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -1497,7 +1502,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: '@("C")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("C")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("C")' || '@()' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -1670,7 +1676,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: '@("C", "CXX")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("C", "CXX")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("C", "CXX")' || '@()' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -1802,7 +1809,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: '@("ASM_MASM", "C", "CXX")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("ASM_MASM", "C", "CXX")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("ASM_MASM", "C", "CXX")' || '@()' }}
           cmake-defines: |
             @{
               'LLVM_ENABLE_ASSERTIONS' = "YES";
@@ -3713,7 +3721,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-format
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          msvc-compilers: '@("C")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("C")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("C")' || '@()' }}
           built-compilers: '@("Swift")'
           cmake-defines: |
             @{
@@ -3740,7 +3749,8 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/swift-lmdb
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-lmdb
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          msvc-compilers: '@("C")'
+          msvc-compilers: ${{ inputs.llvm_clang && '@()' || '@("C")' }}
+          pinned-compilers: ${{ inputs.llvm_clang && '@("C")' || '@()' }}
       - name: Build swift-lmdb
         run: cmake --build ${{ github.workspace }}/BinaryCache/swift-lmdb
 
