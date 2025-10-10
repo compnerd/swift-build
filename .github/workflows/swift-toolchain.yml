@@ -1421,11 +1421,13 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: '@("C")'
+          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C")' || '@()' }}
+          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C")' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
               'CMAKE_POSITION_INDEPENDENT_CODE' = "YES";
+              'CMAKE_C_FLAGS' = "${{ inputs.use_host_toolchain && '' || '-fuse-ld=lld' }}";
             }
       - name: Build brotli
         run: cmake --build ${{ github.workspace }}/BinaryCache/brotli-${{ inputs.brotli_version }}
