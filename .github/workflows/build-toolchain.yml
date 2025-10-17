@@ -143,7 +143,6 @@ on:
         type: boolean
         default: true
         required: false
-  
 
     secrets:
       SYMBOL_SERVER_PAT:
