@@ -3328,6 +3328,7 @@ jobs:
           repository: swiftlang/swift-tools-protocols
           ref: ${{ inputs.swift_tools_protocols_revision }}
           path: ${{ github.workspace }}/SourceCache/swift-tools-protocols
+          show-progress: false
       - uses: actions/checkout@v4.2.2
         with:
           repository: swiftlang/swift-build
