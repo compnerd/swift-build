@@ -1047,7 +1047,7 @@ jobs:
             $ExpectedHash = $Hash.ToUpperInvariant()
             $SHA256 = (Get-FileHash -Path $Destination -Algorithm SHA256).Hash.ToUpperInvariant()
             if ($SHA256 -ne $ExpectedHash) {
-              throw "SHA256 mismatch ($SHA256 vs $Hash)"
+              throw "SHA256 mismatch ($SHA256 vs $Hash) for $URL"
             }
           }
 
@@ -5603,7 +5603,7 @@ jobs:
             $ExpectedHash = $Hash.ToUpperInvariant()
             $SHA256 = (Get-FileHash -Path $Destination -Algorithm SHA256).Hash.ToUpperInvariant()
             if ($SHA256 -ne $ExpectedHash) {
-              throw "SHA256 mismatch ($SHA256 vs $Hash)"
+              throw "SHA256 mismatch ($SHA256 vs $Hash) for $URL"
             }
           }
 
