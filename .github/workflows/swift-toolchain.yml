@@ -1068,7 +1068,7 @@ jobs:
           Write-Host "Downloaded Python $version for $archKey to $packagePath"
   
           # Extract the Python package
-          $extractRoot = "${{ github.workspace }}\BuildRoot\Library\Developer\Python-${{ matrix.arch }}-${{ inputs.python_version }}"
+          $extractRoot = "${{ github.workspace }}\BuildRoot\Library\Developer\Python-$archKey-$version"
           New-Item -ItemType Directory -Path $extractRoot -ErrorAction Ignore | Out-Null
           Expand-Archive -Path $packagePath -DestinationPath $extractRoot -Force
           Write-Host "Extracted Python $version for $archKey to $extractRoot"
