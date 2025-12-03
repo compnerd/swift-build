@@ -1949,7 +1949,6 @@ jobs:
         with:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
-          swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       # FIXME(compnerd): workaround CMake 3.30+ issue
       - uses: lukka/get-cmake@aa1df13cce8c30d2cb58efa871271c5a764623f8 # main
         with:
@@ -3204,7 +3203,6 @@ jobs:
         with:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
-          swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Compute workspace hash
         id: workspace_hash
         run: |
@@ -3955,7 +3953,6 @@ jobs:
         with:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
-          swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Compute workspace hash
         id: workspace_hash
         run: |
@@ -4121,7 +4118,6 @@ jobs:
         with:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
-          swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
 
       - name: Download Debugging Tools
         uses: actions/download-artifact@v4
