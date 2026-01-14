@@ -4082,7 +4082,6 @@ jobs:
         run: |
           $AssertToolchainRoot = "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts"
           $NoAssertToolchainRoot = "${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+NoAsserts"
-          # Only the compiler itself is built with NoAsserts, so we copy other binaries from the Asserts toolchain
           # Use robocopy for robust recursive copying with optimizations
           #   /E : Copy subdirectories, including empty ones
           #   /XC: Exclude existing files with same timestamp but different file sizes
