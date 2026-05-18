@@ -68,9 +68,8 @@ runs:
         $s3_path = "s3://$s3_bucket/$s3_key"
         if (Test-Path "$cas_path" -PathType Container) {
           Write-Host "Found CAS at $cas_path"
-          Get-ChildItem "$cas_path" -Recurse
-          $bytes = (Get-ChildItem "$cas_path" -Recurse -File | Measure-Object Length -Sum).Sum
-          "CAS size: {0:N2} MB" -f ($bytes / 1MB)
+          $stats = Get-ChildItem "$cas_path" -Recurse -File | Measure-Object Length -Sum
+          "CAS: {0} files, {1:N2} MB" -f $stats.Count, ($stats.Sum / 1MB)
           $temp_dir = Join-Path $env:TEMP ("my-temp-dir-" + [guid]::NewGuid().ToString())
           New-Item -ItemType Directory -Path $temp_dir | Out-Null
           $temp_path = "$temp_dir\$cas_tgz"
