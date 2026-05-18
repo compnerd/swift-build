@@ -78,6 +78,7 @@ runs:
           Push-Location "$cas_path"
           tar --force-local -xf "$temp_path" -C .
           Pop-Location
+          Remove-Item -Force "$temp_path"
           Get-ChildItem "$cas_path" -Recurse
           Write-Host "CAS restored at $cas_path."
         } else {
