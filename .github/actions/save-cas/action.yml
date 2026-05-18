@@ -73,13 +73,21 @@ runs:
           $temp_dir = Join-Path $env:TEMP ("my-temp-dir-" + [guid]::NewGuid().ToString())
           New-Item -ItemType Directory -Path $temp_dir | Out-Null
           $temp_path = "$temp_dir\$cas_tgz"
+          Get-PSDrive
           Push-Location "$cas_path"
           tar --sparse --force-local -cf "$temp_path" *
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "tar failed, creating an empty tarball instead"
+            if (Test-Path "$temp_path") {
+              Remove-Item "$temp_path" -Force
+            }
+            tar --force-local -cf "$temp_path" --files-from $null
+          }
           Pop-Location
           $FileSize = (Get-Item $temp_path).Length
           Write-Host "$cas_tgz file size $FileSize bytes"
           Write-Host "Archieved CAS to $temp_path"
-          aws s3 cp $temp_path $s3_path
+          aws s3 cp $temp_path $s3_path --no-progress
           $code = $LASTEXITCODE
           $global:LASTEXITCODE = 0
           if ($code -eq 0) {
