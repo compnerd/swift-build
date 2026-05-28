@@ -407,12 +407,10 @@ jobs:
           install-dir: ${{ github.workspace }}/BuildRoot/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
-              'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
             }
       - name: Build SQLite
         run: cmake --build ${{ github.workspace }}/BinaryCache/sqlite-${{ inputs.swift_toolchain_sqlite_version }}
@@ -514,14 +512,9 @@ jobs:
           arch: ${{ inputs.build_arch }}
           src-dir: ${{ github.workspace }}/SourceCache/ds2/Tools/RegsGen2
           bin-dir: ${{ github.workspace }}/BinaryCache/RegsGen2
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C", "CXX")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C", "CXX")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
+          cxx-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.CXX' || '$Compilers.Pinned.CXX' }}
           cache-script: ${{ github.workspace }}/SourceCache/ds2/cmake/caches/MSVCWarnings.cmake
-          cmake-defines: |
-            @{
-              'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
-              'CMAKE_CXX_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
-            }
       - name: Build RegsGen2
         if: inputs.build_android
         run: cmake --build ${{ github.workspace }}/BinaryCache/RegsGen2 --config Release
@@ -658,7 +651,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          pinned-compilers: '@("C", "CXX")'
+          c-compiler: '$Compilers.Pinned.C'
+          cxx-compiler: '$Compilers.Pinned.CXX'
           cmake-defines: |
             @{
               'DS2_REGSGEN2' = "${{ github.workspace }}/BinaryCache/RegsGen2/regsgen2.exe";
@@ -760,15 +754,13 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/cmark-gfm
           bin-dir: ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }}
           install-dir: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C", "CXX")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C", "CXX")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
+          cxx-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.CXX' || '$Compilers.Pinned.CXX' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
               'BUILD_TESTING' = "NO";
               'CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP' = "YES";
-              'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
-              'CMAKE_CXX_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
             }
       - name: Build cmark-gfm
         run: cmake --build ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }}
@@ -877,8 +869,9 @@ jobs:
           arch: ${{ matrix.arch }}
           src-dir: ${{ github.workspace }}/SourceCache/llvm-project/llvm
           bin-dir: ${{ github.workspace }}/BinaryCache/0
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("ASM_MASM", "C", "CXX")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("ASM_MASM", "C", "CXX")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
+          cxx-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.CXX' || '$Compilers.Pinned.CXX' }}
+          use-asm-masm: ${{ inputs.use_host_toolchain }}
           cmake-defines: |
             @{
               'CMAKE_CROSSCOMPILING' = "NO";
@@ -908,8 +901,6 @@ jobs:
               'SWIFT_INCLUDE_DOCS' = "NO";
               'SWIFT_INCLUDE_TESTS' = "NO";
               'cmark-gfm_DIR' = "${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr/lib/cmake";
-              'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
-              'CMAKE_CXX_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
             }
       - name: Build llvm-tblgen
         run: cmake --build ${{ github.workspace }}/BinaryCache/0 --target llvm-tblgen
@@ -1078,7 +1069,9 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/swift-driver
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-driver
           swift-sdk-path: ${{ steps.setup-context.outputs.sdkroot }}
-          pinned-compilers: '@("C", "CXX", "Swift")'
+          c-compiler: '$Compilers.Pinned.C'
+          cxx-compiler: '$Compilers.Pinned.CXX'
+          swift-compiler: '$Compilers.Pinned.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -1343,8 +1336,9 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/1
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+${{ matrix.variant }}/usr
           swift-sdk-path: ${{ steps.setup-context.outputs.sdkroot }}
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C", "CXX")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@("Swift")' || '@("C", "CXX", "Swift")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
+          cxx-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.CXX' || '$Compilers.Pinned.CXX' }}
+          swift-compiler: '$Compilers.Pinned.Swift'
           cache-script: ${{ github.workspace }}/SourceCache/swift/cmake/caches/${{ matrix.os }}-${{ matrix.cpu }}.cmake
           cmake-defines: |
             @{
@@ -1598,13 +1592,12 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
+          cxx-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.CXX' || '$Compilers.Pinned.CXX' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
               'CMAKE_POSITION_INDEPENDENT_CODE' = "YES";
-              'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
             }
       - name: Build zlib
         run: cmake --build ${{ github.workspace }}/BinaryCache/zlib-${{ inputs.zlib_version }}
@@ -1710,13 +1703,11 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
               'CMAKE_POSITION_INDEPENDENT_CODE' = "YES";
-              'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
             }
       - name: Build brotli
         run: cmake --build ${{ github.workspace }}/BinaryCache/brotli-${{ inputs.brotli_version }}
@@ -1833,8 +1824,7 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -1927,7 +1917,6 @@ jobs:
               'USE_WIN32_LDAP' = "NO";
               'ZLIB_ROOT' = "${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr";
               'ZLIB_LIBRARY' = "${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr/lib/zlibstatic.lib";
-              'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
             }
       - name: Build curl
         run: cmake --build ${{ github.workspace }}/BinaryCache/curl-${{ inputs.curl_version }}
@@ -2034,8 +2023,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C", "CXX")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C", "CXX")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
+          cxx-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.CXX' || '$Compilers.Pinned.CXX' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -2047,8 +2036,6 @@ jobs:
               'LIBXML2_WITH_TESTS' = "NO";
               'LIBXML2_WITH_THREADS' = "YES";
               'LIBXML2_WITH_ZLIB' = "NO";
-              'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
-              'CMAKE_CXX_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
             }
       - name: Build libxml2
         run: cmake --build ${{ github.workspace }}/BinaryCache/libxml2-${{ inputs.libxml2_version }}
@@ -2188,16 +2175,15 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C", "CXX")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C", "CXX")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
+          cxx-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.CXX' || '$Compilers.Pinned.CXX' }}
           cmake-defines: |
             @{
               'LLVM_HOST_TRIPLE' = "${{ matrix.triple }}";
-              'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
-              'CMAKE_CXX_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
              }
 
       # build.ps1: Build-Runtime
+      # FIXME: REMOVED
       - name: Configure Swift Standard Library
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -2217,6 +2203,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
+          cxx-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.CXX' || '$Compilers.Pinned.CXX' }}
           built-compilers: '@("C", "CXX", "Swift")'
           cache-script: ${{ github.workspace }}/SourceCache/swift/cmake/caches/Runtime-${{ matrix.os == 'Darwin' && 'MacOSX' || matrix.os }}-${{ matrix.cpu }}.cmake
           cmake-defines: |
@@ -2395,7 +2383,7 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-foundation-macros
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("Swift")'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'SwiftSyntax_DIR' = "${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules";
@@ -2420,7 +2408,7 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-testing-macros
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("Swift")'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'SwiftSyntax_DIR' = "${{ github.workspace }}/BinaryCache/swift-syntax/cmake/modules";
@@ -2695,6 +2683,7 @@ jobs:
           cmake -P Resync.cmake
 
       # build.ps1: Build-CDispatch
+      # FIXME: Need different versions of this job
       - name: Configure CDispatch
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -2713,7 +2702,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "CXX")'
+          c-compiler: ${{ matrix.os == 'Windows' && '$Compilers.Stage0.C' || '$Compilers.Stage0.GNUC' }}
+          cxx-compiler: ${{ matrix.os == 'Windows' && '$Compilers.Stage0.CXX' || '$Compilers.Stage0.GNUCXX' }}
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -2725,7 +2715,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/libdispatch-c
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental Runtime
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -2745,8 +2735,9 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "CXX", "Swift")'
-          use-gnu-driver: true
+          c-compiler: '$Compilers.Stage0.GNUC'
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "${{ matrix.static && 'NO' || 'YES' }}";
@@ -2774,7 +2765,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalRuntime --target install
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental Overlay
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -2794,8 +2785,9 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "CXX", "Swift")'
-          use-gnu-driver: true
+          c-compiler: '$Compilers.Stage0.GNUC'
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "${{ matrix.static && 'NO' || 'YES' }}";
@@ -2815,7 +2807,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalOverlay --target install
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental String Processing
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -2835,8 +2827,9 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "Swift")'
-          use-gnu-driver: true
+          c-compiler: '$Compilers.Stage0.GNUC'
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "${{ matrix.static && 'NO' || 'YES' }}";
@@ -2855,7 +2848,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalStringProcessing --target install
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental Synchronization
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -2875,8 +2868,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "Swift")'
-          use-gnu-driver: true
+          c-compiler: '$Compilers.Stage0.GNUC'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "${{ matrix.static && 'NO' || 'YES' }}";
@@ -2896,7 +2889,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalSynchronization --target install
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental Distributed
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -2916,8 +2909,9 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "CXX", "Swift")'
-          use-gnu-driver: true
+          c-compiler: '$Compilers.Stage0.GNUC'
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "${{ matrix.static && 'NO' || 'YES' }}";
@@ -2938,7 +2932,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalDistributed --target install
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental Observation
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -2958,8 +2952,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("CXX", "Swift")'
-          use-gnu-driver: true
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "${{ matrix.static && 'NO' || 'YES' }}";
@@ -2981,7 +2975,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalObservation --target install
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental Differentiation
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -3001,8 +2995,9 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "CXX", "Swift")'
-          use-gnu-driver: true
+          c-compiler: '$Compilers.Stage0.GNUC'
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "${{ matrix.static && 'NO' || 'YES' }}";
@@ -3022,7 +3017,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalDifferentiation --target install
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental Volatile
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -3042,8 +3037,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "Swift")'
-          use-gnu-driver: true
+          c-compiler: '$Compilers.Stage0.GNUC'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "${{ matrix.static && 'NO' || 'YES' }}";
@@ -3064,7 +3059,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalVolatile --target install
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental RuntimeModule
         if: matrix.os != 'Android' # Disabled for Android https://github.com/swiftlang/swift/issues/87445
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -3084,8 +3079,9 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "CXX", "Swift")'
-          use-gnu-driver: true
+          c-compiler: '$Compilers.Stage0.GNUC'
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "${{ matrix.static && 'NO' || 'YES' }}";
@@ -3108,7 +3104,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalRuntimeModule --target install
 
-      # build.ps1: Build-ExperimentalRuntime
+      # build.ps1: Build-SDK
       - name: Configure Experimental Backtrace
         # NOTE: we only build this if static variants are enabled to ensure that we
         # can statically link the runtime.
@@ -3131,8 +3127,8 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("CXX", "Swift")'
-          use-gnu-driver: true
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           cmake-defines: |
             @{
               'CMAKE_Swift_FLAGS' = @("-static-stdlib");
@@ -3156,7 +3152,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalRuntimeBacktrace --target install
 
-      # build.ps1: Build-ExperimentalSDK
+      # build.ps1: Build-SDK
       - name: Configure Experimental Dispatch
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -3176,7 +3172,9 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("C", "CXX", "Swift")'
+          c-compiler: '$Compilers.Stage0.GNUC'
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           swift-sdk-path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}Experimental.sdk
           cmake-defines: |
             @{
@@ -3194,7 +3192,7 @@ jobs:
         run: |
           cmake --build ${{ github.workspace }}/BinaryCache/ExperimentalDispatch --target install
 
-      # build.ps1: Build-ExperimentalSDK
+      # build.ps1: Build-SDK
       - name: Configure Experimental Foundation
         if: matrix.os != 'Android' || inputs.build_android
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
@@ -3214,7 +3212,9 @@ jobs:
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          built-compilers: '@("ASM","C", "CXX", "Swift")'
+          c-compiler: '$Compilers.Stage0.GNUC'
+          cxx-compiler: '$Compilers.Stage0.GNUCXX'
+          swift-compiler: '$Compilers.Stage0.Swift'
           swift-sdk-path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}Experimental.sdk
           cmake-defines: |
             @{
@@ -3330,496 +3330,6 @@ jobs:
           aws-region: ${{ vars.SCCACHE_AWS_REGION }}
           aws-arn: ${{ vars.SCCACHE_AWS_ARN }}
           cache-key: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.static && 'static' || 'shared' }}-experimental-sdk
-
-  sdk:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
-    if: inputs.build_os == 'Windows'
-    needs: [libxml2, curl, zlib, brotli, compilers, cmark_gfm, stdlib, macros]
-    runs-on: ${{ inputs.default_build_runner }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: amd64
-            cpu: x86_64
-            triple: 'x86_64-unknown-windows-msvc'
-            bindir: 'bin64'
-            os: Windows
-          - arch: arm64
-            cpu: aarch64
-            triple: 'aarch64-unknown-windows-msvc'
-            bindir: 'bin64a'
-            os: Windows
-          - arch: x86
-            cpu: i686
-            triple: 'i686-unknown-windows-msvc'
-            bindir: 'bin32'
-            os: Windows
-          - arch: arm64
-            cpu: aarch64
-            triple: 'aarch64-unknown-linux-android${{ inputs.ANDROID_API_LEVEL }}'
-            bindir: 'bin64a'
-            os: Android
-          - arch: armv7
-            cpu: armv7
-            triple: 'armv7a-unknown-linux-androideabi${{ inputs.ANDROID_API_LEVEL }}'
-            bindir: 'bin32a'
-            os: Android
-          - arch: i686
-            cpu: i686
-            triple: 'i686-unknown-linux-android${{ inputs.ANDROID_API_LEVEL }}'
-            bindir: 'bin32'
-            os: Android
-          - arch: x86_64
-            cpu: x86_64
-            triple: 'x86_64-unknown-linux-android${{ inputs.ANDROID_API_LEVEL }}'
-            bindir: 'bin64'
-            os: Android
-
-    name: ${{ matrix.os }} ${{ matrix.arch }} SDK
-
-    steps:
-      - uses: actions/checkout@v4.2.2
-        with:
-          ref: ${{ inputs.ci_build_revision }}
-          path: ${{ github.workspace }}/SourceCache/ci-build
-          show-progress: false
-      - uses: ./SourceCache/ci-build/.github/actions/setup-build
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          setup-vs-dev-env: ${{ matrix.os == 'Windows' }}
-          host-arch: ${{ matrix.arch }}
-          swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-
-      - name: Compute workspace hash
-        id: workspace_hash
-        run: |
-          $stringAsStream = [System.IO.MemoryStream]::new()
-          $writer = [System.IO.StreamWriter]::new($stringAsStream)
-          $writer.write("${{ github.workspace }}")
-          $writer.Flush()
-          $stringAsStream.Position = 0
-          $hash = (Get-FileHash -Algorithm SHA256 -InputStream $stringAsStream).Hash
-          echo "hash=$hash" >> $env:GITHUB_OUTPUT
-      - name: Setup sccache
-        uses: ./SourceCache/ci-build/.github/actions/setup-sccache
-        if: inputs.use_host_toolchain
-        with:
-          s3-bucket: ${{ vars.SCCACHE_S3_BUCKET }}
-          aws-region: ${{ vars.SCCACHE_AWS_REGION }}
-          aws-arn: ${{ vars.SCCACHE_AWS_ARN }}
-          disk-max-size: 500M
-          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-sdk
-      - name: Restore CAS
-        uses: ./SourceCache/ci-build/.github/actions/restore-cas
-        if: ${{ !inputs.use_host_toolchain }}
-        with:
-          s3-bucket: ${{ vars.SCCACHE_S3_BUCKET }}
-          aws-region: ${{ vars.SCCACHE_AWS_REGION }}
-          aws-arn: ${{ vars.SCCACHE_AWS_ARN }}
-          cache-key: ${{ matrix.os }}-${{ matrix.arch }}-sdk
-
-      - uses: actions/download-artifact@v4
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-libxml2-${{ inputs.libxml2_version }}
-          path: ${{ github.workspace }}/BuildRoot/Library/libxml2-${{ inputs.libxml2_version }}/usr
-      - uses: actions/download-artifact@v4
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-curl-${{ inputs.curl_version }}
-          path: ${{ github.workspace }}/BuildRoot/Library/curl-${{ inputs.curl_version }}/usr
-      - uses: actions/download-artifact@v4
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-zlib-${{ inputs.zlib_version }}
-          path: ${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr
-      - uses: actions/download-artifact@v4
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-brotli-${{ inputs.brotli_version }}
-          path: ${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr
-
-      - name: Download Compilers
-        if: matrix.os != 'Android' || inputs.build_android
-        uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Windows-${{ inputs.build_arch }}-Asserts-compilers
-          path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-stdlib
-          path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: Windows-${{ inputs.build_arch }}-stdlib
-          path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: actions/download-artifact@v4
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: Windows-${{ inputs.build_arch }}-macros
-          path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: actions/checkout@v4.2.2
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          repository: apple/swift-corelibs-libdispatch
-          ref: ${{ inputs.swift_corelibs_libdispatch_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-corelibs-libdispatch
-          show-progress: false
-      - uses: actions/checkout@v4.2.2
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          repository: apple/swift-corelibs-foundation
-          ref: ${{ inputs.swift_corelibs_foundation_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-corelibs-foundation
-          show-progress: false
-      - uses: actions/checkout@v4.2.2
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          repository: apple/swift-foundation
-          ref: ${{ inputs.swift_foundation_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-foundation
-          show-progress: false
-      - uses: actions/checkout@v4.2.2
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          repository: apple/swift-foundation-icu
-          ref: ${{ inputs.swift_foundation_icu_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-foundation-icu
-          show-progress: false
-      - uses: actions/checkout@v4.2.2
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          repository: apple/swift-collections
-          ref: ${{ inputs.swift_collections_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-collections
-          show-progress: false
-      - uses: actions/checkout@v4.2.2
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          repository: swiftlang/swift-corelibs-xctest
-          ref: ${{ inputs.swift_corelibs_xctest_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-corelibs-xctest
-          show-progress: false
-      - uses: actions/checkout@v4.2.2
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          repository: swiftlang/swift-testing
-          ref: ${{ inputs.swift_testing_revision }}
-          path: ${{ github.workspace }}/SourceCache/swift-testing
-          show-progress: false
-
-      - name: Setup environment
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          $RTLPath = cygpath -w ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/bin
-          echo ${RTLPath} | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-          $SDKRoot = cygpath -w ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk
-          echo "SDKROOT=${SDKRoot}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      # FIXME(compnerd): workaround CMake 3.30+ issue
-      - uses: lukka/get-cmake@aa1df13cce8c30d2cb58efa871271c5a764623f8 # main
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          cmakeVersion: 3.29.9
-
-      - uses: nttld/setup-ndk@v1
-        if: matrix.os == 'Android' && inputs.build_android
-        id: setup-ndk
-        with:
-          ndk-version: ${{ inputs.ANDROID_NDK_VERSION }}
-          local-cache: true
-
-      # build.ps1: Build-Dispatch
-      - name: Configure libdispatch
-        if: matrix.os != 'Android' || inputs.build_android
-        uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
-        with:
-          project-name: libdispatch
-          swift-version: ${{ inputs.swift_version }}
-          enable-caching: ${{ inputs.use_host_toolchain }}
-          enable-cas: ${{ !inputs.use_host_toolchain }}
-          debug-info: ${{ inputs.debug_info }}
-          build-os: ${{ inputs.build_os }}
-          build-arch: ${{ inputs.build_arch }}
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.arch }}
-          src-dir: ${{ github.workspace }}/SourceCache/swift-corelibs-libdispatch
-          bin-dir: ${{ github.workspace }}/BinaryCache/libdispatch
-          install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk/usr
-          android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
-          android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
-          ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "CXX", "Swift")'
-          cmake-defines: |
-            @{
-              'ENABLE_SWIFT' = "YES";
-            }
-      - name: Build libdispatch
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          cmake --build ${{ github.workspace }}/BinaryCache/libdispatch
-
-      # build.ps1: Build-Foundation
-      - name: Configure Foundation
-        if: matrix.os != 'Android' || inputs.build_android
-        uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
-        with:
-          project-name: Foundation
-          swift-version: ${{ inputs.swift_version }}
-          enable-caching: ${{ inputs.use_host_toolchain }}
-          enable-cas: ${{ !inputs.use_host_toolchain }}
-          debug-info: ${{ inputs.debug_info }}
-          build-os: ${{ inputs.build_os }}
-          build-arch: ${{ inputs.build_arch }}
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.arch }}
-          src-dir: ${{ github.workspace }}/SourceCache/swift-corelibs-foundation
-          bin-dir: ${{ github.workspace }}/BinaryCache/foundation
-          install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk/usr
-          android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
-          android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
-          ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "CXX", "Swift")'
-          cmake-defines: |
-            @{
-              'BUILD_SHARED_LIBS' = "YES";
-              # FIXME(compnerd) - workaround ARM64 build failure when cross-compiling.
-              'CMAKE_NINJA_FORCE_RESPONSE_FILE' = "YES";
-              'CMAKE_STATIC_LIBRARY_PREFIX_Swift' = "lib";
-              'BROTLI_INCLUDE_DIR' = "${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr/include";
-              'BROTLICOMMON_LIBRARY' = "${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr/lib/$(if ("${{ matrix.os }}" -eq "Windows") { "brotlicommon.lib" } else { "libbrotlicommon.a" })";
-              'BROTLIDEC_LIBRARY' = "${{ github.workspace }}/BuildRoot/Library/brotli-${{ inputs.brotli_version }}/usr/lib/$(if ("${{ matrix.os }}" -eq "Windows") { "brotlidec.lib" } else { "libbrotlidec.a" })";
-              'FOUNDATION_BUILD_TOOLS' = if ("${{ matrix.os }}" -eq 'Windows') { "YES" } else { "NO" };
-              'CURL_DIR' = "${{ github.workspace }}/BuildRoot/Library/curl-${{ inputs.curl_version }}/usr/lib/cmake/CURL";
-              'LibXml2_DIR' = "${{ github.workspace }}/BuildRoot/Library/libxml2-${{ inputs.libxml2_version }}/usr/lib/cmake/libxml2-${{ inputs.libxml2_version }}";
-              'ZLIB_LIBRARY' = if ("${{ matrix.os }}" -eq "Windows") {
-                  "${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr/lib/zlibstatic.lib"
-                } else {
-                  "${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr/lib/libz.a"
-                };
-              'ZLIB_INCLUDE_DIR' = "${{ github.workspace }}/BuildRoot/Library/zlib-${{ inputs.zlib_version }}/usr/include";
-              'dispatch_DIR' = "${{ github.workspace }}/BinaryCache/libdispatch/cmake/modules";
-              '_SwiftFoundation_SourceDIR' = "${{ github.workspace }}/SourceCache/swift-foundation";
-              '_SwiftFoundationICU_SourceDIR' = "${{ github.workspace }}/SourceCache/swift-foundation-icu";
-              '_SwiftCollections_SourceDIR' = "${{ github.workspace }}/SourceCache/swift-collections";
-              'SwiftFoundation_MACRO' = "${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr/bin";
-            }
-      - name: Build Foundation
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          cmake --build ${{ github.workspace }}/BinaryCache/foundation
-
-      # build.ps1: Build-Testing
-      - name: Configure Testing
-        if: matrix.os != 'Android' || inputs.build_android
-        uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
-        with:
-          project-name: Testing
-          swift-version: ${{ inputs.swift_version }}
-          enable-caching: ${{ inputs.use_host_toolchain }}
-          enable-cas: ${{ !inputs.use_host_toolchain }}
-          debug-info: ${{ inputs.debug_info }}
-          build-os: ${{ inputs.build_os }}
-          build-arch: ${{ inputs.build_arch }}
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.arch }}
-          src-dir: ${{ github.workspace }}/SourceCache/swift-testing
-          bin-dir: ${{ github.workspace }}/BinaryCache/testing
-          install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/Library/Testing-${{ inputs.swift_version }}/usr
-          android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
-          android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
-          ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("CXX", "Swift")'
-          cmake-defines: |
-            @{
-              'BUILD_SHARED_LIBS' = "YES";
-              'CMAKE_INSTALL_BINDIR' = "${{ matrix.bindir }}";
-              'SwiftTesting_MACRO' = "${{ github.workspace }}/BinaryCache/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr/bin/TestingMacros.dll";
-              'SwiftTesting_INSTALL_NESTED_SUBDIR' = "YES";
-              # build.ps1: These are not passed in the original script, but are necessary on GHA.
-              'dispatch_DIR' = "${{ github.workspace }}/BinaryCache/libdispatch/cmake/modules";
-              'Foundation_DIR' = "${{ github.workspace }}/BinaryCache/foundation/cmake/modules";
-            }
-      - name: Build Testing
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          cmake --build ${{ github.workspace }}/BinaryCache/testing
-
-      # build.ps1: Build-XCTest
-      # TODO(compnerd) correctly version XCTest
-      - name: Configure XCTest
-        if: matrix.os != 'Android' || inputs.build_android
-        uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
-        with:
-          project-name: XCTest
-          swift-version: ${{ inputs.swift_version }}
-          enable-caching: ${{ inputs.use_host_toolchain }}
-          enable-cas: ${{ !inputs.use_host_toolchain }}
-          debug-info: ${{ inputs.debug_info }}
-          build-os: ${{ inputs.build_os }}
-          build-arch: ${{ inputs.build_arch }}
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.arch }}
-          src-dir: ${{ github.workspace }}/SourceCache/swift-corelibs-xctest
-          bin-dir: ${{ github.workspace }}/BinaryCache/xctest
-          install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/Library/XCTest-${{ inputs.swift_version }}/usr
-          android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
-          android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
-          ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
-          swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("Swift")'
-          cmake-defines: |
-            @{
-              'BUILD_SHARED_LIBS' = "YES";
-              'CMAKE_INSTALL_BINDIR' = "${{ matrix.bindir }}";
-              'ENABLE_TESTING' = "NO";
-              'dispatch_DIR' = "${{ github.workspace }}/BinaryCache/libdispatch/cmake/modules";
-              'Foundation_DIR' = "${{ github.workspace }}/BinaryCache/foundation/cmake/modules";
-              'XCTest_INSTALL_NESTED_SUBDIR' = "YES";
-              'SwiftTesting_DIR' = "${{ github.workspace }}/BinaryCache/testing/cmake/modules";
-            }
-      - name: Build XCTest
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          cmake --build ${{ github.workspace }}/BinaryCache/xctest
-
-      - name: Install Testing
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          cmake --build ${{ github.workspace }}/BinaryCache/testing --target install
-      - name: Install xctest
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          cmake --build ${{ github.workspace }}/BinaryCache/xctest --target install
-      - name: Install foundation
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          cmake --build ${{ github.workspace }}/BinaryCache/foundation --target install
-      - name: Install libdispatch
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          cmake --build ${{ github.workspace }}/BinaryCache/libdispatch --target install
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ inputs.python_version }}
-          architecture: x64 # FIXME(#1004): Remove workaround installing x64 Python on ARM64 CI hosts
-
-      - uses: jannekem/run-python-script-action@v1
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          script: |
-            import os
-            import plistlib
-
-            info_plist = r'${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Info.plist'
-            with open(os.path.normpath(info_plist), 'wb') as plist:
-              # TODO(compnerd) derive this from the install directory
-              plistlib.dump({ 'DefaultProperties': { 'XCTEST_VERSION': '${{ inputs.swift_version }}', 'SWIFT_TESTING_VERSION': '${{ inputs.swift_version }}', 'SWIFTC_FLAGS': ['-use-ld=lld'] } }, plist)
-
-            sdk_settings_plist = r'${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk/SDKSettings.plist'
-            with open(os.path.normpath(sdk_settings_plist), 'wb') as plist:
-              # TODO(compnerd) derive this from the CMAKE_BUILD_TYPE for the
-              # runtime.
-              plistlib.dump({
-                'DefaultProperties': { 'DEFAULT_USE_RUNTIME': 'MD' },
-                'CanonicalName': "${{ matrix.os }}".lower()
-              }, plist)
-
-      - name: Create SDKSettings.json
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          $SDKSettings = @{
-            CanonicalName = "${{ matrix.os }}".ToLower()
-            DisplayName = "${{ matrix.os }}"
-            IsBaseSDK = "NO"
-            Version = "${{ inputs.swift_version }}"
-            VersionMap = @{}
-            DefaultProperties = @{
-              PLATFORM_NAME = "${{ matrix.os }}"
-            }
-          }
-          if ("${{ matrix.os }}" -eq "Windows") {
-            $SDKSettings.DefaultProperties.DEFAULT_USE_RUNTIME = "MD"
-          }
-          New-Item -ItemType Directory -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk" -Force | Out-Null
-          $SDKSettings | ConvertTo-JSON | Out-File -FilePath "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk/SDKSettings.json"
-
-      - name: Move libraries and headers
-        if: matrix.os != 'Android' || inputs.build_android
-        run: |
-          $SDKRoot = "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk"
-
-          New-Item -ItemType Directory -Path ${SDKRoot}/usr/include -Force | Out-Null
-          Move-Item ${SDKRoot}/usr/lib/swift/dispatch ${SDKRoot}/usr/include/
-          Move-Item ${SDKRoot}/usr/lib/swift/os ${SDKRoot}/usr/include/
-          Move-Item ${SDKRoot}/usr/lib/swift/Block ${SDKRoot}/usr/include/
-          Move-Item ${SDKRoot}/usr/lib/swift/_foundation_unicode ${SDKRoot}/usr/include/
-          Move-Item ${SDKRoot}/usr/lib/swift/_FoundationCShims ${SDKRoot}/usr/include/
-
-          if ("${{ matrix.os }}" -eq "Windows") {
-            New-Item -ItemType Directory -Path ${SDKRoot}/usr/lib/swift/windows/${{ matrix.cpu }} -Force | Out-Null
-            Move-Item ${SDKRoot}/usr/lib/swift/windows/*.lib ${SDKRoot}/usr/lib/swift/windows/${{ matrix.cpu }}/
-          } else {
-            New-Item -ItemType Directory -Path ${SDKRoot}/usr/lib/swift/android/${{ matrix.cpu }} -Force | Out-Null
-            Move-Item ${SDKRoot}/usr/lib/swift/android/lib*.so ${SDKRoot}/usr/lib/swift/android/${{ matrix.cpu }}/
-            Move-Item ${SDKRoot}/usr/lib/swift/android/lib*.a ${SDKRoot}/usr/lib/swift/android/${{ matrix.cpu }}/
-          }
-
-      - uses: actions/upload-artifact@v4
-        if: matrix.os != 'Android' || inputs.build_android
-        with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/${{ matrix.os }}.platform
-
-      - name: Upload PDBs to Azure
-        uses: thebrowsercompany/action-publish-symbols@d5f4b06266463bf9a71ef6a4e3b0b8d79eaa82a4
-        if: ${{ inputs.debug_info && matrix.os == 'Windows' }}
-        with:
-          accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
-          personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
-          symbolsFolder: ${{ github.workspace }}/BinaryCache
-          searchPattern: '**/*.pdb'
-
-      - name: Upload PDBs to Public Symbol Server
-        uses: ./SourceCache/ci-build/.github/actions/publish-symbols-r2
-        if: ${{ inputs.debug_info && matrix.os == 'Windows' }}
-        with:
-          symbolsFolder: ${{ github.workspace }}/BinaryCache
-          searchPattern: '*.pdb'
-          swift-version: ${{ inputs.swift_version }}
-          arch: ${{ matrix.arch }}
-          variant: 'sdk'
-          build-revision: ${{ inputs.swift_build_revision }}
-          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
-
-      - name: Upload DLLs to Azure
-        uses: thebrowsercompany/action-publish-symbols@d5f4b06266463bf9a71ef6a4e3b0b8d79eaa82a4
-        if: ${{ inputs.debug_info && matrix.os == 'Windows' }}
-        with:
-          accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
-          personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
-          symbolsFolder: ${{ github.workspace }}/BinaryCache
-          searchPattern: '**/*.dll'
-
-      - name: Save CAS
-        uses: ./SourceCache/ci-build/.github/actions/save-cas
-        if: ${{ !inputs.use_host_toolchain }}
-        with:
-          s3-bucket: ${{ vars.SCCACHE_S3_BUCKET }}
-          aws-region: ${{ vars.SCCACHE_AWS_REGION }}
-          aws-arn: ${{ vars.SCCACHE_AWS_ARN }}
-          cache-key: ${{ matrix.os }}-${{ matrix.arch }}-sdk
 
   devtools:
     # TODO: Build this on macOS or make an equivalent Mac-only job
@@ -4074,7 +3584,7 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-argument-parser
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("Swift")'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4101,7 +3611,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-collections
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4126,7 +3637,7 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/swift-asn1
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-asn1
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("Swift")'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -4152,7 +3663,10 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-crypto
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("ASM", "C", "CXX", "Swift")'
+          assembler: $Assemblers.Stage1
+          c-compiler: '$Compilers.Stage1.C'
+          cxx-compiler: '$Compilers.Stage1.CXX'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -4181,7 +3695,7 @@ jobs:
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
           msvc-compilers: ${{ inputs.use_host_toolchain && '@("CXX")' || '@()' }}
           pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("CXX")' }}
-          built-compilers: '@("Swift")'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4209,7 +3723,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-system
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -4235,7 +3750,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-subprocess
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -4265,7 +3781,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-tools-support-core
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4293,7 +3810,9 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-driver
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "CXX", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          cxx-compiler: '$Compilers.Stage1.CXX'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4327,7 +3846,7 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/swift-certificates
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-certificates
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("Swift")'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -4355,7 +3874,9 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-tools-protocols
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "CXX", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          cxx-compiler: '$Compilers.Stage1.CXX'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4380,7 +3901,9 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-build
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "CXX", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          cxx-compiler: '$Compilers.Stage1.CXX'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4421,7 +3944,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-package-manager
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4462,7 +3986,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-markdown
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -4492,7 +4017,7 @@ jobs:
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
           msvc-compilers: ${{ inputs.use_host_toolchain && '@("C")' || '@()' }}
           pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C")' }}
-          built-compilers: '@("Swift")'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4521,8 +4046,7 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/swift-lmdb
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-lmdb
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C")' }}
+          c-compiler: '$Compilers.Stage1.C'
           cmake-defines: |
             @{
               'CMAKE_C_FLAGS' = "${{ !inputs.use_host_toolchain && '-fuse-ld=lld' || '' }}";
@@ -4579,7 +4103,9 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/sourcekit-lsp
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          cxx-compiler: '$Compilers.Stage1.CXX'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'CMAKE_STATIC_LIBRARY_PREFIX_Swift' = "lib";
@@ -4617,7 +4143,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-docc-symbolkit
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
@@ -4644,7 +4171,8 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-docc
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
@@ -4875,6 +4403,7 @@ jobs:
           name: Windows-${{ inputs.build_arch }}-sdk
           path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/Windows.platform
 
+      # build.ps1: Build-Inspect
       - name: Configure swift-inspect
         uses: ./SourceCache/ci-build/.github/actions/configure-cmake-project
         with:
@@ -4891,12 +4420,12 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/${{ matrix.arch }}/swift-inspect
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("Swift")'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'CMAKE_Swift_FLAGS' =  @(
-                "-Xcc",
-                "-I${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk/usr/include/swift/SwiftRemoteMirror");
+                "-Xcc", "-I${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk/usr/include/swift/SwiftRemoteMirror"
+              );
               'ArgumentParser_DIR' = "${{ github.workspace }}/BinaryCache/swift-argument-parser/cmake/modules";
             }
 
@@ -7225,8 +6754,9 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/1
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ steps.setup-context.outputs.sdkroot }}
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C", "CXX")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@("Swift")' || '@("C", "CXX", "Swift")' }}
+          c-compiler: '$Compilers.Stage1.C'
+          cxx-compiler: '$Compilers.Stage1.CXX'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cache-script: ${{ github.workspace }}/SourceCache/swift/cmake/caches/${{ matrix.os }}-${{ matrix.cpu }}.cmake
           cmake-defines: |
             @{
