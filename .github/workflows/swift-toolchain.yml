@@ -3693,8 +3693,7 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-llbuild
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("CXX")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("CXX")' }}
+          cxx-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.CXX' || '$Compilers.Pinned.CXX' }}
           swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
@@ -3702,7 +3701,7 @@ jobs:
               'LLBUILD_SUPPORT_BINDINGS' = "Swift";
               'SQLite3_INCLUDE_DIR' = "${{ github.workspace }}/BinaryCache/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr/include";
               'SQLite3_LIBRARY' = "${{ github.workspace }}/BinaryCache/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr/lib/SQLite3.lib";
-            }  
+            }
       - name: Build swift-llbuild
         run: cmake --build ${{ github.workspace }}/BinaryCache/swift-llbuild
 
@@ -4015,8 +4014,7 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/swift-format
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+Asserts/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          msvc-compilers: ${{ inputs.use_host_toolchain && '@("C")' || '@()' }}
-          pinned-compilers: ${{ inputs.use_host_toolchain && '@()' || '@("C")' }}
+          c-compiler: ${{ inputs.use_host_toolchain && '$Compilers.MSVC.C' || '$Compilers.Pinned.C' }}
           swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
@@ -4070,7 +4068,9 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/indexstore-db
           bin-dir: ${{ github.workspace }}/BinaryCache/indexstore-db
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
-          built-compilers: '@("C", "CXX", "Swift")'
+          c-compiler: '$Compilers.Stage1.C'
+          cxx-compiler: '$Compilers.Stage1.CXX'
+          swift-compiler: '$Compilers.Stage1.Swift'
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
