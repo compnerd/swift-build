@@ -1148,7 +1148,7 @@ jobs:
         run: |
           if ("${{ matrix.os }}" -eq "Windows") {
               $sdkRoot = Split-Path -Parent ${env:SDKROOT}
-              $sdkRoot = Join-Path $sdkRoot "WindowsExperimental.sdk"
+              $sdkRoot = Join-Path $sdkRoot "Windows.sdk"
               $sdkRoot = cygpath -m ${sdkRoot}
           } else {
               $sdkRoot = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
@@ -4224,7 +4224,7 @@ jobs:
   devtools:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
-    needs: [sqlite, compilers, stdlib, sdk]
+    needs: [sqlite, compilers, sdk, macros]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -4243,26 +4243,6 @@ jobs:
         with:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
-          swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-      - name: Compute workspace hash
-        id: workspace_hash
-        run: |
-          $stringAsStream = [System.IO.MemoryStream]::new()
-          $writer = [System.IO.StreamWriter]::new($stringAsStream)
-          $writer.write("${{ github.workspace }}")
-          $writer.Flush()
-          $stringAsStream.Position = 0
-          $hash = (Get-FileHash -Algorithm SHA256 -InputStream $stringAsStream).Hash
-          echo "hash=$hash" >> $env:GITHUB_OUTPUT
-      - name: Setup sccache
-        uses: ./SourceCache/ci-build/.github/actions/setup-sccache
-        if: inputs.use_host_toolchain
-        with:
-          s3-bucket: ${{ vars.SCCACHE_S3_BUCKET }}
-          aws-region: ${{ vars.SCCACHE_AWS_REGION }}
-          aws-arn: ${{ vars.SCCACHE_AWS_ARN }}
-          disk-max-size: 100M
-          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-devtools
       - name: Restore CAS
         uses: ./SourceCache/ci-build/.github/actions/restore-cas
         if: ${{ !inputs.use_host_toolchain }}
@@ -4281,15 +4261,11 @@ jobs:
           name: Windows-${{ matrix.arch }}-sqlite-${{ inputs.swift_toolchain_sqlite_version }}
           path: ${{ github.workspace }}/BinaryCache/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr
 
-      - name: Download Compilers
+      - name: Download Stage1 compiler
         uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: Windows-${{ inputs.build_arch }}-Asserts-compilers
-          path: ${{ github.workspace }}/BinaryCache/Library
-      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Windows-${{ matrix.arch }}-stdlib
-          path: ${{ github.workspace }}/BinaryCache/Library
+          name: Windows-${{ inputs.build_arch }}-stage1-compiler
+          path: ${{ github.workspace }}/BinaryCache/stage1/Library
       - uses: actions/download-artifact@v4
         with:
           name: Windows-${{ matrix.arch }}-sdk
@@ -5200,7 +5176,7 @@ jobs:
   debugging_tools:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
-    needs: [compilers, devtools, stdlib, sdk]
+    needs: [compilers, devtools, sdk, macros]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -5219,25 +5195,6 @@ jobs:
         with:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
-      - name: Compute workspace hash
-        id: workspace_hash
-        run: |
-          $stringAsStream = [System.IO.MemoryStream]::new()
-          $writer = [System.IO.StreamWriter]::new($stringAsStream)
-          $writer.write("${{ github.workspace }}")
-          $writer.Flush()
-          $stringAsStream.Position = 0
-          $hash = (Get-FileHash -Algorithm SHA256 -InputStream $stringAsStream).Hash
-          echo "hash=$hash" >> $env:GITHUB_OUTPUT
-      - name: Setup sccache
-        uses: ./SourceCache/ci-build/.github/actions/setup-sccache
-        if: inputs.use_host_toolchain
-        with:
-          s3-bucket: ${{ vars.SCCACHE_S3_BUCKET }}
-          aws-region: ${{ vars.SCCACHE_AWS_REGION }}
-          aws-arn: ${{ vars.SCCACHE_AWS_ARN }}
-          disk-max-size: 100M
-          disk-cache-key: ${{ steps.workspace_hash.outputs.hash }}-${{ matrix.os }}-${{ matrix.arch }}-debugging-tools
       - name: Restore CAS
         uses: ./SourceCache/ci-build/.github/actions/restore-cas
         if: ${{ !inputs.use_host_toolchain }}
@@ -5253,15 +5210,10 @@ jobs:
           name: Windows-${{ matrix.arch }}-swift-argument-parser
           path: ${{ github.workspace }}/BinaryCache/swift-argument-parser
 
-      - name: Download Compilers
+      - name: Download Stage1 Compiler
         uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
         with:
-          name: Windows-${{ inputs.build_arch }}-Asserts-compilers
-          path: ${{ github.workspace }}/BinaryCache/Library
-      - name: Download stdlib
-        uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Windows-${{ matrix.arch }}-stdlib
+          name: Windows-${{ inputs.build_arch }}-stage1-compiler
           path: ${{ github.workspace }}/BinaryCache/Library
       - name: Download SDK
         uses: actions/download-artifact@v4
@@ -5284,10 +5236,6 @@ jobs:
           echo "SDKROOT=${SDKRoot}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       # Download host SDK on top of the target SDK, so that the runtime DLLs are the host ones.
-      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Windows-${{ inputs.build_arch }}-stdlib
-          path: ${{ github.workspace }}/BinaryCache/Library
       - uses: actions/download-artifact@v4
         with:
           name: Windows-${{ inputs.build_arch }}-sdk
@@ -5370,7 +5318,7 @@ jobs:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     name: Package Tools
-    needs: [compilers, macros, debugging_tools, devtools, stdlib, sdk, configure_signing]
+    needs: [compilers, macros, debugging_tools, devtools, sdk, macros, configure_signing]
     runs-on: ${{ inputs.default_build_runner }}
 
     strategy:
@@ -5435,14 +5383,6 @@ jobs:
         with:
           name: Windows-${{ matrix.arch }}-sdk
           path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
-          name: Windows-${{ matrix.arch }}-static-experimental-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
-          name: Windows-${{ matrix.arch }}-shared-experimental-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
 
       - uses: actions/checkout@v4.2.2
         with:
@@ -5452,18 +5392,18 @@ jobs:
           show-progress: false
 
       - run: |
-          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/" -ItemType Directory -Force | Out-Null
+          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/" -ItemType Directory -Force | Out-Null
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/swiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/swiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/Foundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/Foundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/${{ matrix.cpu }}/
 
           New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes/usr" -ItemType Directory -Force | Out-Null
 
@@ -5473,7 +5413,7 @@ jobs:
 
           Move-Item "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/libexec" "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes/usr"
 
-          Move-Item "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/bin" "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/usr"
+          Move-Item "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/bin" "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/usr"
 
       - run: |
           $CertificatePath = Join-Path -Path ${env:RUNNER_TEMP} -ChildPath CodeSign.b64
@@ -5883,7 +5823,7 @@ jobs:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     name: Package Windows SDK & Runtime
-    needs: [stdlib, sdk, experimental-sdk, configure_signing]
+    needs: [sdk, configure_signing]
     runs-on: ${{ inputs.default_build_runner }}
     outputs:
       expected-dlls-amd64: ${{ steps.write-expectations.outputs.expected-dlls-amd64 }}
@@ -5901,21 +5841,9 @@ jobs:
           setup-vs-dev-env: true
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
 
-      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Windows-amd64-stdlib
-          path: ${{ github.workspace }}/BuildRoot/Library
       - uses: actions/download-artifact@v4
         with:
           name: Windows-amd64-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
-          name: Windows-amd64-static-experimental-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
-          name: Windows-amd64-shared-experimental-sdk
           path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
       - uses: actions/download-artifact@v4
         with:
@@ -5935,41 +5863,41 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/brotli/
 
       - run: |
-          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/" -ItemType Directory -Force | Out-Null
-          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/" -ItemType Directory -Force | Out-Null
+          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/" -ItemType Directory -Force | Out-Null
+          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/" -ItemType Directory -Force | Out-Null
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/swiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/swiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libswiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libswiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/libxml2/lib/libxml2s.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/curl/lib/libcurl.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/zlib/lib/zlibstatic.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlicommon.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlidec.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/libxml2/lib/libxml2s.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/curl/lib/libcurl.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/zlib/lib/zlibstatic.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlicommon.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlidec.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/Foundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/Foundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/x86_64/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_CFURLSessionInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_CFXMLInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_FoundationCShims.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/CoreFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/lib_FoundationCollections.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_CFURLSessionInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_CFXMLInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_FoundationCShims.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/CoreFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/lib_FoundationCollections.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/x86_64/
 
           New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes/Windows-x86_64/usr" -ItemType Directory -Force | Out-Null
 
@@ -5979,23 +5907,11 @@ jobs:
 
           New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/Windows-x86_64/usr" -ItemType Directory -Force | Out-Null
 
-          Move-Item "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/bin" "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/Windows-x86_64/usr"
+          Move-Item "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/bin" "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/Windows-x86_64/usr"
 
-      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Windows-arm64-stdlib
-          path: ${{ github.workspace }}/BuildRoot/Library
       - uses: actions/download-artifact@v4
         with:
           name: Windows-arm64-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
-          name: Windows-arm64-static-experimental-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
-          name: Windows-arm64-shared-experimental-sdk
           path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
       - uses: actions/download-artifact@v4
         with:
@@ -6015,41 +5931,41 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/brotli
 
       - run: |
-          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/" -ItemType Directory -Force
-          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/" -ItemType Directory -Force
+          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/" -ItemType Directory -Force
+          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/" -ItemType Directory -Force
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/swiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/swiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libswiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libswiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/libxml2/lib/libxml2s.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/curl/lib/libcurl.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/zlib/lib/zlibstatic.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlidec.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlicommon.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/libxml2/lib/libxml2s.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/curl/lib/libcurl.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/zlib/lib/zlibstatic.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlidec.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlicommon.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/Foundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/Foundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/aarch64/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_CFURLSessionInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_CFXMLInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_FoundationCShims.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/CoreFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/lib_FoundationCollections.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_CFURLSessionInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_CFXMLInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_FoundationCShims.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/CoreFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/lib_FoundationCollections.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/aarch64/
 
           New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes/Windows-aarch64/usr" -ItemType Directory -Force | Out-Null
 
@@ -6059,23 +5975,11 @@ jobs:
 
           New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/Windows-aarch64/usr" -ItemType Directory -Force | Out-Null
 
-          Move-Item "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/bin" "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/Windows-aarch64/usr"
+          Move-Item "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/bin" "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/Windows-aarch64/usr"
 
-      - uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Windows-x86-stdlib
-          path: ${{ github.workspace }}/BuildRoot/Library
       - uses: actions/download-artifact@v4
         with:
           name: Windows-x86-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
-          name: Windows-x86-static-experimental-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
-      - uses: actions/download-artifact@v4
-        with:
-          name: Windows-x86-shared-experimental-sdk
           path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform
       - uses: actions/download-artifact@v4
         with:
@@ -6095,41 +5999,41 @@ jobs:
           path: ${{ github.workspace }}/BuildRoot/Library/brotli
 
       - run: |
-          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/" -ItemType Directory -Force
-          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/" -ItemType Directory -Force
+          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/" -ItemType Directory -Force
+          New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/" -ItemType Directory -Force
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/swiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/swiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libswiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/BlocksRuntime.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/dispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libswiftDispatch.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/libxml2/lib/libxml2s.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/curl/lib/libcurl.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/zlib/lib/zlibstatic.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlidec.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlicommon.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/libxml2/lib/libxml2s.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/curl/lib/libcurl.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/zlib/lib/zlibstatic.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlidec.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/brotli/lib/brotlicommon.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/Foundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/FoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/Foundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/FoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift/windows/i686/
 
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_CFURLSessionInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_CFXMLInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_FoundationCShims.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/CoreFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/lib_FoundationCollections.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/libFoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_CFURLSessionInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_CFXMLInterface.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_FoundationCShims.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/_FoundationICU.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/CoreFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/lib_FoundationCollections.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundation.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationEssentials.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationInternationalization.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationNetworking.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/libFoundationXML.lib ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/windows/i686/
 
           New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes/Windows-i686/usr" -ItemType Directory -Force | Out-Null
 
@@ -6141,7 +6045,7 @@ jobs:
 
           New-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/Windows-i686/usr" -ItemType Directory -Force | Out-Null
 
-          Move-Item "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/bin" "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/Windows-i686/usr"
+          Move-Item "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/bin" "${{ github.workspace }}/BuildRoot/Library/Developer/Runtimes.Experimental/Windows-i686/usr"
 
       - uses: actions/checkout@v4.2.2
         with:
@@ -6165,11 +6069,11 @@ jobs:
           }
 
       - run: |
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/dispatch ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/include/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/os ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/include/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/Block ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/include/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/_foundation_unicode ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/include/
-          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/lib/swift_static/_FoundationCShims ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/WindowsExperimental.sdk/usr/include/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/dispatch ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/include/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/os ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/include/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/Block ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/include/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/_foundation_unicode ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/include/
+          Move-Item ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/lib/swift_static/_FoundationCShims ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Windows.platform/Developer/SDKs/Windows.sdk/usr/include/
 
       - uses: azure/login@v2
         with:
@@ -6344,7 +6248,7 @@ jobs:
   package_android_platform:
     # TODO: Build this on macOS or make an equivalent Mac-only job
     name: Package Android SDK & Runtime
-    needs: [stdlib, ds2, sdk, experimental-sdk, configure_signing]
+    needs: [ds2, sdk, configure_signing]
     runs-on: ${{ inputs.default_build_runner }}
 
     steps:
@@ -6361,19 +6265,9 @@ jobs:
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
 
       - if: inputs.build_android
-        uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Android-arm64-stdlib
-          path: ${{ github.workspace }}/BuildRoot/Library
-      - if: inputs.build_android
         uses: actions/download-artifact@v4
         with:
           name: Android-arm64-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform
-      - if: inputs.build_android
-        uses: actions/download-artifact@v4
-        with:
-          name: Android-arm64-static-experimental-sdk
           path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform
       - if: inputs.build_android
         uses: actions/download-artifact@v4
@@ -6388,19 +6282,9 @@ jobs:
           Move-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform/Developer/SDKs/AndroidExperimental.sdk/usr/lib/swift_static/android/lib*.a" -Destination ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform/Developer/SDKs/AndroidExperimental.sdk/usr/lib/swift_static/android/aarch64/
 
       - if: inputs.build_android
-        uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Android-armv7-stdlib
-          path: ${{ github.workspace }}/BuildRoot/Library
-      - if: inputs.build_android
         uses: actions/download-artifact@v4
         with:
           name: Android-armv7-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform
-      - if: inputs.build_android
-        uses: actions/download-artifact@v4
-        with:
-          name: Android-armv7-static-experimental-sdk
           path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform
       - if: inputs.build_android
         uses: actions/download-artifact@v4
@@ -6415,19 +6299,9 @@ jobs:
           Move-Item -Path "${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform/Developer/SDKs/AndroidExperimental.sdk/usr/lib/swift_static/android/lib*.a" -Destination ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform/Developer/SDKs/AndroidExperimental.sdk/usr/lib/swift_static/android/armv7/
 
       - if: inputs.build_android
-        uses: thebrowsercompany/gha-download-tar-artifact@59992d91335d4ecba543c8535f7d07238e42125d # main
-        with:
-          name: Android-x86_64-stdlib
-          path: ${{ github.workspace }}/BuildRoot/Library
-      - if: inputs.build_android
         uses: actions/download-artifact@v4
         with:
           name: Android-x86_64-sdk
-          path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform
-      - if: inputs.build_android
-        uses: actions/download-artifact@v4
-        with:
-          name: Android-x86_64-static-experimental-sdk
           path: ${{ github.workspace }}/BuildRoot/Library/Developer/Platforms/Android.platform
       - if: inputs.build_android
         uses: actions/download-artifact@v4
@@ -7222,7 +7096,7 @@ jobs:
       - name: Build compnerd/vigil
         working-directory: ${{ github.workspace }}/SourceCache/vigil
         run: |
-          $ExperimentalSDK = "$(Split-Path -Path ${env:SDKROOT} -Parent)/WindowsExperimental.sdk"
+          $ExperimentalSDK = "$(Split-Path -Path ${env:SDKROOT} -Parent)/Windows.sdk"
           swift build --build-system native --triple aarch64-unknown-windows-msvc -debug-info-format none -c release -Xswiftc -sdk -Xswiftc ${ExperimentalSDK} -Xswiftc -static-stdlib -Xlinker /WX
 
       - name: Build & Test pointfreeco/swift-issue-reporting
