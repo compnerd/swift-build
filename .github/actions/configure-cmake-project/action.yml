@@ -40,7 +40,7 @@ inputs:
     required: false
     default: false
   build-os:
-    description: Build operating system (e.g., "Windows", "Darwin").
+    description: Build operating system (e.g., "Windows").
     required: true
   build-arch:
     description: Build architecture (e.g., "x86_64", "arm64").
@@ -186,7 +186,6 @@ runs:
               default { throw "Unsupported Android architecture: $Arch" }
             } 
           }
-          "Darwin" { $Arch }
           default { throw "Unsupported OS: $OS" }
         }
 
@@ -208,7 +207,6 @@ runs:
               default { throw "Unsupported Android architecture: $Arch" }
             }
           }
-          'Darwin' { "${Arch}-apple-macosx15.0" }
           default { throw "Unsupported OS: $OS" }
         }
 
