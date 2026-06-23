@@ -1,7 +1,7 @@
 name: Swift Toolchain Build
 description: |
-  This workflow builds the Swift toolchain for a single platform (macOS or
-  Windows), with the standard library and SDK for a set of target platforms. The
+  This workflow builds the Swift toolchain for a single platform (Windows), with
+  the standard library and SDK for a set of target platforms. The
   `build_android` input can be used to
   enable building the Android standard library and SDK as part of the toolchain.
   This workflow is meant to mimic what the `utils\build.ps1` script does in the
@@ -350,9 +350,6 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
 
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
-
       - name: Compute workspace hash
         id: workspace_hash
         run: |
@@ -434,7 +431,6 @@ jobs:
           cache-key: ${{ matrix.os }}-${{ matrix.arch }}-sqlite
 
   ds2_tools:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     runs-on: ${{ inputs.default_build_runner }}
 
     name: ds2 Build Tools
@@ -542,7 +538,6 @@ jobs:
           cache-key: ${{ matrix.os }}-${{ matrix.arch }}-ds2_tools
 
   ds2:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     needs: [ds2_tools]
     runs-on: ${{ inputs.default_build_runner }}
 
@@ -706,9 +701,6 @@ jobs:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
-
       - name: Compute workspace hash
         id: workspace_hash
         run: |
@@ -808,9 +800,6 @@ jobs:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
-
       - name: Compute workspace hash
         id: workspace_hash
         run: |
@@ -1057,8 +1046,6 @@ jobs:
               $sdkRoot = Split-Path -Parent ${env:SDKROOT}
               $sdkRoot = Join-Path $sdkRoot "WindowsExperimental.sdk"
               $sdkRoot = cygpath -m ${sdkRoot}
-          } else {
-              $sdkRoot = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
           }
           Write-Output "sdkroot=${sdkRoot}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
@@ -1145,9 +1132,6 @@ jobs:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
 
       - name: Compute workspace hash
         id: workspace_hash
@@ -1293,19 +1277,11 @@ jobs:
             $LIBPYTHON_PATH = "${env:PYTHON_LOCATION}/tools/libs/python${PythonMajor}${PythonMinor}.lib"
             $PYTHON_INCLUDE_DIR = "${env:PYTHON_LOCATION}/tools/include"
             $PYTHON_BINARY="python.exe"
-          } elseif ( "${{ matrix.os }}" -eq "Darwin" ) {
-            $CLANG_LOCATION = "${env:HOME}/Library/Developer/Toolchains/swift-${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}-RELEASE.xctoolchain/usr/bin"
-            $SDKROOT = xcrun --sdk macosx --show-sdk-path
-            $LIBPYTHON_PATH = "${env:pythonLocation}/lib/python${PythonMajor}.${PythonMinor}/config-${PythonMajor}.${PythonMinor}-darwin/libpython${PythonMajor}.${PythonMinor}.a"
-            $PYTHON_INCLUDE_DIR = "${env:pythonLocation}/include/python${PythonMajor}.${PythonMinor}"
-            $PYTHON_BINARY="python${PythonMajor}"
           }
 
           # Compute the number of parallel jobs to use for the build.
           $RamBytes = if ($IsWindows) {
             (Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory
-          } elseif ($IsMacOS) {
-            [int64](sysctl -n hw.memsize)
           } else {
               throw "Unsupported OS"
           }
@@ -1534,9 +1510,6 @@ jobs:
           setup-vs-dev-env: ${{ matrix.os == 'Windows' }}
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
-
       - name: Compute workspace hash
         id: workspace_hash
         run: |
@@ -1646,9 +1619,6 @@ jobs:
           setup-vs-dev-env: ${{ matrix.os == 'Windows' }}
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
-
       - name: Compute workspace hash
         id: workspace_hash
         run: |
@@ -1759,9 +1729,6 @@ jobs:
           setup-vs-dev-env: ${{ matrix.os == 'Windows' }}
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
-
       - name: Compute workspace hash
         id: workspace_hash
         run: |
@@ -1968,9 +1935,6 @@ jobs:
           setup-vs-dev-env: ${{ matrix.os == 'Windows' }}
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
-
       - name: Compute workspace hash
         id: workspace_hash
         shell: pwsh
@@ -2091,8 +2055,6 @@ jobs:
           setup-vs-dev-env: ${{ matrix.os == 'Windows' }}
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
-      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # master
-        if: inputs.build_os == 'Darwin'
       - name: Compute workspace hash
         if: matrix.os != 'Android' || inputs.build_android
         id: workspace_hash
@@ -2218,7 +2180,7 @@ jobs:
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
           ndk-path: ${{ steps.setup-ndk.outputs.ndk-path }}
           built-compilers: '@("C", "CXX", "Swift")'
-          cache-script: ${{ github.workspace }}/SourceCache/swift/cmake/caches/Runtime-${{ matrix.os == 'Darwin' && 'MacOSX' || matrix.os }}-${{ matrix.cpu }}.cmake
+          cache-script: ${{ github.workspace }}/SourceCache/swift/cmake/caches/Runtime-${{ matrix.os }}-${{ matrix.cpu }}.cmake
           cmake-defines: |
             @{
               'LLVM_DIR' = "${{ github.workspace }}/BinaryCache/llvm/lib/cmake/llvm";
@@ -2305,7 +2267,6 @@ jobs:
           cache-key: ${{ matrix.os }}-${{ matrix.arch }}-stdlib
 
   macros:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     needs: [compilers, cmark_gfm, stdlib]
     runs-on: ${{ inputs.default_build_runner }}
@@ -3332,7 +3293,6 @@ jobs:
           cache-key: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.static && 'static' || 'shared' }}-experimental-sdk
 
   sdk:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     needs: [libxml2, curl, zlib, brotli, compilers, cmark_gfm, stdlib, macros]
     runs-on: ${{ inputs.default_build_runner }}
@@ -3822,7 +3782,6 @@ jobs:
           cache-key: ${{ matrix.os }}-${{ matrix.arch }}-sdk
 
   devtools:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     needs: [sqlite, compilers, stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
@@ -4780,7 +4739,6 @@ jobs:
           cache-key: ${{ matrix.os }}-${{ matrix.arch }}-devtools
 
   debugging_tools:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     needs: [compilers, devtools, stdlib, sdk]
     runs-on: ${{ inputs.default_build_runner }}
@@ -4948,7 +4906,6 @@ jobs:
           path: ${{ github.workspace }}/Microsoft.ArtifactSigning.Client/bin/x64
 
   package_tools:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     name: Package Tools
     needs: [compilers, macros, debugging_tools, devtools, stdlib, sdk, configure_signing]
@@ -5461,7 +5418,6 @@ jobs:
             ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.arch }}/rtl.${{ matrix.arch }}.cab
 
   package_windows_platform:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     name: Package Windows SDK & Runtime
     needs: [stdlib, sdk, experimental-sdk, configure_signing]
@@ -5923,7 +5879,6 @@ jobs:
             ${{ github.workspace }}/BinaryCache/installer/Release/x86/rtl.static.x86.msm
 
   package_android_platform:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     name: Package Android SDK & Runtime
     needs: [stdlib, ds2, sdk, experimental-sdk, configure_signing]
     runs-on: ${{ inputs.default_build_runner }}
@@ -6422,7 +6377,6 @@ jobs:
             ${{ github.workspace }}/BinaryCache/installer/Release/${{ inputs.build_arch }}/res.cab
 
   installer:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     needs: [package_tools, package_windows_platform, package_android_platform, package_python, package_resources, configure_signing]
     runs-on: ${{ inputs.default_build_runner }}
@@ -6727,7 +6681,6 @@ jobs:
             --acl private
 
   smoke_test:
-    # TODO: Build this on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows'
     needs: [installer]
     runs-on: ${{ inputs.default_build_runner }}
@@ -6865,7 +6818,6 @@ jobs:
           }
 
   smoke_test_android:
-    # TODO: Run this job on macOS or make an equivalent Mac-only job
     if: inputs.build_os == 'Windows' && inputs.build_android
     needs: [installer]
     runs-on: ${{ inputs.default_build_runner }}
@@ -7175,19 +7127,11 @@ jobs:
             $LIBPYTHON_PATH = "${env:PYTHON_LOCATION}/tools/libs/python${PythonMajor}${PythonMinor}.lib"
             $PYTHON_INCLUDE_DIR = "${env:PYTHON_LOCATION}/tools/include"
             $PYTHON_BINARY="python.exe"
-          } elseif ( "${{ matrix.os }}" -eq "Darwin" ) {
-            $CLANG_LOCATION = "${env:HOME}/Library/Developer/Toolchains/swift-${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}-RELEASE.xctoolchain/usr/bin"
-            $SDKROOT = xcrun --sdk macosx --show-sdk-path
-            $LIBPYTHON_PATH = "${env:pythonLocation}/lib/python${PythonMajor}.${PythonMinor}/config-${PythonMajor}.${PythonMinor}-darwin/libpython${PythonMajor}.${PythonMinor}.a"
-            $PYTHON_INCLUDE_DIR = "${env:pythonLocation}/include/python${PythonMajor}.${PythonMinor}"
-            $PYTHON_BINARY="python${PythonMajor}"
           }
 
           # Compute the number of parallel jobs to use for the build.
           $RamBytes = if ($IsWindows) {
             (Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory
-          } elseif ($IsMacOS) {
-            [int64](sysctl -n hw.memsize)
           } else {
               throw "Unsupported OS"
           }
