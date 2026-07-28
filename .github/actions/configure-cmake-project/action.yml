@@ -29,16 +29,12 @@ inputs:
     description: Enable sccache.
     required: false
     default: false
-  enable-cas:
-    description: Enable cas.
-    required: false
-    default: false
   debug-info:
     description: Enable debug information in the build.
     required: false
     default: false
   build-os:
-    description: Build operating system (e.g., "Windows", "Darwin").
+    description: Build operating system (e.g., "Windows").
     required: true
   build-arch:
     description: Build architecture (e.g., "x86_64", "arm64").
@@ -100,10 +96,10 @@ inputs:
       (e.g. "Pinned.Swift", "Stage1.Swift"). Empty means no Swift compiler.
     required: false
     default: ''
-  use-host-toolchain:
+  use-msvc-host-toolchain:
     description: |
-      When true, the `Host.*` compiler selectors resolve to the host MSVC
-      toolchain; otherwise they resolve to the pinned toolchain.
+      When true, the `Host.*` compiler selectors resolve to the MSVC toolchain;
+      otherwise they resolve to the pinned toolchain.
     required: false
     default: false
   use-asm-masm:
@@ -134,7 +130,6 @@ runs:
         INPUT_PROJECT_NAME: ${{ inputs.project-name }}
         INPUT_SWIFT_VERSION: ${{ inputs.swift-version }}
         INPUT_ENABLE_CACHING: ${{ inputs.enable-caching }}
-        INPUT_ENABLE_CAS: ${{ inputs.enable-cas }}
         INPUT_DEBUG_INFO: ${{ inputs.debug-info }}
         INPUT_BUILD_OS: ${{ inputs.build-os }}
         INPUT_BUILD_ARCH: ${{ inputs.build-arch }}
@@ -153,7 +148,7 @@ runs:
         INPUT_C_COMPILER: ${{ inputs.c-compiler }}
         INPUT_CXX_COMPILER: ${{ inputs.cxx-compiler }}
         INPUT_SWIFT_COMPILER: ${{ inputs.swift-compiler }}
-        INPUT_USE_HOST_TOOLCHAIN: ${{ inputs.use-host-toolchain }}
+        INPUT_USE_MSVC_HOST_TOOLCHAIN: ${{ inputs.use-msvc-host-toolchain }}
         INPUT_USE_ASM_MASM: ${{ inputs.use-asm-masm }}
       run: |
         & "${env:GITHUB_WORKSPACE}\SourceCache\ci-build\.github\actions\configure-cmake-project\action.ps1"

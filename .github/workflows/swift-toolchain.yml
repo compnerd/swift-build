@@ -397,7 +397,7 @@ jobs:
           install-dir: ${{ github.workspace }}/BuildRoot/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr
           android-api-level: ${{ inputs.ANDROID_API_LEVEL }}
           android-clang-version: ${{ inputs.ANDROID_CLANG_VERSION }}
-          use-host-toolchain: ${{ inputs.use_host_toolchain }}
+          use-msvc-host-toolchain: ${{ inputs.use_host_toolchain }}
           c-compiler: 'Host.C'
           cmake-defines: |
             @{
@@ -487,7 +487,7 @@ jobs:
           arch: ${{ inputs.build_arch }}
           src-dir: ${{ github.workspace }}/SourceCache/ds2/Tools/RegsGen2
           bin-dir: ${{ github.workspace }}/BinaryCache/RegsGen2
-          use-host-toolchain: ${{ inputs.use_host_toolchain }}
+          use-msvc-host-toolchain: ${{ inputs.use_host_toolchain }}
           c-compiler: 'Host.C'
           cxx-compiler: 'Host.CXX'
           cache-script: ${{ github.workspace }}/SourceCache/ds2/cmake/caches/MSVCWarnings.cmake
@@ -697,7 +697,7 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/cmark-gfm
           bin-dir: ${{ github.workspace }}/BinaryCache/cmark-gfm-${{ inputs.swift_cmark_version }}
           install-dir: ${{ github.workspace }}/BuildRoot/Library/cmark-gfm-${{ inputs.swift_cmark_version }}/usr
-          use-host-toolchain: ${{ inputs.use_host_toolchain }}
+          use-msvc-host-toolchain: ${{ inputs.use_host_toolchain }}
           c-compiler: 'Host.C'
           cxx-compiler: 'Host.CXX'
           cmake-defines: |
@@ -796,7 +796,7 @@ jobs:
           arch: ${{ matrix.arch }}
           src-dir: ${{ github.workspace }}/SourceCache/llvm-project/llvm
           bin-dir: ${{ github.workspace }}/BinaryCache/BuildTools
-          use-host-toolchain: ${{ inputs.use_host_toolchain }}
+          use-msvc-host-toolchain: ${{ inputs.use_host_toolchain }}
           c-compiler: 'Host.C'
           cxx-compiler: 'Host.CXX'
           use-asm-masm: ${{ inputs.use_host_toolchain }}
@@ -1220,7 +1220,7 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/llvm-project/llvm
           bin-dir: ${{ github.workspace }}/BinaryCache/1
           install-dir: ${{ github.workspace }}/BuildRoot/Library/Developer/Toolchains/${{ inputs.swift_version }}+${{ matrix.variant }}/usr
-          use-host-toolchain: ${{ inputs.use_host_toolchain }}
+          use-msvc-host-toolchain: ${{ inputs.use_host_toolchain }}
           c-compiler: 'Host.C'
           cxx-compiler: 'Host.CXX'
           swift-compiler: 'Pinned.Swift'

@@ -18,7 +18,6 @@ function ConvertTo-Bool([string]$Value) {
 $ProjectName = $env:INPUT_PROJECT_NAME
 $SwiftVersion = $env:INPUT_SWIFT_VERSION
 $EnableCaching = ConvertTo-Bool $env:INPUT_ENABLE_CACHING
-$EnableCAS = ConvertTo-Bool $env:INPUT_ENABLE_CAS
 $DebugInfo = ConvertTo-Bool $env:INPUT_DEBUG_INFO
 $BuildOS = $env:INPUT_BUILD_OS
 $BuildArch = $env:INPUT_BUILD_ARCH
@@ -32,7 +31,7 @@ $AndroidClangVersion = $env:INPUT_ANDROID_CLANG_VERSION
 $NDKPath = $env:INPUT_NDK_PATH
 $SwiftSDK = $env:INPUT_SWIFT_SDK_PATH
 $CacheScript = $env:INPUT_CACHE_SCRIPT
-$UseHostToolchain = ConvertTo-Bool $env:INPUT_USE_HOST_TOOLCHAIN
+$UseMSVCHostToolchain = ConvertTo-Bool $env:INPUT_USE_MSVC_HOST_TOOLCHAIN
 $UseASM_MASM = ConvertTo-Bool $env:INPUT_USE_ASM_MASM
 
 # `cmake-defines` is a PowerShell hashtable literal (`@{ ... }`) authored at the
@@ -236,12 +235,12 @@ $Compilers = @{
 
 # Mirror `build.ps1`'s `$Compilers.Host` trick: a computed pseudo-set that
 # redirects to the host MSVC toolchain or the pinned toolchain depending on
-# `$UseHostToolchain`. This keeps the host-vs-pinned decision in one place so
+# `$UseMSVCHostToolchain`. This keeps the host-vs-pinned decision in one place so
 # call sites can simply select `Host.C` / `Host.CXX`. Note there is no
 # `Host.Swift`: Swift always comes from a real stage.
 $Compilers.Host = @{
-    C   = if ($UseHostToolchain) { $Compilers.MSVC.C } else { $Compilers.Pinned.C }
-    CXX = if ($UseHostToolchain) { $Compilers.MSVC.CXX } else { $Compilers.Pinned.CXX }
+    C   = if ($UseMSVCHostToolchain) { $Compilers.MSVC.C } else { $Compilers.Pinned.C }
+    CXX = if ($UseMSVCHostToolchain) { $Compilers.MSVC.CXX } else { $Compilers.Pinned.CXX }
 }
 
 # Resolve a dotted selector (e.g. "Pinned.C", "Stage1.GNUCXX", "Host.CXX")
@@ -595,29 +594,6 @@ switch ($OS) {
         # This indication allows it to understand that it can use `chrpath` to
         # change the RPATH on the dynamic libraries.
         Add-FlagsDefine $Defines CMAKE_EXECUTABLE_FORMAT "ELF"
-    }
-}
-
-# Android's compilers are from the NDK and do not support CAS.
-if ($EnableCAS -and $OS -ne "Android") {
-    if ($UseC -and $CCompiler.DriverStyle -ne [DriverStyle]::CL) {
-        Add-KeyValueIfNew $Defines CMAKE_C_COMPILER_LAUNCHER `
-            (Join-Path -Path (Split-Path $CCompiler.Executable) -ChildPath "clang-cache.exe")
-    }
-
-    if ($UseCXX -and $CXXCompiler.DriverStyle -ne [DriverStyle]::CL) {
-        Add-KeyValueIfNew $Defines CMAKE_CXX_COMPILER_LAUNCHER `
-            (Join-Path -Path (Split-Path $CXXCompiler.Executable) -ChildPath "clang-cache.exe")
-    }
-
-    if ($UseSwift) {
-        $CasPath = "${env:GITHUB_WORKSPACE}\cas"
-        Add-FlagsDefine $Defines CMAKE_Swift_FLAGS @(
-            "-explicit-module-build",
-            "-cache-compile-job",
-            "-cas-path", $CasPath,
-            "-incremental-dependency-scan"
-        )
     }
 }
 
