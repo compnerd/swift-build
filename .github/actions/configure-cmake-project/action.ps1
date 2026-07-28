@@ -597,7 +597,7 @@ switch ($OS) {
     }
 }
 
-# Note: On GHA, sccache is no longer supported.
+# Note: In build.ps1, sccache is no longer supported.
 if ($EnableCaching -and $OS -ne "Android") {
     if ($UseC) {
         Add-KeyValueIfNew $Defines CMAKE_C_COMPILER_LAUNCHER "sccache"
