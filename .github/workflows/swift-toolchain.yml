@@ -317,7 +317,7 @@ on:
 
 env:
   PINNED_BOOTSTRAP_TOOLCHAIN_VERSION: DEVELOPMENT-SNAPSHOT-2026-03-16-a
-  CMAKE_VERSION: 4.4.0
+  CMAKE_VERSION: 4.4.1
 
 defaults:
   run:
@@ -431,7 +431,7 @@ jobs:
           setup-vs-dev-env: true
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -538,7 +538,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -652,7 +652,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -736,7 +736,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -895,7 +895,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -1041,7 +1041,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -1402,7 +1402,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -1495,7 +1495,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -1589,7 +1589,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -1779,7 +1779,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -1883,7 +1883,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -2103,7 +2103,7 @@ jobs:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -2313,7 +2313,7 @@ jobs:
           setup-vs-dev-env: ${{ matrix.os == 'Windows' }}
           host-arch: ${{ matrix.arch }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -3175,7 +3175,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -3611,7 +3611,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -4553,7 +4553,7 @@ jobs:
           setup-vs-dev-env: true
           host-arch: ${{ matrix.arch }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
@@ -6667,7 +6667,7 @@ jobs:
           host-arch: ${{ matrix.arch }}
           swift-version: ${{ env.PINNED_BOOTSTRAP_TOOLCHAIN_VERSION }}
       - name: Install CMake ${{ env.CMAKE_VERSION }}
-        uses: lukka/get-cmake@e6906078ebd1ccb8ce51ab4626ac46a1b5a517e3 # v4.4.0
+        uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
           cmakeVersion: ${{ env.CMAKE_VERSION }}
 
