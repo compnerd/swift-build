@@ -317,7 +317,7 @@ on:
 
 env:
   PINNED_BOOTSTRAP_TOOLCHAIN_VERSION: DEVELOPMENT-SNAPSHOT-2026-03-16-a
-  AZURE_VAULT_SIGN_COMMAND: ${{ secrets.AZURE_KEY_VAULT_URI != '' && '"%USERPROFILE%\.dotnet\tools\AzureSignTool.exe" sign --azure-key-vault-url "%AZURE_KEY_VAULT_URI%" --azure-key-vault-managed-identity --azure-key-vault-certificate "%AZURE_KEY_VAULT_CERTIFICATE_NAME%" --file-digest sha256 --timestamp-rfc3161 "http://timestamp.digicert.com" --timestamp-digest sha256 --verbose' || '' }}
+  AZURE_VAULT_SIGN_COMMAND: ${{ secrets.AZURE_KEY_VAULT_URI != '' && '"%UserProfile%\.dotnet\tools\AzureSignTool.exe" sign --azure-key-vault-url "%AZURE_KEY_VAULT_URI%" --azure-key-vault-managed-identity --azure-key-vault-certificate "%AZURE_KEY_VAULT_CERTIFICATE_NAME%" --file-digest sha256 --timestamp-rfc3161 "http://timestamp.digicert.com" --timestamp-digest sha256 --verbose' || '' }}
 
 defaults:
   run:
