@@ -4751,18 +4751,6 @@ jobs:
           dotnet tool install --global AzureSignTool --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --global AzureSignTool
 
-      - name: Configure Azure Key Vault signing
-        if: inputs.signed && env.AZURE_VAULT_SIGN_COMMAND != ''
-        run: |
-          $UserPropsPath = Join-Path -Path "${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows" -ChildPath "$($env:USERNAME).props"
-          @"
-          <Project>
-            <PropertyGroup>
-              <SignCommand>$env:AZURE_VAULT_SIGN_COMMAND</SignCommand>
-            </PropertyGroup>
-          </Project>
-          "@ | Out-File -FilePath $UserPropsPath -Encoding utf8
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
@@ -4774,6 +4762,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -4788,6 +4777,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -4802,6 +4792,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:SWIFT_DOCC_RENDER_ARTIFACT_ROOT="${{ github.workspace }}\SourceCache\swift-docc-render-artifact" `
@@ -4816,6 +4807,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:SWIFT_DOCC_RENDER_ARTIFACT_ROOT="${{ github.workspace }}\SourceCache\swift-docc-render-artifact" `
@@ -4830,6 +4822,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -4843,6 +4836,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -4856,6 +4850,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -4869,6 +4864,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -4882,6 +4878,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -4899,6 +4896,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -5305,18 +5303,6 @@ jobs:
           dotnet tool install --global AzureSignTool --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --global AzureSignTool
 
-      - name: Configure Azure Key Vault signing
-        if: inputs.signed && env.AZURE_VAULT_SIGN_COMMAND != ''
-        run: |
-          $UserPropsPath = Join-Path -Path "${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows" -ChildPath "$($env:USERNAME).props"
-          @"
-          <Project>
-            <PropertyGroup>
-              <SignCommand>$env:AZURE_VAULT_SIGN_COMMAND</SignCommand>
-            </PropertyGroup>
-          </Project>
-          "@ | Out-File -FilePath $UserPropsPath -Encoding utf8
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
@@ -5328,6 +5314,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -5614,18 +5601,6 @@ jobs:
           dotnet tool install --global AzureSignTool --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --global AzureSignTool
 
-      - name: Configure Azure Key Vault signing
-        if: inputs.build_android && inputs.signed && env.AZURE_VAULT_SIGN_COMMAND != ''
-        run: |
-          $UserPropsPath = Join-Path -Path "${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows" -ChildPath "$($env:USERNAME).props"
-          @"
-          <Project>
-            <PropertyGroup>
-              <SignCommand>$env:AZURE_VAULT_SIGN_COMMAND</SignCommand>
-            </PropertyGroup>
-          </Project>
-          "@ | Out-File -FilePath $UserPropsPath -Encoding utf8
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
@@ -5638,6 +5613,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:ANDROID_INCLUDE_DS2=true `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
@@ -5720,18 +5696,6 @@ jobs:
           dotnet tool install --global AzureSignTool --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --global AzureSignTool
 
-      - name: Configure Azure Key Vault signing
-        if: inputs.signed && env.AZURE_VAULT_SIGN_COMMAND != ''
-        run: |
-          $UserPropsPath = Join-Path -Path "${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows" -ChildPath "$($env:USERNAME).props"
-          @"
-          <Project>
-            <PropertyGroup>
-              <SignCommand>$env:AZURE_VAULT_SIGN_COMMAND</SignCommand>
-            </PropertyGroup>
-          </Project>
-          "@ | Out-File -FilePath $UserPropsPath -Encoding utf8
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
@@ -5779,6 +5743,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ImageRoot=${{ github.workspace }}/BuildRoot/Library/Developer `
@@ -5847,18 +5812,6 @@ jobs:
           dotnet tool install --global AzureSignTool --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --global AzureSignTool
 
-      - name: Configure Azure Key Vault signing
-        if: inputs.signed && env.AZURE_VAULT_SIGN_COMMAND != ''
-        run: |
-          $UserPropsPath = Join-Path -Path "${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows" -ChildPath "$($env:USERNAME).props"
-          @"
-          <Project>
-            <PropertyGroup>
-              <SignCommand>$env:AZURE_VAULT_SIGN_COMMAND</SignCommand>
-            </PropertyGroup>
-          </Project>
-          "@ | Out-File -FilePath $UserPropsPath -Encoding utf8
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
@@ -5870,6 +5823,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ProductVersion=${{ inputs.swift_version }} `
@@ -6016,18 +5970,6 @@ jobs:
           dotnet tool install --global AzureSignTool --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --global AzureSignTool
 
-      - name: Configure Azure Key Vault signing
-        if: inputs.signed && env.AZURE_VAULT_SIGN_COMMAND != ''
-        run: |
-          $UserPropsPath = Join-Path -Path "${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows" -ChildPath "$($env:USERNAME).props"
-          @"
-          <Project>
-            <PropertyGroup>
-              <SignCommand>$env:AZURE_VAULT_SIGN_COMMAND</SignCommand>
-            </PropertyGroup>
-          </Project>
-          "@ | Out-File -FilePath $UserPropsPath -Encoding utf8
-
       - name: Authenticate with Azure
         uses: azure/login@v2
         with:
@@ -6042,6 +5984,7 @@ jobs:
               -p:BaseOutputPath=${{ github.workspace }}\BinaryCache\installer\ `
               -p:Configuration=Release `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:ProductArchitecture=${{ matrix.arch }} `
@@ -6060,6 +6003,7 @@ jobs:
               -p:Configuration=Release `
               -p:BuildProjectReferences=false `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:BundleFlavor=offline `
@@ -6110,6 +6054,7 @@ jobs:
               -p:Configuration=Release `
               -p:BuildProjectReferences=false `
               -p:SignOutput=${{ inputs.signed }} `
+              -p:SignCommand="${env:AZURE_VAULT_SIGN_COMMAND}" `
               -p:CERTIFICATE=${env:CERTIFICATE} `
               -p:PASSPHRASE=${{ secrets.PASSPHRASE }} `
               -p:SWIFT_DOCC_RENDER_ARTIFACT_ROOT="${{ github.workspace }}\SourceCache\swift-docc-render-artifact" `
