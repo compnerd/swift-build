@@ -89,7 +89,7 @@ $Compilers = @{
         C   = @{
             Executable       = (Get-Command "cl.exe").Source
             DriverStyle      = [DriverStyle]::CL
-            Flags            = @("/GS-", "/Gw", "/Gy", "/Oy", "/Oi", "/Zc:inline", "/Zc:preprocessor")
+            Flags            = @("/GS-", "/Gw", "/Gy", "/Oy", "/Oi", "/source-charset:utf-8", "/Zc:inline", "/Zc:preprocessor")
             DebugFlags       = { param([string] $Format)
                 @()
             }
@@ -98,7 +98,7 @@ $Compilers = @{
         CXX = @{
             Executable       = (Get-Command "cl.exe").Source
             DriverStyle      = [DriverStyle]::CL
-            Flags            = @("/GS-", "/Gw", "/Gy", "/Oy", "/Oi", "/Zc:inline", "/Zc:preprocessor", "/Zc:__cplusplus")
+            Flags            = @("/GS-", "/Gw", "/Gy", "/Oy", "/Oi", "/source-charset:utf-8", "/Zc:inline", "/Zc:preprocessor", "/Zc:__cplusplus")
             DebugFlags       = { param([string] $Format)
                 @()
             }
