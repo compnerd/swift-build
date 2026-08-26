@@ -1733,10 +1733,6 @@ jobs:
           setup-vs-dev-env: true
           host-arch: ${{ inputs.build_arch }}
 
-      - name: Clear inherited SDKROOT
-        run: |
-          "SDKROOT=" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
       - name: Install CMake ${{ env.CMAKE_VERSION }}
         uses: lukka/get-cmake@4a7d025fc60f00db0c7b44ebf783d19b52444830 # v4.4.1
         with:
@@ -1811,7 +1807,11 @@ jobs:
 
           $RamBytes = (Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory
           $RamGB = [math]::Round($RamBytes / 1GB)
-          $LinkJobs = [math]::Max(2, [math]::Floor($RamGB / 24))
+          $LinkJobs = if ("${{ inputs.debug_info }}" -eq "true") {
+            2
+          } else {
+            [math]::Max(2, [math]::Floor($RamGB / 24))
+          }
 
           $Context = @"
           cpu=${Cpu}
@@ -1882,9 +1882,6 @@ jobs:
               'LLVM_PARALLEL_LINK_JOBS' = "${{ steps.setup-context.outputs.link-jobs }}";
               'SWIFT_PARALLEL_LINK_JOBS' = "${{ steps.setup-context.outputs.link-jobs }}";
             }
-
-      - name: Build Stage1 Compiler Distribution
-        run: cmake --build ${{ github.workspace }}/BinaryCache/stage1/build --target distribution
 
       - name: Install Stage1 Compiler Distribution
         run: cmake --build ${{ github.workspace }}/BinaryCache/stage1/build --target install-distribution
