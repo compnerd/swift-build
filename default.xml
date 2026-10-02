@@ -75,5 +75,5 @@
 
   <project remote="github" name="tukaani-project/xz" path="xz" revision="refs/tags/v5.8.4" />
 
-  <project remote="github" name="WebAssembly/wasi-libc" path="wasi-libc" revision="refs/tags/wasi-sdk-31" />
+  <project remote="github" name="WebAssembly/wasi-libc" path="wasi-libc" revision="refs/tags/wasi-sdk-33" />
 </manifest>
