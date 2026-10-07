@@ -7200,6 +7200,12 @@ jobs:
               -p:ToolchainVariants="`"asserts;noasserts`"" `
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bundle/installer.wixproj
 
+      - name: Generate Build Provenance (offline installer)
+        if: ${{ !inputs.release }}
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.arch }}/installer.exe
+
       - name: Upload installer (offline)
         if: ${{ !inputs.release }}
         uses: actions/upload-artifact@v4
