@@ -7680,6 +7680,7 @@ jobs:
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bundle/baf/baf.vcxproj
 
       - name: Build installer bundle (offline)
+        if: ${{ !inputs.release }}
         env:
           AZURE_KEY_VAULT_URI: ${{ steps.signing_mode.outputs.azure_vault == 'true' && secrets.AZURE_KEY_VAULT_URI || '' }}
           AZURE_KEY_VAULT_CERTIFICATE_NAME: ${{ steps.signing_mode.outputs.azure_vault == 'true' && secrets.AZURE_KEY_VAULT_CERTIFICATE_NAME || '' }}
@@ -7709,12 +7710,13 @@ jobs:
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bundle/installer.wixproj
 
       - name: Generate Build Provenance (offline installer)
-        if: ${{ inputs.release }}
+        if: ${{ !inputs.release }}
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.arch }}/installer.exe
 
       - name: Upload installer (offline)
+        if: ${{ !inputs.release }}
         uses: actions/upload-artifact@v4
         with:
           name: Windows-${{ matrix.arch }}-installer-offline
