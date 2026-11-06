@@ -2395,7 +2395,7 @@ jobs:
               'ZLIB_BUILD_MINIZIP' = "NO";
               'ZLIB_BUILD_SHARED' = "NO";
               'ZLIB_BUILD_STATIC‎' = "YES";
-              'ZLIB_BUILD_TESTING' = "NO';
+              'ZLIB_BUILD_TESTING' = "NO";
             }
       - name: Build zlib
         run: cmake --build ${{ github.workspace }}/BinaryCache/zlib-${{ inputs.zlib_version }}
