@@ -5644,7 +5644,7 @@ jobs:
       - name: Install AzureSignTool
         if: inputs.signed && steps.signing_mode.outputs.azure_vault == 'true'
         run: |
-          dotnet tool install AzureSignTool --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
+          dotnet tool install AzureSignTool --version 7.0.1 --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --tool-path "${env:RUNNER_TEMP}\AzureSignTool"
 
       - name: Package Build Tools (${{ matrix.variant.name }})
@@ -5919,7 +5919,7 @@ jobs:
       - name: Install AzureSignTool
         if: inputs.signed && steps.signing_mode.outputs.azure_vault == 'true'
         run: |
-          dotnet tool install AzureSignTool --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
+          dotnet tool install AzureSignTool --version 7.0.1 --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --tool-path "${env:RUNNER_TEMP}\AzureSignTool"
 
       - name: Package CLI Tools (Asserts)
@@ -6262,7 +6262,7 @@ jobs:
       - name: Install AzureSignTool
         if: inputs.signed && steps.signing_mode.outputs.azure_vault == 'true'
         run: |
-          dotnet tool install AzureSignTool --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
+          dotnet tool install AzureSignTool --version 7.0.1 --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --tool-path "${env:RUNNER_TEMP}\AzureSignTool"
 
       - name: Package Debugging Tools (Asserts)
@@ -6533,7 +6533,7 @@ jobs:
       - name: Install AzureSignTool
         if: inputs.signed && steps.signing_mode.outputs.azure_vault == 'true'
         run: |
-          dotnet tool install AzureSignTool --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
+          dotnet tool install AzureSignTool --version 7.0.1 --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --tool-path "${env:RUNNER_TEMP}\AzureSignTool"
 
       - name: Package Private Runtime (Asserts)
@@ -6986,7 +6986,7 @@ jobs:
       - name: Install AzureSignTool
         if: inputs.signed && steps.signing_mode.outputs.azure_vault == 'true'
         run: |
-          dotnet tool install AzureSignTool --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
+          dotnet tool install AzureSignTool --version 7.0.1 --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --tool-path "${env:RUNNER_TEMP}\AzureSignTool"
 
       - name: Package Platform
@@ -7458,7 +7458,7 @@ jobs:
       - name: Install AzureSignTool
         if: inputs.build_android && inputs.signed && steps.signing_mode.outputs.azure_vault == 'true'
         run: |
-          dotnet tool install AzureSignTool --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
+          dotnet tool install AzureSignTool --version 7.0.1 --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --tool-path "${env:RUNNER_TEMP}\AzureSignTool"
 
       - uses: azure/login@v2
@@ -7559,7 +7559,7 @@ jobs:
       - name: Install AzureSignTool
         if: inputs.signed && steps.signing_mode.outputs.azure_vault == 'true'
         run: |
-          dotnet tool install AzureSignTool --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
+          dotnet tool install AzureSignTool --version 7.0.1 --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --tool-path "${env:RUNNER_TEMP}\AzureSignTool"
 
       - uses: azure/login@v2
@@ -7681,7 +7681,7 @@ jobs:
       - name: Install AzureSignTool
         if: inputs.signed && steps.signing_mode.outputs.azure_vault == 'true'
         run: |
-          dotnet tool install AzureSignTool --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
+          dotnet tool install AzureSignTool --version 7.0.1 --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --tool-path "${env:RUNNER_TEMP}\AzureSignTool"
 
       - uses: azure/login@v2
@@ -7848,7 +7848,7 @@ jobs:
       - name: Install AzureSignTool
         if: inputs.signed && steps.signing_mode.outputs.azure_vault == 'true'
         run: |
-          dotnet tool install AzureSignTool --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
+          dotnet tool install AzureSignTool --version 7.0.1 --tool-path "${env:RUNNER_TEMP}\AzureSignTool" --add-source "https://api.nuget.org/v3/index.json"
           dotnet tool list --tool-path "${env:RUNNER_TEMP}\AzureSignTool"
 
       - name: Authenticate with Azure
