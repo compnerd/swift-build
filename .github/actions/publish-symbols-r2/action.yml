@@ -134,7 +134,8 @@ runs:
         # 5. Attempt to upload 000Admin/server.txt with --if-match using the ETag we captured
         #    - If successful (ETag matches), no one else modified it - proceed with metadata upload
         #    - If failed with PreconditionFailed (412), someone else updated it - retry
-        # 6. Retry up to 5 times with random delay (1-30 seconds) between attempts
+        # 6. Upload remaining metadata
+        # Retry metadata conflicts up to 5 total attempts, with a random delay (30-59 seconds).
         $MaxRetries = 5
 
         for ($Attempt = 1; $Attempt -le $MaxRetries; $Attempt++) {
