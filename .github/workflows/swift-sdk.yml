@@ -14,16 +14,6 @@ on:
         required: true
         type: string
 
-    secrets:
-      SYMBOL_SERVER_PAT:
-        required: false
-      R2_ACCOUNT_ID:
-        required: false
-      R2_ACCESS_KEY_ID:
-        required: false
-      R2_SECRET_ACCESS_KEY:
-        required: false
-
 # TODO: Pass this as input once the build and swift toolchain workflows are merged.
 env:
   CMAKE_VERSION: 4.4.1
@@ -50,8 +40,6 @@ jobs:
       libxml2_version: ${{ fromJSON(inputs.context).libxml2_version }}
       llvm_project_revision: ${{ fromJSON(inputs.context).llvm_project_revision }}
       python_version: ${{ fromJSON(inputs.context).python_version }}
-      release: ${{ fromJSON(inputs.context).release }}
-      swift_build_revision: ${{ fromJSON(inputs.context).swift_build_revision }}
       swift_collections_revision: ${{ fromJSON(inputs.context).swift_collections_revision }}
       swift_corelibs_foundation_revision: ${{ fromJSON(inputs.context).swift_corelibs_foundation_revision }}
       swift_corelibs_libdispatch_revision: ${{ fromJSON(inputs.context).swift_corelibs_libdispatch_revision }}
@@ -1609,95 +1597,3 @@ jobs:
             ${{ github.workspace }}/BinaryCache/**/*.dll
           compression-level: 1
           if-no-files-found: warn
-
-  sdk-symbols-azure:
-    name: Publish sdk symbols to Azure
-    needs: [context, sdk]
-    if: fromJSON(needs.context.outputs.platform).publish_symbols && fromJSON(needs.context.outputs.debug_info)
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.context.outputs.sdk_matrix) }}
-    runs-on: windows-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: ${{ needs.context.outputs.os }}-${{ matrix.arch }}-${{ matrix.static && 'static' || 'shared' }}-sdk-symbols
-          merge-multiple: true
-          path: ${{ github.workspace }}/symbols
-
-      - name: Check for symbol files
-        id: symbols
-        run: |
-          $SymbolsPath = Join-Path $env:GITHUB_WORKSPACE 'symbols'
-          if ((Test-Path $SymbolsPath) -and (Get-ChildItem $SymbolsPath -Recurse -File)) {
-            "available=true" >> $env:GITHUB_OUTPUT
-          } else {
-            Write-Output "::warning::No files available for symbol publishing"
-          }
-
-      - name: Upload PDBs to Azure
-        if: steps.symbols.outputs.available == 'true'
-        uses: thebrowsercompany/action-publish-symbols@d5f4b06266463bf9a71ef6a4e3b0b8d79eaa82a4
-        with:
-          accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
-          personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
-          symbolsFolder: ${{ github.workspace }}/symbols
-          searchPattern: '**/*.pdb'
-
-      - name: Upload DLLs to Azure
-        if: steps.symbols.outputs.available == 'true'
-        uses: thebrowsercompany/action-publish-symbols@d5f4b06266463bf9a71ef6a4e3b0b8d79eaa82a4
-        with:
-          accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
-          personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
-          symbolsFolder: ${{ github.workspace }}/symbols
-          searchPattern: '**/*.dll'
-
-  sdk-symbols-r2:
-    name: Publish sdk symbols to R2
-    needs: [context, sdk]
-    if: fromJSON(needs.context.outputs.platform).publish_symbols && fromJSON(needs.context.outputs.debug_info) && fromJSON(needs.context.outputs.release)
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.context.outputs.sdk_matrix) }}
-    runs-on: windows-latest
-    concurrency:
-      group: r2-swift-toolchain-symbols
-      cancel-in-progress: false
-      queue: max
-    steps:
-      - uses: actions/checkout@v4.2.2
-        with:
-          ref: ${{ needs.context.outputs.ci_build_revision }}
-          path: SourceCache/ci-build
-          show-progress: false
-
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: ${{ needs.context.outputs.os }}-${{ matrix.arch }}-${{ matrix.static && 'static' || 'shared' }}-sdk-symbols
-          merge-multiple: true
-          path: ${{ github.workspace }}/symbols
-
-      - name: Check for symbol files
-        id: symbols
-        run: |
-          $SymbolsPath = Join-Path $env:GITHUB_WORKSPACE 'symbols'
-          if ((Test-Path $SymbolsPath) -and (Get-ChildItem $SymbolsPath -Recurse -File)) {
-            "available=true" >> $env:GITHUB_OUTPUT
-          } else {
-            Write-Output "::warning::No files available for symbol publishing"
-          }
-
-      - name: Upload PDBs to Public Symbol Server
-        if: steps.symbols.outputs.available == 'true'
-        uses: ./SourceCache/ci-build/.github/actions/publish-symbols-r2
-        with:
-          symbolsFolder: ${{ github.workspace }}/symbols
-          searchPattern: '*.pdb'
-          swift-version: ${{ needs.context.outputs.swift_version }}
-          arch: ${{ matrix.arch }}
-          variant: ${{ matrix.static && 'static' || 'shared' }}
-          build-revision: ${{ needs.context.outputs.swift_build_revision }}
-          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}

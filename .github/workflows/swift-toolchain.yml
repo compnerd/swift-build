@@ -1527,7 +1527,6 @@ jobs:
     with:
       context: ${{ toJSON(inputs) }}
       platform: windows
-    secrets: inherit
 
   android_sdk:
     name: Android SDK
@@ -1537,7 +1536,6 @@ jobs:
     with:
       context: ${{ toJSON(inputs) }}
       platform: android
-    secrets: inherit
 
   android_package:
     name: Android SDK packaging
@@ -1553,18 +1551,24 @@ jobs:
   # success so the rest of the build can depend on it unconditionally.
   android_gate:
     name: Android SDK Gate
-    needs: [android_sdk, android_package]
+    needs: [ds2_tools, android_sdk, android_package]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - name: Check Android results
         env:
           RESULTS: ${{ toJSON(needs) }}
+          EXPECTED: ${{ inputs.build_android && 'success' || 'skipped' }}
         run: |
-          $Failed = ($env:RESULTS | ConvertFrom-Json).PSObject.Properties | Where-Object { $_.Value.result -notin 'success', 'skipped' }
-          if (-not $Failed) { exit 0 }
-          foreach ($Job in $Failed) { Write-Host "::error::$($Job.Name) finished with result '$($Job.Value.result)'." }
-          exit 1
+          $Results = $env:RESULTS | ConvertFrom-Json
+          $ExitCode = 0
+          foreach ($Job in $Results.PSObject.Properties) {
+            if ($Job.Value.result -ne $env:EXPECTED) {
+              Write-Host "::error::$($Job.Name) finished with result '$($Job.Value.result)', expected '$env:EXPECTED'."
+              $ExitCode = 1
+            }
+          }
+          exit $ExitCode
 
   stage2-libxml2:
     needs: [stage1-compiler]
@@ -2336,6 +2340,106 @@ jobs:
           swift-version: ${{ inputs.swift_version }}
           arch: ${{ matrix.arch }}
           variant: ${{ matrix.variant }}
+          build-revision: ${{ inputs.swift_build_revision }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+
+  sdk-symbols-azure:
+    name: Publish sdk symbols to Azure
+    permissions:
+      contents: read
+    needs: [windows_sdk]
+    if: inputs.debug_info
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64, x86]
+        static: [true, false]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Windows-${{ matrix.arch }}-${{ matrix.static && 'static' || 'shared' }}-sdk-symbols
+          merge-multiple: true
+          path: ${{ github.workspace }}/symbols
+
+      - name: Check for symbol files
+        id: symbols
+        run: |
+          $SymbolsPath = Join-Path $env:GITHUB_WORKSPACE 'symbols'
+          if ((Test-Path $SymbolsPath) -and (Get-ChildItem $SymbolsPath -Recurse -File)) {
+            "available=true" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Output "::warning::No files available for symbol publishing"
+          }
+
+      - name: Upload PDBs to Azure
+        if: steps.symbols.outputs.available == 'true'
+        uses: thebrowsercompany/action-publish-symbols@d5f4b06266463bf9a71ef6a4e3b0b8d79eaa82a4
+        with:
+          accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
+          personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
+          symbolsFolder: ${{ github.workspace }}/symbols
+          searchPattern: '**/*.pdb'
+
+      - name: Upload DLLs to Azure
+        if: steps.symbols.outputs.available == 'true'
+        uses: thebrowsercompany/action-publish-symbols@d5f4b06266463bf9a71ef6a4e3b0b8d79eaa82a4
+        with:
+          accountName: ${{ vars.SYMBOL_SERVER_ACCOUNT }}
+          personalAccessToken: ${{ secrets.SYMBOL_SERVER_PAT }}
+          symbolsFolder: ${{ github.workspace }}/symbols
+          searchPattern: '**/*.dll'
+
+  sdk-symbols-r2:
+    name: Publish sdk symbols to R2
+    permissions:
+      contents: read
+    needs: [windows_sdk]
+    if: inputs.debug_info && inputs.release
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64, x86]
+        static: [true, false]
+    runs-on: windows-latest
+    concurrency:
+      group: r2-swift-toolchain-symbols
+      cancel-in-progress: false
+      queue: max
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          ref: ${{ inputs.ci_build_revision }}
+          path: SourceCache/ci-build
+          show-progress: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Windows-${{ matrix.arch }}-${{ matrix.static && 'static' || 'shared' }}-sdk-symbols
+          merge-multiple: true
+          path: ${{ github.workspace }}/symbols
+
+      - name: Check for symbol files
+        id: symbols
+        run: |
+          $SymbolsPath = Join-Path $env:GITHUB_WORKSPACE 'symbols'
+          if ((Test-Path $SymbolsPath) -and (Get-ChildItem $SymbolsPath -Recurse -File)) {
+            "available=true" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Output "::warning::No files available for symbol publishing"
+          }
+
+      - name: Upload PDBs to Public Symbol Server
+        if: steps.symbols.outputs.available == 'true'
+        uses: ./SourceCache/ci-build/.github/actions/publish-symbols-r2
+        with:
+          symbolsFolder: ${{ github.workspace }}/symbols
+          searchPattern: '*.pdb'
+          swift-version: ${{ inputs.swift_version }}
+          arch: ${{ matrix.arch }}
+          variant: ${{ matrix.static && 'static' || 'shared' }}
           build-revision: ${{ inputs.swift_build_revision }}
           r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
