@@ -3,10 +3,10 @@
   "canonical_name": "android",
 
   "archs": [
-    { "arch": "arm64", "triple": "aarch64-unknown-linux-android{{ANDROID_API_LEVEL}}", "ds2_program_prefix": "aarch64-unknown-linux-android-" },
-    { "arch": "armv7", "triple": "armv7-unknown-linux-androideabi{{ANDROID_API_LEVEL}}", "ds2_program_prefix": "armv7-unknown-linux-android-" },
-    { "arch": "i686", "triple": "i686-unknown-linux-android{{ANDROID_API_LEVEL}}", "ds2_program_prefix": "i686-unknown-linux-android-" },
-    { "arch": "x86_64", "triple": "x86_64-unknown-linux-android{{ANDROID_API_LEVEL}}", "ds2_program_prefix": "x86_64-unknown-linux-android-" }
+    { "arch": "arm64", "triple": "aarch64-unknown-linux-android{{ANDROID_API_LEVEL}}", "module_triple": "aarch64-unknown-linux-android", "inspect": true },
+    { "arch": "armv7", "triple": "armv7-unknown-linux-androideabi{{ANDROID_API_LEVEL}}", "module_triple": "armv7-unknown-linux-android", "inspect": false },
+    { "arch": "i686", "triple": "i686-unknown-linux-android{{ANDROID_API_LEVEL}}", "module_triple": "i686-unknown-linux-android", "inspect": false },
+    { "arch": "x86_64", "triple": "x86_64-unknown-linux-android{{ANDROID_API_LEVEL}}", "module_triple": "x86_64-unknown-linux-android", "inspect": true }
   ],
   "variants": ["static", "shared"],
 
@@ -28,18 +28,26 @@
     "brotlidec": "libbrotlidec.a"
   },
   "curl": {
+    "CURL_DEFAULT_SSL_BACKEND": "openssl",
+    "CURL_USE_OPENSSL": "YES",
     "CURL_USE_SCHANNEL": "NO",
     "CURL_WINDOWS_SSPI": "NO",
+    "USE_OPENSSL": "YES",
     "USE_WIN32_IDN": "NO",
-    "USE_WIN32_LARGE_FILES": "NO"
+    "USE_WIN32_LARGE_FILES": "NO",
+    "USE_WINDOWS_SSPI": "NO"
   },
 
+  "boringssl": true,
   "ds2": true,
   "runtime_module": false,
   "foundation_build_tools": false,
   "testing_include_sdk_headers": true,
   "publish_symbols": false,
 
+  "info_plist": {
+    "default_properties": {}
+  },
   "sdk_settings": {
     "llvm_target_vendor": "unknown",
     "llvm_target_sys": "linux",

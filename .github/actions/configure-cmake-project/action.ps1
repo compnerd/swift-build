@@ -301,8 +301,6 @@ $Defines = $CMakeDefines.Clone()
 Add-KeyValueIfNew $Defines CMAKE_POLICY_DEFAULT_CMP0181 NEW
 # Enable CMP0214: Honor CMAKE_EXE_LINKER_FLAGS for Swift executable targets.
 Add-KeyValueIfNew $Defines CMAKE_POLICY_DEFAULT_CMP0214 NEW
-# Enable CMP0215: Ninja generators emit Swift modules separately from compilation.
-Add-KeyValueIfNew $Defines CMAKE_POLICY_DEFAULT_CMP0215 NEW
 
 Add-KeyValueIfNew $Defines CMAKE_BUILD_TYPE Release
 
@@ -322,6 +320,17 @@ switch ($OS) {
         if ($UseASM) {
             Add-KeyValueIfNew $Defines CMAKE_ASM_COMPILER $Assembler.Executable
             Add-KeyValueIfNew $Defines CMAKE_ASM_FLAGS @("--target=$Triple")
+
+            # CMake's assembler detection computes the MSVC-like frontend
+            # correctly but does not cache CMAKE_<ASMDialect>_SIMULATE_ID and
+            # CMAKE_<ASMDialect>_COMPILER_FRONTEND_VARIANT. On every re-configure,
+            # the assembler is reloaded from the saved compiler file with both
+            # fields empty, the Ninja generator then misidentifies it as GCC on
+            # Windows and rewrites the include path with forward slashes,
+            # resulting in a full rebuild.
+            Add-KeyValueIfNew $Defines CMAKE_ASM_SIMULATE_ID MSVC
+            Add-KeyValueIfNew $Defines CMAKE_ASM_COMPILER_FRONTEND_VARIANT MSVC
+
             Add-KeyValueIfNew $Defines CMAKE_ASM_COMPILE_OPTIONS_MSVC_RUNTIME_LIBRARY_MultiThreadedDLL "/MD"
 
             if ($DebugInfo) {
@@ -342,6 +351,10 @@ switch ($OS) {
 
             Add-KeyValueIfNew $Defines CMAKE_ASM_MASM_COMPILER $ASM_MASM
             Add-KeyValueIfNew $Defines CMAKE_ASM_MASM_FLAGS @("/nologo" , "/quiet")
+            # See the `CMAKE_ASM_SIMULATE_ID` note above; MASM is subject to the
+            # same re-configure misidentification.
+            Add-KeyValueIfNew $Defines CMAKE_ASM_MASM_SIMULATE_ID MSVC
+            Add-KeyValueIfNew $Defines CMAKE_ASM_MASM_COMPILER_FRONTEND_VARIANT MSVC
         }
 
         if ($UseC) {
@@ -445,6 +458,9 @@ switch ($OS) {
         Add-KeyValueIfNew $Defines CMAKE_ANDROID_API "$AndroidAPILevel"
         Add-KeyValueIfNew $Defines CMAKE_ANDROID_ARCH_ABI "$AndroidArchABI"
         Add-KeyValueIfNew $Defines CMAKE_ANDROID_NDK "$AndroidNDKPath"
+        # Use the shared C++ runtime so that libraries like libswiftCore and
+        # _FoundationICU don't carry their own copy.
+        Add-KeyValueIfNew $Defines CMAKE_ANDROID_STL_TYPE c++_shared
         Add-KeyValueIfNew $Defines CMAKE_SYSROOT "$AndroidSysroot"
 
         if ($UseASM) {

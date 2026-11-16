@@ -221,6 +221,10 @@ on:
         required: true
         type: string
 
+      boringssl_revision:
+        required: true
+        type: string
+
       brotli_revision:
         required: true
         type: string
@@ -573,6 +577,7 @@ jobs:
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
+              'CMAKE_C_FLAGS' = @("-w");
               'CMAKE_POSITION_INDEPENDENT_CODE' = "YES";
               'LIBXML2_WITH_C14N' = "NO";
               'LIBXML2_WITH_CATALOG' = "NO";
@@ -870,6 +875,7 @@ jobs:
           src-dir: ${{ github.workspace }}/SourceCache/llvm-project/llvm
           bin-dir: ${{ github.workspace }}/BinaryCache/BuildTools
           use-msvc-host-toolchain: ${{ inputs.use_host_toolchain }}
+          assembler: ${{ !inputs.use_host_toolchain && 'Pinned' || '' }}
           c-compiler: 'Host.C'
           cxx-compiler: 'Host.CXX'
           use-asm-masm: ${{ inputs.use_host_toolchain }}
@@ -1230,6 +1236,7 @@ jobs:
           swift-sdk-path: ${{ steps.setup-context.outputs.sdkroot }}
           use-msvc-host-toolchain: ${{ inputs.use_host_toolchain }}
           use-asm-masm: ${{ inputs.use_host_toolchain }}
+          assembler: ${{ !inputs.use_host_toolchain && 'Pinned' || '' }}
           c-compiler: 'Host.C'
           cxx-compiler: 'Host.CXX'
           swift-compiler: 'Pinned.Swift'
@@ -1243,6 +1250,7 @@ jobs:
               'SWIFT_NATIVE_SWIFT_TOOLS_PATH' = "${{ github.workspace }}/BinaryCache/BuildTools/bin";
 
               'CLANG_TABLEGEN' = "${{ github.workspace }}/BinaryCache/BuildTools/bin/clang-tblgen${ExeSuffix}";
+              'CLANG_TIDY_CONFUSABLE_CHARS_GEN' = "${{ github.workspace }}/BinaryCache/BuildTools/bin/clang-tidy-confusable-chars-gen${ExeSuffix}";
               'CMAKE_STATIC_LIBRARY_PREFIX_Swift' = "lib";
               'LibXml2_DIR' = "${{ github.workspace }}/BinaryCache/Library/bootstrap-libxml2-${{ inputs.libxml2_version }}/usr/lib/cmake/libxml2-${{ inputs.libxml2_version }}";
               'LLVM_CONFIG_PATH' = "${{ github.workspace }}/BinaryCache/BuildTools/bin/llvm-config${ExeSuffix}";
@@ -1626,6 +1634,7 @@ jobs:
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "NO";
+              'CMAKE_C_FLAGS' = @("-w");
               'CMAKE_POSITION_INDEPENDENT_CODE' = "YES";
               'LIBXML2_WITH_C14N' = "NO";
               'LIBXML2_WITH_CATALOG' = "NO";
@@ -1874,6 +1883,7 @@ jobs:
           bin-dir: ${{ github.workspace }}/BinaryCache/stage2/build
           install-dir: ${{ github.workspace }}/BinaryCache/stage2/Library/Developer/Toolchains/${{ inputs.swift_version }}+${{ matrix.variant }}/usr
           swift-sdk-path: ${{ github.workspace }}/BinaryCache/SDK/Library/Developer/Platforms/${{ matrix.os }}.platform/Developer/SDKs/${{ matrix.os }}.sdk
+          assembler: 'Stage1'
           c-compiler: 'Stage1.C'
           cxx-compiler: 'Stage1.CXX'
           swift-compiler: 'Stage1.Swift'
@@ -2691,6 +2701,7 @@ jobs:
             @{
               'BUILD_SHARED_LIBS' = "YES";
               'BUILD_TESTING' = "NO";
+              'BUILD_EXAMPLES' = "NO";
               'CMAKE_STATIC_LIBRARY_PREFIX_Swift' = "lib";
             }
       - name: Build swift-argument-parser
@@ -2793,6 +2804,7 @@ jobs:
           cmake-defines: |
             @{
               'BUILD_SHARED_LIBS' = "YES";
+              'BUILD_TESTING' = "NO";
               'LLBUILD_SUPPORT_BINDINGS' = "Swift";
               'SQLite3_INCLUDE_DIR' = "${{ github.workspace }}/BinaryCache/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr/include";
               'SQLite3_LIBRARY' = "${{ github.workspace }}/BinaryCache/Library/sqlite-${{ inputs.swift_toolchain_sqlite_version }}/usr/lib/SQLite3.lib";
