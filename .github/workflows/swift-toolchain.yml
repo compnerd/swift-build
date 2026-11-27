@@ -6068,9 +6068,6 @@ jobs:
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bundle/baf/baf.vcxproj
 
       - name: Build installer bundle (offline)
-        # TODO: The offline installer is currently over the GitHub releases 2GiB limit. Start building it
-        # again when we're under the limit.
-        if: ${{ !inputs.create_release }}
         env:
           AZURE_KEY_VAULT_URI: ${{ steps.signing_mode.outputs.azure_vault == 'true' && secrets.AZURE_KEY_VAULT_URI || '' }}
           AZURE_KEY_VAULT_CERTIFICATE_NAME: ${{ steps.signing_mode.outputs.azure_vault == 'true' && secrets.AZURE_KEY_VAULT_CERTIFICATE_NAME || '' }}
@@ -6100,14 +6097,12 @@ jobs:
               ${{ github.workspace }}/SourceCache/swift-installer-scripts/platforms/Windows/bundle/installer.wixproj
 
       - name: Generate Build Provenance (offline installer)
-        # TODO: restore this to ${{ inputs.create_release }} if/when we build offline installer again.
-        if: false
+        if: ${{ inputs.create_release }}
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: ${{ github.workspace }}/BinaryCache/installer/Release/${{ matrix.arch }}/installer.exe
 
       - name: Upload installer (offline)
-        if: ${{ !inputs.create_release }}
         uses: actions/upload-artifact@v4
         with:
           name: Windows-${{ matrix.arch }}-installer-offline
@@ -7057,6 +7052,16 @@ jobs:
           name: Windows-arm64-installer-online
           path: ${{ github.workspace }}/tmp/online/arm64
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: Windows-amd64-installer-offline
+          path: ${{ github.workspace }}/tmp/offline/amd64
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: Windows-arm64-installer-offline
+          path: ${{ github.workspace }}/tmp/offline/arm64
+
       - name: Create Release
         shell: bash
         env:
@@ -7087,6 +7092,8 @@ jobs:
           # Create Release
           gh release create "${SWIFT_TAG}" --title "${SWIFT_TAG}" -R "${GITHUB_REPOSITORY}" --latest=${latest}
 
-          # Upload online installers
+          # Upload all installer variants
           upload_installer "${WORKSPACE}/tmp/online/amd64/installer.exe" "installer-amd64.exe"
           upload_installer "${WORKSPACE}/tmp/online/arm64/installer.exe" "installer-arm64.exe"
+          upload_installer "${WORKSPACE}/tmp/offline/amd64/installer.exe" "installer-offline-amd64.exe"
+          upload_installer "${WORKSPACE}/tmp/offline/arm64/installer.exe" "installer-offline-arm64.exe"
